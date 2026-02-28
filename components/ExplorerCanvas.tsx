@@ -196,13 +196,13 @@ export default function ExplorerCanvas() {
                 {/* BEAT A (Top-Left aligned, prominent) */}
                 <motion.div
                     style={{ opacity: opacityA, y: yA }}
-                    className="absolute inset-0 flex flex-col justify-start pt-32 px-8 md:px-24 pointer-events-none"
+                    className="absolute inset-0 flex flex-col justify-start pt-32 px-6 md:px-24 pointer-events-none"
                 >
                     <div className="max-w-4xl">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-white/90 leading-tight">
+                        <h2 className="text-3xl md:text-6xl font-bold tracking-tight text-white/90 leading-tight">
                             {t.hero.beatA.title}
                         </h2>
-                        <p className="mt-4 text-xl md:text-2xl text-white/60 font-light tracking-wide">
+                        <p className="mt-4 text-lg md:text-2xl text-white/60 font-light tracking-wide pr-4 md:pr-0">
                             {t.hero.beatA.subtitle}
                         </p>
                     </div>
@@ -211,13 +211,13 @@ export default function ExplorerCanvas() {
                 {/* BEAT B (Left aligned) */}
                 <motion.div
                     style={{ opacity: opacityB, y: yB }}
-                    className="absolute inset-0 flex flex-col justify-center px-8 md:px-24 pointer-events-none"
+                    className="absolute inset-0 flex flex-col justify-center px-6 md:px-24 pointer-events-none"
                 >
                     <div className="max-w-xl">
-                        <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-white/90 leading-tight">
+                        <h2 className="text-4xl md:text-7xl font-bold tracking-tight text-white/90 leading-tight">
                             {t.hero.beatB.title}
                         </h2>
-                        <p className="mt-6 text-lg md:text-xl text-white/60 font-light tracking-wide">
+                        <p className="mt-4 md:mt-6 text-base md:text-xl text-white/60 font-light tracking-wide pr-4 md:pr-0">
                             {t.hero.beatB.subtitle}
                         </p>
                     </div>
@@ -226,13 +226,13 @@ export default function ExplorerCanvas() {
                 {/* BEAT C (Right aligned) */}
                 <motion.div
                     style={{ opacity: opacityC, y: yC }}
-                    className="absolute inset-0 flex flex-col items-end justify-center px-8 md:px-24 text-right pointer-events-none"
+                    className="absolute inset-0 flex flex-col items-end justify-center px-6 md:px-24 text-right pointer-events-none"
                 >
                     <div className="max-w-xl">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-white/90 leading-tight">
+                        <h2 className="text-3xl md:text-6xl font-bold tracking-tight text-white/90 leading-tight">
                             {t.hero.beatC.title}
                         </h2>
-                        <p className="mt-6 text-lg md:text-xl text-white/60 font-light tracking-wide">
+                        <p className="mt-4 md:mt-6 text-base md:text-xl text-white/60 font-light tracking-wide pl-8 md:pl-0">
                             {t.hero.beatC.subtitle}
                         </p>
                     </div>
@@ -241,16 +241,16 @@ export default function ExplorerCanvas() {
                 {/* BEAT D (Centered CTA) */}
                 <motion.div
                     style={{ opacity: opacityD, y: yD }}
-                    className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto px-4"
+                    className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto px-6"
                 >
-                    <h2 className="text-4xl md:text-7xl font-bold tracking-tight text-white/90 text-center max-w-5xl leading-tight">
-                        {t.hero.beatD.title1}<br className="hidden md:block" /> {t.hero.beatD.title2}<br className="md:hidden" /> {t.hero.beatD.title3}
+                    <h2 className="text-3xl md:text-7xl font-bold tracking-tight text-white/90 text-center max-w-5xl leading-tight">
+                        {t.hero.beatD.title1}<br /> {t.hero.beatD.title2} <br className="md:hidden" />{t.hero.beatD.title3}
                     </h2>
-                    <p className="mt-6 text-lg md:text-2xl text-white/60 font-light tracking-wide text-center mb-10">
+                    <p className="mt-4 md:mt-6 text-base md:text-2xl text-white/60 font-light tracking-wide text-center mb-8 md:mb-10 px-2">
                         {t.hero.beatD.subtitle}
                     </p>
                     <Link href="/contacto">
-                        <button className="px-8 py-4 bg-white text-black text-sm uppercase tracking-widest font-semibold rounded-full hover:bg-white/90 transition-transform hover:scale-105">
+                        <button className="px-6 md:px-8 py-3 md:py-4 bg-white text-black text-xs md:text-sm uppercase tracking-widest font-semibold rounded-full hover:bg-white/90 transition-transform hover:scale-105">
                             {t.hero.beatD.btn}
                         </button>
                     </Link>

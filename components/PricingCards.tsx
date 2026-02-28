@@ -30,8 +30,8 @@ const tiers = [
 
 export default function PricingCards() {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mx-auto px-6 pointer-events-auto">
-            {tiers.map((tier, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mx-auto pointer-events-auto">
+            {tiers.map((tier) => (
                 <div
                     key={tier.name}
                     className={`relative group rounded-2xl border border-white/10 bg-[#0A0A0A]/80 backdrop-blur-md p-8 overflow-hidden transition-all duration-500 hover:border-white/30 hover:-translate-y-2 ${tier.popular ? 'md:-translate-y-4 md:hover:-translate-y-6 shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.1)]' : ''}`}
