@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function ContactForm() {
     const { t } = useLanguage();
@@ -43,28 +44,44 @@ export default function ContactForm() {
     return (
         <div className="w-full mx-auto relative">
             {isSuccess ? (
-                <div className="bg-zinc-50 border border-zinc-200 rounded-3xl p-6 md:p-12 text-center shadow-sm animate-in fade-in zoom-in duration-500 w-full mb-12">
-                    <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
+                <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 md:p-12 text-center shadow-2xl animate-in fade-in zoom-in duration-500 w-full mb-12 relative overflow-hidden">
+
+                    {/* Background Logo Watermark */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] opacity-[0.03] pointer-events-none flex items-center justify-center">
+                        <Image src="/logo-red.png" alt="Scalia Shape" width={800} height={800} className="object-contain" priority />
+                    </div>
+
+                    <div className="relative z-10 w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/20">
+                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+
+                    <h3 className="relative z-10 text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">
                         {t.contact.success.split('.')[0]}.
                     </h3>
-                    <p className="text-zinc-500 text-lg mb-8">
+                    <p className="relative z-10 text-white/70 text-lg mb-2">
                         {t.contact.success.split('.').slice(1).join('.').trim()}
+                    </p>
+                    <p className="relative z-10 text-white/50 text-sm md:text-base font-light mb-10 max-w-2xl mx-auto leading-relaxed">
+                        {/* @ts-ignore */}
+                        {t.contact.successSubtitle}
                     </p>
 
                     {/* Calendly Inline Widget */}
-                    <div className="w-full h-[700px] rounded-2xl overflow-hidden shadow-sm border border-zinc-100 bg-white relative">
+                    <div className="relative z-10 w-full h-[700px] rounded-2xl overflow-hidden shadow-sm border border-white/10 bg-[#0A0A0A]">
                         <iframe
-                            src="https://calendly.com/contact-scalia?primary_color=ff0000"
+                            src="https://calendly.com/contact-scalia?primary_color=ff0000&theme=dark"
                             width="100%"
                             height="100%"
                             frameBorder="0"
-                            className="bg-white"
+                            className="bg-[#0A0A0A]"
                         ></iframe>
                     </div>
 
-                    <div className="mt-8 flex justify-center">
+                    <div className="relative z-10 mt-8 flex justify-center">
                         <Link href="/">
-                            <button className="text-zinc-500 hover:text-black font-medium transition-colors border-b border-transparent hover:border-black pb-1">
+                            <button className="text-white/40 hover:text-white text-sm tracking-wide transition-colors border-b border-white/20 hover:border-white pb-1">
                                 {/* @ts-ignore */}
                                 {t.contact.skipBooking}
                             </button>
