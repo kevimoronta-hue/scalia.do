@@ -111,7 +111,7 @@ export default function Navbar({ forceDark = false }: { forceDark?: boolean }) {
                                 onClick={() => {
                                     setIsOpen(false);
                                     // @ts-expect-error Calendly is injected externally
-                                    if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia/auditoria?primary_color=000000&locale=' + locale });
+                                    if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale });
                                 }}
                                 className="text-3xl text-white font-semibold transition-colors uppercase tracking-widest"
                             >

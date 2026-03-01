@@ -39,7 +39,7 @@ export default function CalendlyWidget() {
         if (window.Calendly) {
             // @ts-expect-error Calendly is injected externally
             window.Calendly.initPopupWidget({
-                url: 'https://calendly.com/contact-scalia/auditoria?primary_color=000000&locale=' + locale,
+                url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale,
             });
         }
     };

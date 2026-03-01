@@ -29,7 +29,7 @@ export default function SalesCTA() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-8">
                     <button onClick={() => {
                         // @ts-expect-error Calendly is injected externally
-                        if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia/auditoria?primary_color=000000&locale=' + locale });
+                        if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale });
                     }}>
                         <ShimmerButton
                             className="w-full sm:w-auto text-sm uppercase tracking-widest font-bold shadow-xl shadow-black/10 transition-transform hover:scale-105"
