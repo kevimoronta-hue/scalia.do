@@ -34,7 +34,7 @@ export const dictionaries = {
                 title2: "Más ingresos.",
                 title3: "Cero límites.",
                 subtitle: "Únete a la élite. Redefine tus límites.",
-                btn: "Reserva tu consulta",
+                btn: "Reserva tu auditoría",
             }
         },
         testimonials: {
@@ -62,7 +62,7 @@ export const dictionaries = {
             tag: "El momento es ahora",
             title: "El estándar operativo de la nueva era.",
             subtitle: "Sincronice su visión con nuestra arquitectura de flujo. Descubra el potencial real de su estructura en una sesión estratégica exclusiva.",
-            btnPrimary: "Reserva una consulta",
+            btnPrimary: "Reserva una auditoría",
             btnSecondary: "Ver Casos de Éxito",
         },
         about: {
@@ -228,7 +228,7 @@ export const dictionaries = {
                 title2: "Plus de revenus.",
                 title3: "Zéro limite.",
                 subtitle: "Rejoignez l'élite. Redéfinissez vos limites.",
-                btn: "Réservez votre consultation",
+                btn: "Réservez votre audit",
             }
         },
         testimonials: {
@@ -256,7 +256,7 @@ export const dictionaries = {
             tag: "Le moment est venu",
             title: "Le standard opérationnel de la nouvelle ère.",
             subtitle: "Synchronisez votre vision avec notre architecture de flux. Découvrez le véritable potentiel de votre structure lors d'une session stratégique exclusive.",
-            btnPrimary: "Réserver une consultation",
+            btnPrimary: "Réserver un audit",
             btnSecondary: "Voir les cas de réussite",
         },
         about: {
@@ -422,7 +422,7 @@ export const dictionaries = {
                 title2: "More revenue.",
                 title3: "Zero limits.",
                 subtitle: "Join the elite. Redefine your limits.",
-                btn: "Book your consultation",
+                btn: "Book your audit",
             }
         },
         testimonials: {
@@ -450,7 +450,7 @@ export const dictionaries = {
             tag: "The time is now",
             title: "The operational standard of the new era.",
             subtitle: "Synchronize your vision with our flow architecture. Discover the real potential of your structure in an exclusive strategic session.",
-            btnPrimary: "Book a consultation",
+            btnPrimary: "Book an audit",
             btnSecondary: "View Success Stories",
         },
         about: {
@@ -616,7 +616,7 @@ export const dictionaries = {
                 title2: "Più entrate.",
                 title3: "Zero limiti.",
                 subtitle: "Unisciti all'élite. Ridefinisci i tuoi limiti.",
-                btn: "Prenota la tua consulenza",
+                btn: "Prenota il tuo audit",
             }
         },
         testimonials: {
@@ -644,7 +644,7 @@ export const dictionaries = {
             tag: "Il momento è adesso",
             title: "Lo standard operativo della nuova era.",
             subtitle: "Sincronizza la tua visione con la nostra architettura di flusso. Scopri il vero potenziale della tua struttura in una sessione strategica esclusiva.",
-            btnPrimary: "Prenota una consulenza",
+            btnPrimary: "Prenota un audit",
             btnSecondary: "Vedi Casi di Successo",
         },
         about: {
@@ -810,7 +810,7 @@ export const dictionaries = {
                 title2: "Mehr Umsatz.",
                 title3: "Keine Limits.",
                 subtitle: "Werden Sie Teil der Elite. Definieren Sie Ihre Grenzen neu.",
-                btn: "Beratung buchen",
+                btn: "Audit buchen",
             }
         },
         testimonials: {
@@ -838,7 +838,7 @@ export const dictionaries = {
             tag: "Die Zeit ist jetzt",
             title: "Der operative Standard der neuen Ära.",
             subtitle: "Synchronisieren Sie Ihre Vision mit unserer Flow-Architektur. Entdecken Sie in einer exklusiven Strategie-Session das reale Potenzial Ihrer Struktur.",
-            btnPrimary: "Beratung buchen",
+            btnPrimary: "Audit buchen",
             btnSecondary: "Erfolgsgeschichten ansehen",
         },
         about: {

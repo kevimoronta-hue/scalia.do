@@ -10,11 +10,11 @@ export default function CalendlyWidget() {
     const [isVisible, setIsVisible] = useState(false);
 
     const textMap: Record<string, string> = {
-        es: "Programe una reunión con Scalia",
-        fr: "Planifiez une réunion avec Scalia",
-        en: "Schedule a meeting with Scalia",
-        it: "Programma una riunione con Scalia",
-        de: "Buchen Sie ein Meeting mit Scalia"
+        es: "Programe una auditoría con Scalia",
+        fr: "Planifiez un audit avec Scalia",
+        en: "Schedule an audit with Scalia",
+        it: "Programma un audit con Scalia",
+        de: "Buchen Sie ein Audit mit Scalia"
     };
 
     useEffect(() => {
