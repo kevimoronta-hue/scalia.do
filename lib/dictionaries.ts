@@ -203,169 +203,63 @@ export const dictionaries = {
             emailLink: "contact@scalia.do"
         }
     },
-    fr: {
-        nav: {
-            about: "À propos",
-            work: "Projets",
-            contact: "Contact",
-        },
-        hero: {
-            scroll: "Faites défiler pour découvrir",
-            beatA: {
-                title: "Ingénierie de systèmes pour l'hypercroissance.",
-                subtitle: "Nous éliminons les processus manuels pour que votre entreprise évolue en pilote automatique.",
-            },
-            beatB: {
-                title: "Blindage du Flux Commercial",
-                subtitle: "Ingénierie de contact conçue pour une conclusion constante. Nous éliminons les frictions opérationnelles, garantissant que chaque prospect est traité avec une précision chirurgicale.",
-            },
-            beatC: {
-                title: "Architecture Haute Performance",
-                subtitle: "L'ADN opérationnel de la nouvelle ère. Une infrastructure intelligente pour les entreprises qui dominent leur marché.",
-            },
-            beatD: {
-                title1: "Moins de processus.",
-                title2: "Plus de revenus.",
-                title3: "Zéro limite.",
-                subtitle: "Rejoignez l'élite. Redéfinissez vos limites.",
-                btn: "Réservez votre consultation",
-            }
-        },
-        testimonials: {
-            title: "Trajectoire Internationale, Exécution Locale",
-            subtitle: "Forte d'une expérience dans l'optimisation de systèmes pour des organisations en Europe, Scalia entame son expansion en République Dominicaine avec un objectif clair : aider les entreprises à croître avec structure, simplicité et contrôle.",
-            reviews: [
-                {
-                    quote: "Évoluer avec SCALIA nous a permis d'automatiser des tâches clés et d'augmenter notre rétention de 40% en seulement trois mois.",
-                    author: "Elena Rodríguez",
-                    role: "Directrice des Opérations, TechFlow",
-                },
-                {
-                    quote: "La transition a été parfaite. L'infrastructure supporte maintenant 10 fois le trafic initial sans aucune panne.",
-                    author: "Marc Dupont",
-                    role: "CTO, Innova Solutions",
-                },
-                {
-                    quote: "Ils n'ont pas seulement optimisé notre plateforme, ils ont jeté les bases de notre croissance à travers toute l'Europe.",
-                    author: "Laura Fernández",
-                    role: "CEO, Nexo Digital",
-                }
-            ]
-        },
-        sales: {
-            tag: "Le moment est venu",
-            title: "Le standard opérationnel de la nouvelle ère.",
-            subtitle: "Synchronisez votre vision avec notre architecture de flux. Découvrez le véritable potentiel de votre structure lors d'une session stratégique exclusive.",
-            btnPrimary: "Réserver une consultation",
-            btnSecondary: "Voir les cas de réussite",
-        },
-        about: {
-            title: "Nous concevons des systèmes pour croître avec clarté",
-            subtitle: "",
-            p1: "Scalia est née d'une vision partagée entre deux frères à Toulouse, l'un des principaux centres européens de l'ingénierie aérospatiale. Notre base combine technologie, organisation et expérience réelle dans des environnements exigeants.",
-            p2: "Avec plus d'une décennie d'expérience à diriger des équipes et des opérations dans des contextes à haute responsabilité, nous avons appris que la performance durable ne dépend pas de l'improvisation, mais de systèmes clairs et bien structurés.",
-            p3: "Aujourd'hui, nous transposons cette même philosophie au monde de l'entreprise : nous aidons les organisations à concevoir, optimiser et automatiser leur structure numérique pour travailler avec plus de clarté, d'efficacité et de contrôle.",
-            p4: "Chez Scalia, il ne s'agit pas seulement de mettre en œuvre des outils, mais de construire des systèmes solides qui permettent aux entreprises de croître avec stabilité et confiance."
-        },
-        projects: {
-            title: "Ingénierie de Flux et de Présence",
-            subtitle: "",
-            features: [
-                {
-                    title: "01. Architecture Visuelle & Conversion",
-                    tag: "Web Design",
-                    desc: "La crédibilité de votre entreprise se joue dans les 3 premières secondes. Nous concevons des interfaces haute fidélité qui projettent une autorité immédiate.",
-                    points: [
-                        { name: "Design Stratégique", text: "Esthétique minimaliste et fonctionnelle orientée vers la clarté visuelle, l'expérience utilisateur et la conversion." },
-                        { name: "Systèmes d'Identité", text: "Nous créons le langage visuel qui positionne votre marque dans le secteur Premium." }
-                    ]
-                },
-                {
-                    title: "02. Écosystèmes d'Exécution Autonome",
-                    tag: "Automatisation",
-                    desc: "Derrière chaque interface de luxe, nous installons une machinerie invisible qui gère la croissance pour vous. Voici les flux que nous blindons :",
-                    points: [
-                        { name: "Onboarding Automatisé", text: "Réception et activation de nouveaux clients via un processus clair et structuré, sans friction opérationnelle." },
-                        { name: "Cycle Commercial Intelligent", text: "Génération et envoi automatisés de devis liés à votre flux opérationnel et administratif." },
-                        { name: "Gestion Financière Optimisée", text: "Émission de facturation et confirmation automatique des paiements en temps réel." },
-                        { name: "Gestion Opérationnelle Centralisée", text: "Suivi des projets et des tâches avec une vision claire de l'avancement et notifications automatiques pour l'équipe." }
-                    ]
-                },
-                {
-                    title: "03. Trajectoire & Validation",
-                    tag: "Opérations",
-                    desc: "Notre méthodologie a été développée dans des environnements très exigeants, combinant expérience opérationnelle et innovation technologique.",
-                    points: [
-                        { name: "15 organisations en Europe", text: "Expérience dans l'accompagnement des entreprises dans l'optimisation des processus et des systèmes pour améliorer leur fonctionnement quotidien." }
-                    ]
-                }
-            ]
-        },
-        meta: {
-            title: "SCALIA | Ingénierie d'Infrastructure Numérique",
-            description: "Ingénierie de systèmes et automatisation intelligente pour les entreprises en hypercroissance.",
-        },
-        footer: {
-            copy: "© 2026 Scalia. Tous droits réservés.",
-            tag: "Fait avec rigueur et précision."
-        },
         zeroRisk: {
-            badge: "Programa Fundador",
-            title: "Seleccionamos únicamente 3 empresas para el lanzamiento oficial de SCALIA en República Dominicana, bajo condiciones especiales.",
+            badge: "Programme Fondateur",
+            title: "Nous sélectionnons uniquement 3 entreprises pour le lancement officiel de SCALIA en République Dominicaine, sous des conditions spéciales.",
             subtitle: "",
             offer: {
-                title: "Oferta de implementación sin riesgo",
+                title: "Offre d'implémentation sans risque",
                 points: [
                     {
-                        title: "Despliegue completo",
-                        desc: "Diseñamos y automatizamos su infraestructura operativa sin coste inicial."
+                        title: "Déploiement complet",
+                        desc: "Nous concevons et automatisons votre infrastructure opérationnelle sans coût initial."
                     },
                     {
-                        title: "Garantía de resultados",
-                        desc: "Si el sistema implementado no cumple con los estándares definidos, no tendrá ningún coste."
+                        title: "Garantie de résultats",
+                        desc: "Si le système implémenté ne répond pas aux standards définis, vous ne paierez rien."
                     },
                     {
-                        title: "Compromiso mutuo",
-                        desc: "Si el sistema mejora su operativa y queda plenamente satisfecho, solo le pediremos un testimonio en video."
+                        title: "Engagement mutuel",
+                        desc: "Si le système améliore vos opérations et que vous êtes pleinement satisfait, nous vous demanderons uniquement un témoignage vidéo."
                     }
                 ]
             },
             process: {
-                title: "Proceso",
+                title: "Processus",
                 points: [
                     {
-                        title: "1. Onboarding estratégico",
-                        desc: "Sesión de alineación para entender tu negocio y definir objetivos claros."
+                        title: "1. Onboarding stratégique",
+                        desc: "Session d'alignement pour comprendre votre entreprise et définir des objectifs clairs."
                     },
                     {
-                        title: "2. Diseño del sistema",
-                        desc: "Diseño de la estructura web y operativa. Primera entrega en un máximo de 14 días."
+                        title: "2. Conception du système",
+                        desc: "Conception de la structure web et opérationnelle. Première livraison sous 14 jours maximum."
                     },
                     {
-                        title: "3. Validación",
-                        desc: "Ajustes y optimización hasta obtener una estructura sólida y lista para operar."
+                        title: "3. Validation",
+                        desc: "Ajustements et optimisation jusqu'à l'obtention d'une structure solide et prête à opérer."
                     },
                     {
-                        title: "4. Automatizaciones clave",
-                        desc: "Implementación de los sistemas esenciales para simplificar y escalar tu operativa."
+                        title: "4. Automatisations clés",
+                        desc: "Implémentation des systèmes essentiels pour simplifier et mettre à l'échelle vos opérations."
                     },
                     {
-                        title: "5. Activación",
-                        desc: "Puesta en marcha y validación en condiciones reales."
+                        title: "5. Activation",
+                        desc: "Mise en service et validation en conditions réelles."
                     }
                 ]
             },
             conditions: {
-                title: "Condiciones",
+                title: "Conditions",
                 points: [
-                    "Implementación completa sin coste inicial.",
-                    "Si el sistema no cumple los estándares definidos, no pagas.",
-                    "Si el sistema mejora tu operativa, el único requisito es un testimonio en video validando la experiencia."
+                    "Implémentation complète sans coût initial.",
+                    "Si le système ne répond pas aux standards définis, vous ne payez pas.",
+                    "Si le système améliore vos opérations, la seule exigence est un témoignage vidéo validant l'expérience."
                 ]
             },
             limits: {
-                title: "Cupos limitados",
-                desc: "Solo 3 empresas. Cuando se completen, el programa se cerrará."
+                title: "Places limitées",
+                desc: "Seulement 3 entreprises. Une fois les places pourvues, le programme sera fermé."
             }
         },
         contact: {
@@ -504,62 +398,62 @@ export const dictionaries = {
             tag: "Made with rigor and precision."
         },
         zeroRisk: {
-            badge: "Programa Fundador",
-            title: "Seleccionamos únicamente 3 empresas para el lanzamiento oficial de SCALIA en República Dominicana, bajo condiciones especiales.",
+            badge: "Founder Program",
+            title: "We are selecting only 3 companies for the official launch of SCALIA in the Dominican Republic, under special conditions.",
             subtitle: "",
             offer: {
-                title: "Oferta de implementación sin riesgo",
+                title: "Risk-Free Implementation Offer",
                 points: [
                     {
-                        title: "Despliegue completo",
-                        desc: "Diseñamos y automatizamos su infraestructura operativa sin coste inicial."
+                        title: "Full Deployment",
+                        desc: "We design and automate your operational infrastructure with zero upfront cost."
                     },
                     {
-                        title: "Garantía de resultados",
-                        desc: "Si el sistema implementado no cumple con los estándares definidos, no tendrá ningún coste."
+                        title: "Results Guarantee",
+                        desc: "If the implemented system does not meet the defined standards, there will be no cost."
                     },
                     {
-                        title: "Compromiso mutuo",
-                        desc: "Si el sistema mejora su operativa y queda plenamente satisfecho, solo le pediremos un testimonio en video."
+                        title: "Mutual Commitment",
+                        desc: "If the system improves your operations and you are fully satisfied, we will only ask for a video testimonial."
                     }
                 ]
             },
             process: {
-                title: "Proceso",
+                title: "Process",
                 points: [
                     {
-                        title: "1. Onboarding estratégico",
-                        desc: "Sesión de alineación para entender tu negocio y definir objetivos claros."
+                        title: "1. Strategic Onboarding",
+                        desc: "Alignment session to understand your business and define clear objectives."
                     },
                     {
-                        title: "2. Diseño del sistema",
-                        desc: "Diseño de la estructura web y operativa. Primera entrega en un máximo de 14 días."
+                        title: "2. System Design",
+                        desc: "Design of the web and operational structure. First delivery within a maximum of 14 days."
                     },
                     {
-                        title: "3. Validación",
-                        desc: "Ajustes y optimización hasta obtener una estructura sólida y lista para operar."
+                        title: "3. Validation",
+                        desc: "Adjustments and optimization until obtaining a solid structure ready to operate."
                     },
                     {
-                        title: "4. Automatizaciones clave",
-                        desc: "Implementación de los sistemas esenciales para simplificar y escalar tu operativa."
+                        title: "4. Key Automations",
+                        desc: "Implementation of essential systems to simplify and scale your operations."
                     },
                     {
-                        title: "5. Activación",
-                        desc: "Puesta en marcha y validación en condiciones reales."
+                        title: "5. Activation",
+                        desc: "Launch and validation under real-world conditions."
                     }
                 ]
             },
             conditions: {
-                title: "Condiciones",
+                title: "Conditions",
                 points: [
-                    "Implementación completa sin coste inicial.",
-                    "Si el sistema no cumple los estándares definidos, no pagas.",
-                    "Si el sistema mejora tu operativa, el único requisito es un testimonio en video validando la experiencia."
+                    "Complete implementation with zero upfront cost.",
+                    "If the system does not meet the defined standards, you do not pay.",
+                    "If the system improves your operations, the only requirement is a video testimonial validating the experience."
                 ]
             },
             limits: {
-                title: "Cupos limitados",
-                desc: "Solo 3 empresas. Cuando se completen, el programa se cerrará."
+                title: "Limited Spots",
+                desc: "Only 3 companies. Once filled, the program will close."
             }
         },
         contact: {
@@ -698,62 +592,62 @@ export const dictionaries = {
             tag: "Realizzato con rigore e precisione."
         },
         zeroRisk: {
-            badge: "Programa Fundador",
-            title: "Seleccionamos únicamente 3 empresas para el lanzamiento oficial de SCALIA en República Dominicana, bajo condiciones especiales.",
+            badge: "Programma Fondatore",
+            title: "Selezioniamo solo 3 aziende per il lancio ufficiale di SCALIA nella Repubblica Dominicana, a condizioni speciali.",
             subtitle: "",
             offer: {
-                title: "Oferta de implementación sin riesgo",
+                title: "Offerta di implementazione senza rischi",
                 points: [
                     {
-                        title: "Despliegue completo",
-                        desc: "Diseñamos y automatizamos su infraestructura operativa sin coste inicial."
+                        title: "Implementazione completa",
+                        desc: "Progettiamo e automatizziamo la tua infrastruttura operativa senza costi iniziali."
                     },
                     {
-                        title: "Garantía de resultados",
-                        desc: "Si el sistema implementado no cumple con los estándares definidos, no tendrá ningún coste."
+                        title: "Garanzia di risultati",
+                        desc: "Se il sistema implementato non soddisfa gli standard definiti, non ci sarà alcun costo."
                     },
                     {
-                        title: "Compromiso mutuo",
-                        desc: "Si el sistema mejora su operativa y queda plenamente satisfecho, solo le pediremos un testimonio en video."
+                        title: "Impegno reciproco",
+                        desc: "Se il sistema migliora le tue operazioni e sei pienamente soddisfatto, chiederemo solo una video recensione."
                     }
                 ]
             },
             process: {
-                title: "Proceso",
+                title: "Processo",
                 points: [
                     {
-                        title: "1. Onboarding estratégico",
-                        desc: "Sesión de alineación para entender tu negocio y definir objetivos claros."
+                        title: "1. Onboarding strategico",
+                        desc: "Sessione di allineamento per comprendere il tuo business e definire obiettivi chiari."
                     },
                     {
-                        title: "2. Diseño del sistema",
-                        desc: "Diseño de la estructura web y operativa. Primera entrega en un máximo de 14 días."
+                        title: "2. Design del sistema",
+                        desc: "Progettazione della struttura web e operativa. Prima consegna entro un massimo di 14 giorni."
                     },
                     {
-                        title: "3. Validación",
-                        desc: "Ajustes y optimización hasta obtener una estructura sólida y lista para operar."
+                        title: "3. Validazione",
+                        desc: "Regolazioni e ottimizzazioni fino a ottenere una struttura solida e pronta per operare."
                     },
                     {
-                        title: "4. Automatizaciones clave",
-                        desc: "Implementación de los sistemas esenciales para simplificar y escalar tu operativa."
+                        title: "4. Automazioni chiave",
+                        desc: "Implementazione di sistemi essenziali per semplificare e scalare le tue operazioni."
                     },
                     {
-                        title: "5. Activación",
-                        desc: "Puesta en marcha y validación en condiciones reales."
+                        title: "5. Attivazione",
+                        desc: "Avvio e validazione in condizioni reali."
                     }
                 ]
             },
             conditions: {
-                title: "Condiciones",
+                title: "Condizioni",
                 points: [
-                    "Implementación completa sin coste inicial.",
-                    "Si el sistema no cumple los estándares definidos, no pagas.",
-                    "Si el sistema mejora tu operativa, el único requisito es un testimonio en video validando la experiencia."
+                    "Implementazione completa senza costi iniziali.",
+                    "Se il sistema non soddisfa gli standard definiti, non paghi.",
+                    "Se il sistema migliora le tue operazioni, l'unico requisito è una video testimonianza che convalidi l'esperienza."
                 ]
             },
             limits: {
-                title: "Cupos limitados",
-                desc: "Solo 3 empresas. Cuando se completen, el programa se cerrará."
+                title: "Posti limitati",
+                desc: "Solo 3 aziende. Una volta esauriti, il programma verrà chiuso."
             }
         },
         contact: {
@@ -892,62 +786,62 @@ export const dictionaries = {
             tag: "Mit Strenge und Präzision gemacht."
         },
         zeroRisk: {
-            badge: "Programa Fundador",
-            title: "Seleccionamos únicamente 3 empresas para el lanzamiento oficial de SCALIA en República Dominicana, bajo condiciones especiales.",
+            badge: "Gründerprogramm",
+            title: "Wir wählen nur 3 Unternehmen für den offiziellen Start von SCALIA in der Dominikanischen Republik unter Sonderbedingungen aus.",
             subtitle: "",
             offer: {
-                title: "Oferta de implementación sin riesgo",
+                title: "Risikofreies Implementierungsangebot",
                 points: [
                     {
-                        title: "Despliegue completo",
-                        desc: "Diseñamos y automatizamos su infraestructura operativa sin coste inicial."
+                        title: "Vollständige Bereitstellung",
+                        desc: "Wir entwerfen und automatisieren Ihre operative Infrastruktur ohne Vorlaufkosten."
                     },
                     {
-                        title: "Garantía de resultados",
-                        desc: "Si el sistema implementado no cumple con los estándares definidos, no tendrá ningún coste."
+                        title: "Ergebnisgarantie",
+                        desc: "Wenn das implementierte System die definierten Standards nicht erfüllt, entstehen keine Kosten."
                     },
                     {
-                        title: "Compromiso mutuo",
-                        desc: "Si el sistema mejora su operativa y queda plenamente satisfecho, solo le pediremos un testimonio en video."
+                        title: "Gegenseitiges Engagement",
+                        desc: "Wenn das System Ihre Betriebsabläufe verbessert und Sie vollkommen zufrieden sind, bitten wir lediglich um ein Video-Testimonial."
                     }
                 ]
             },
             process: {
-                title: "Proceso",
+                title: "Prozess",
                 points: [
                     {
-                        title: "1. Onboarding estratégico",
-                        desc: "Sesión de alineación para entender tu negocio y definir objetivos claros."
+                        title: "1. Strategisches Onboarding",
+                        desc: "Ausrichtungssitzung, um Ihr Geschäft zu verstehen und klare Ziele zu definieren."
                     },
                     {
-                        title: "2. Diseño del sistema",
-                        desc: "Diseño de la estructura web y operativa. Primera entrega en un máximo de 14 días."
+                        title: "2. Systemdesign",
+                        desc: "Design der Web- und operativen Struktur. Erste Lieferung innerhalb von maximal 14 Tagen."
                     },
                     {
-                        title: "3. Validación",
-                        desc: "Ajustes y optimización hasta obtener una estructura sólida y lista para operar."
+                        title: "3. Validierung",
+                        desc: "Anpassungen und Optimierungen, bis eine solide und betriebsbereite Struktur erreicht ist."
                     },
                     {
-                        title: "4. Automatizaciones clave",
-                        desc: "Implementación de los sistemas esenciales para simplificar y escalar tu operativa."
+                        title: "4. Schlüsselautomatisierungen",
+                        desc: "Implementierung wesentlicher Systeme zur Vereinfachung und Skalierung Ihres Betriebs."
                     },
                     {
-                        title: "5. Activación",
-                        desc: "Puesta en marcha y validación en condiciones reales."
+                        title: "5. Aktivierung",
+                        desc: "Start und Validierung unter realen Bedingungen."
                     }
                 ]
             },
             conditions: {
-                title: "Condiciones",
+                title: "Bedingungen",
                 points: [
-                    "Implementación completa sin coste inicial.",
-                    "Si el sistema no cumple los estándares definidos, no pagas.",
-                    "Si el sistema mejora tu operativa, el único requisito es un testimonio en video validando la experiencia."
+                    "Vollständige Implementierung ohne Vorlaufkosten.",
+                    "Wenn das System die definierten Standards nicht erfüllt, zahlen Sie nichts.",
+                    "Wenn das System Ihren Betrieb verbessert, ist die einzige Anforderung ein Video-Testimonial, das die Erfahrung bestätigt."
                 ]
             },
             limits: {
-                title: "Cupos limitados",
-                desc: "Solo 3 empresas. Cuando se completen, el programa se cerrará."
+                title: "Begrenzte Plätze",
+                desc: "Nur 3 Unternehmen. Sobald diese besetzt sind, wird das Programm geschlossen."
             }
         },
         contact: {
