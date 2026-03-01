@@ -203,6 +203,112 @@ export const dictionaries = {
             emailLink: "contact@scalia.do"
         }
     },
+    fr: {
+        nav: {
+            about: "À propos",
+            work: "Projets",
+            contact: "Contact",
+        },
+        hero: {
+            scroll: "Faites défiler pour découvrir",
+            beatA: {
+                title: "Ingénierie de systèmes pour l'hypercroissance.",
+                subtitle: "Nous éliminons les processus manuels pour que votre entreprise évolue en pilote automatique.",
+            },
+            beatB: {
+                title: "Blindage du Flux Commercial",
+                subtitle: "Ingénierie de contact conçue pour une conclusion constante. Nous éliminons les frictions opérationnelles, garantissant que chaque prospect est traité avec une précision chirurgicale.",
+            },
+            beatC: {
+                title: "Architecture Haute Performance",
+                subtitle: "L'ADN opérationnel de la nouvelle ère. Une infrastructure intelligente pour les entreprises qui dominent leur marché.",
+            },
+            beatD: {
+                title1: "Moins de processus.",
+                title2: "Plus de revenus.",
+                title3: "Zéro limite.",
+                subtitle: "Rejoignez l'élite. Redéfinissez vos limites.",
+                btn: "Réservez votre consultation",
+            }
+        },
+        testimonials: {
+            title: "Trajectoire Internationale, Exécution Locale",
+            subtitle: "Forte d'une expérience dans l'optimisation de systèmes pour des organisations en Europe, Scalia entame son expansion en République Dominicaine avec un objectif clair : aider les entreprises à croître avec structure, simplicité et contrôle.",
+            reviews: [
+                {
+                    quote: "Évoluer avec SCALIA nous a permis d'automatiser des tâches clés et d'augmenter notre rétention de 40% en seulement trois mois.",
+                    author: "Elena Rodríguez",
+                    role: "Directrice des Opérations, TechFlow",
+                },
+                {
+                    quote: "La transition a été parfaite. L'infrastructure supporte maintenant 10 fois le trafic initial sans aucune panne.",
+                    author: "Marc Dupont",
+                    role: "CTO, Innova Solutions",
+                },
+                {
+                    quote: "Ils n'ont pas seulement optimisé notre plateforme, ils ont jeté les bases de notre croissance à travers toute l'Europe.",
+                    author: "Laura Fernández",
+                    role: "CEO, Nexo Digital",
+                }
+            ]
+        },
+        sales: {
+            tag: "Le moment est venu",
+            title: "Le standard opérationnel de la nouvelle ère.",
+            subtitle: "Synchronisez votre vision avec notre architecture de flux. Découvrez le véritable potentiel de votre structure lors d'une session stratégique exclusive.",
+            btnPrimary: "Réserver une consultation",
+            btnSecondary: "Voir les cas de réussite",
+        },
+        about: {
+            title: "Nous concevons des systèmes pour croître avec clarté",
+            subtitle: "",
+            p1: "Scalia est née d'une vision partagée entre deux frères à Toulouse, l'un des principaux centres européens de l'ingénierie aérospatiale. Notre base combine technologie, organisation et expérience réelle dans des environnements exigeants.",
+            p2: "Avec plus d'une décennie d'expérience à diriger des équipes et des opérations dans des contextes à haute responsabilité, nous avons appris que la performance durable ne dépend pas de l'improvisation, mais de systèmes clairs et bien structurés.",
+            p3: "Aujourd'hui, nous transposons cette même philosophie au monde de l'entreprise : nous aidons les organisations à concevoir, optimiser et automatiser leur structure numérique pour travailler avec plus de clarté, d'efficacité et de contrôle.",
+            p4: "Chez Scalia, il ne s'agit pas seulement de mettre en œuvre des outils, mais de construire des systèmes solides qui permettent aux entreprises de croître avec stabilité et confiance."
+        },
+        projects: {
+            title: "Ingénierie de Flux et de Présence",
+            subtitle: "",
+            features: [
+                {
+                    title: "01. Architecture Visuelle & Conversion",
+                    tag: "Web Design",
+                    desc: "La crédibilité de votre entreprise se joue dans les 3 premières secondes. Nous concevons des interfaces haute fidélité qui projettent une autorité immédiate.",
+                    points: [
+                        { name: "Design Stratégique", text: "Esthétique minimaliste et fonctionnelle orientée vers la clarté visuelle, l'expérience utilisateur et la conversion." },
+                        { name: "Systèmes d'Identité", text: "Nous créons le langage visuel qui positionne votre marque dans le secteur Premium." }
+                    ]
+                },
+                {
+                    title: "02. Écosystèmes d'Exécution Autonome",
+                    tag: "Automatisation",
+                    desc: "Derrière chaque interface de luxe, nous installons une machinerie invisible qui gère la croissance pour vous. Voici les flux que nous blindons :",
+                    points: [
+                        { name: "Onboarding Automatisé", text: "Réception et activation de nouveaux clients via un processus clair et structuré, sans friction opérationnelle." },
+                        { name: "Cycle Commercial Intelligent", text: "Génération et envoi automatisés de devis liés à votre flux opérationnel et administratif." },
+                        { name: "Gestion Financière Optimisée", text: "Émission de facturation et confirmation automatique des paiements en temps réel." },
+                        { name: "Gestion Opérationnelle Centralisée", text: "Suivi des projets et des tâches avec une vision claire de l'avancement et notifications automatiques pour l'équipe." }
+                    ]
+                },
+                {
+                    title: "03. Trajectoire & Validation",
+                    tag: "Opérations",
+                    desc: "Notre méthodologie a été développée dans des environnements très exigeants, combinant expérience opérationnelle et innovation technologique.",
+                    points: [
+                        { name: "15 organisations en Europe", text: "Expérience dans l'accompagnement des entreprises dans l'optimisation des processus et des systèmes pour améliorer leur fonctionnement quotidien." }
+                    ]
+                }
+            ]
+        },
+        meta: {
+            title: "SCALIA | Ingénierie d'Infrastructure Numérique",
+            description: "Ingénierie de systèmes et automatisation intelligente pour les entreprises en hypercroissance.",
+        },
+        footer: {
+            copy: "© 2026 Scalia. Tous droits réservés.",
+            tag: "Fait avec rigueur et précision."
+        },
         zeroRisk: {
             badge: "Programme Fondateur",
             title: "Nous sélectionnons uniquement 3 entreprises pour le lancement officiel de SCALIA en République Dominicaine, sous des conditions spéciales.",
