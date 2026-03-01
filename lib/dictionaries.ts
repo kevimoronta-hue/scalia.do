@@ -159,6 +159,7 @@ export const dictionaries = {
             },
             submit: "Enviar solicitud",
             success: "Gracias. Revisaremos su solicitud y le contactaremos si su empresa encaja con esta fase de implementación.",
+            skipBooking: "Omitir este paso y volver al inicio",
             footerNote: "O también puede escribirnos directamente:",
             emailLink: "contact@scalia.do"
         }
@@ -313,6 +314,7 @@ export const dictionaries = {
             },
             submit: "Envoyer la demande",
             success: "Merci. Nous examinerons votre demande et vous contacterons si votre entreprise correspond à cette phase d'implémentation.",
+            skipBooking: "Passer cette étape et retourner à l'accueil",
             footerNote: "Ou vous pouvez également nous écrire directement :",
             emailLink: "contact@scalia.do"
         }
@@ -467,6 +469,7 @@ export const dictionaries = {
             },
             submit: "Submit Request",
             success: "Thank you. We will review your request and contact you if your company fits with this implementation phase.",
+            skipBooking: "Skip this step and return home",
             footerNote: "Or you can also write to us directly:",
             emailLink: "contact@scalia.do"
         }
@@ -621,6 +624,7 @@ export const dictionaries = {
             },
             submit: "Invia Richiesta",
             success: "Grazie. Esamineremo la tua richiesta e ti contatteremo se la tua azienda è in linea con questa fase di implementazione.",
+            skipBooking: "Salta questo passaggio e torna alla home",
             footerNote: "Oppure puoi scriverci direttamente a:",
             emailLink: "contact@scalia.do"
         }
@@ -775,6 +779,7 @@ export const dictionaries = {
             },
             submit: "Anfrage senden",
             success: "Danke. Wir prüfen Ihre Anfrage und kontaktieren Sie, sofern Ihr Unternehmen in diese Implementierungsphase passt.",
+            skipBooking: "Diesen Schritt überspringen und zur Startseite zurückkehren",
             footerNote: "Oder Sie können uns auch direkt schreiben:",
             emailLink: "contact@scalia.do"
         }

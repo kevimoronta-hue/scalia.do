@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
+import Link from "next/link";
 
 export default function ContactForm() {
     const { t } = useLanguage();
@@ -42,18 +43,33 @@ export default function ContactForm() {
     return (
         <div className="w-full mx-auto relative">
             {isSuccess ? (
-                <div className="bg-zinc-50 border border-zinc-200 rounded-3xl p-12 text-center shadow-sm animate-in fade-in zoom-in duration-500">
-                    <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                    </div>
+                <div className="bg-zinc-50 border border-zinc-200 rounded-3xl p-6 md:p-12 text-center shadow-sm animate-in fade-in zoom-in duration-500 w-full mb-12">
                     <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
                         {t.contact.success.split('.')[0]}.
                     </h3>
-                    <p className="text-zinc-500 text-lg">
+                    <p className="text-zinc-500 text-lg mb-8">
                         {t.contact.success.split('.').slice(1).join('.').trim()}
                     </p>
+
+                    {/* Calendly Inline Widget */}
+                    <div className="w-full h-[700px] rounded-2xl overflow-hidden shadow-sm border border-zinc-100 bg-white relative">
+                        <iframe
+                            src="https://calendly.com/contact-scalia?primary_color=ff0000"
+                            width="100%"
+                            height="100%"
+                            frameBorder="0"
+                            className="bg-white"
+                        ></iframe>
+                    </div>
+
+                    <div className="mt-8 flex justify-center">
+                        <Link href="/">
+                            <button className="text-zinc-500 hover:text-black font-medium transition-colors border-b border-transparent hover:border-black pb-1">
+                                {/* @ts-ignore */}
+                                {t.contact.skipBooking}
+                            </button>
+                        </Link>
+                    </div>
                 </div>
             ) : (
                 <form
