@@ -9,15 +9,34 @@ export default function ContactForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Simulate a network request for the premium feel
-        setTimeout(() => {
+        const formData = new FormData(e.currentTarget);
+
+        // Add Web3Forms Access Key
+        formData.append("access_key", "a5846514-ee99-4096-a589-66b04f2a4138");
+        // Add subject
+        formData.append("subject", "Nouveau prospect : Demande de consultation Scalia !");
+
+        try {
+            const response = await fetch("https://api.web3forms.com/submit", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                setIsSuccess(true);
+            } else {
+                console.error("Erreur Web3Forms");
+                // Optionnel: Gérer une erreur visible
+            }
+        } catch (error) {
+            console.error("Network Error", error);
+        } finally {
             setIsSubmitting(false);
-            setIsSuccess(true);
-        }, 1500);
+        }
     };
 
     return (
@@ -48,6 +67,7 @@ export default function ContactForm() {
                             </label>
                             <input
                                 required
+                                name="name"
                                 type="text"
                                 className="w-full bg-transparent border-b border-zinc-300 py-3 text-black placeholder:text-zinc-400 focus:outline-none focus:border-black transition-colors rounded-none"
                             />
@@ -59,6 +79,7 @@ export default function ContactForm() {
                             </label>
                             <input
                                 required
+                                name="company"
                                 type="text"
                                 className="w-full bg-transparent border-b border-zinc-300 py-3 text-black placeholder:text-zinc-400 focus:outline-none focus:border-black transition-colors rounded-none"
                             />
@@ -70,6 +91,7 @@ export default function ContactForm() {
                             </label>
                             <input
                                 required
+                                name="role"
                                 type="text"
                                 className="w-full bg-transparent border-b border-zinc-300 py-3 text-black placeholder:text-zinc-400 focus:outline-none focus:border-black transition-colors rounded-none"
                             />
@@ -81,6 +103,7 @@ export default function ContactForm() {
                             </label>
                             <input
                                 required
+                                name="email"
                                 type="email"
                                 className="w-full bg-transparent border-b border-zinc-300 py-3 text-black placeholder:text-zinc-400 focus:outline-none focus:border-black transition-colors rounded-none"
                             />
@@ -91,6 +114,7 @@ export default function ContactForm() {
                                 {t.contact.fields.phone}
                             </label>
                             <input
+                                name="phone"
                                 type="tel"
                                 className="w-full bg-transparent border-b border-zinc-300 py-3 text-black placeholder:text-zinc-400 focus:outline-none focus:border-black transition-colors rounded-none"
                             />
@@ -101,6 +125,7 @@ export default function ContactForm() {
                                 {t.contact.fields.website}
                             </label>
                             <input
+                                name="website"
                                 type="url"
                                 className="w-full bg-transparent border-b border-zinc-300 py-3 text-black placeholder:text-zinc-400 focus:outline-none focus:border-black transition-colors rounded-none"
                             />
@@ -113,6 +138,7 @@ export default function ContactForm() {
                         </label>
                         <select
                             required
+                            name="size"
                             defaultValue=""
                             className="w-full bg-transparent border-b border-zinc-300 py-3 text-black focus:outline-none focus:border-black transition-colors appearance-none cursor-pointer rounded-none"
                         >
@@ -135,6 +161,7 @@ export default function ContactForm() {
                         </label>
                         <textarea
                             required
+                            name="optimization"
                             rows={3}
                             className="w-full bg-transparent border-b border-zinc-300 py-3 text-black placeholder:text-zinc-400 focus:outline-none focus:border-black transition-colors resize-none rounded-none"
                         />
@@ -145,6 +172,7 @@ export default function ContactForm() {
                             {t.contact.fields.additional}
                         </label>
                         <textarea
+                            name="additional"
                             rows={2}
                             className="w-full bg-transparent border-b border-zinc-300 py-3 text-black placeholder:text-zinc-400 focus:outline-none focus:border-black transition-colors resize-none rounded-none"
                         />
@@ -154,6 +182,7 @@ export default function ContactForm() {
                         <div className="flex items-center h-5 mt-0.5 relative">
                             <input
                                 id="terms"
+                                name="terms_accepted"
                                 type="checkbox"
                                 required
                                 className="peer w-5 h-5 appearance-none border border-zinc-300 rounded-sm checked:bg-black checked:border-black transition-colors cursor-pointer"
