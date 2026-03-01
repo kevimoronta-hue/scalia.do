@@ -159,7 +159,7 @@ export const dictionaries = {
             },
             submit: "Enviar solicitud",
             success: "Gracias. Su solicitud ha sido recibida con éxito.",
-            successSubtitle: "Seleccione a continuación un horario en la agenda para hablar directamente con el CEO y analizar cómo nuestra metodología puede integrarse en su empresa.",
+            successSubtitle: "Si lo desea, seleccione a continuación un horario en la agenda para hablar directamente con nosotros y analizar cómo nuestra metodología puede integrarse en su empresa.",
             skipBooking: "Omitir este paso y volver al inicio",
             footerNote: "O también puede escribirnos directamente:",
             emailLink: "contact@scalia.do"
@@ -315,7 +315,7 @@ export const dictionaries = {
             },
             submit: "Envoyer la demande",
             success: "Merci. Votre demande a été reçue avec succès.",
-            successSubtitle: "Sélectionnez ci-dessous un créneau dans l'agenda pour échanger directement avec le CEO et analyser comment notre méthodologie peut s'intégrer à votre entreprise.",
+            successSubtitle: "Si vous le souhaitez, sélectionnez ci-dessous un créneau dans l'agenda pour échanger directement avec nous et analyser comment notre méthodologie peut s'intégrer à votre entreprise.",
             skipBooking: "Passer cette étape et retourner à l'accueil",
             footerNote: "Ou vous pouvez également nous écrire directement :",
             emailLink: "contact@scalia.do"
@@ -471,7 +471,7 @@ export const dictionaries = {
             },
             submit: "Submit Request",
             success: "Thank you. Your request has been successfully received.",
-            successSubtitle: "Select a time below to speak directly with the CEO and discuss how our methodology can be integrated into your company.",
+            successSubtitle: "If you wish, select a time below to speak directly with us and discuss how our methodology can be integrated into your company.",
             skipBooking: "Skip this step and return home",
             footerNote: "Or you can also write to us directly:",
             emailLink: "contact@scalia.do"
@@ -627,7 +627,7 @@ export const dictionaries = {
             },
             submit: "Invia Richiesta",
             success: "Grazie. La tua richiesta è stata ricevuta con successo.",
-            successSubtitle: "Seleziona un orario qui sotto per parlare direttamente con il CEO e discutere come la nostra metodologia può essere integrata nella tua azienda.",
+            successSubtitle: "Se lo desideri, seleziona un orario qui sotto per parlare direttamente con noi e discutere come la nostra metodologia può essere integrata nella tua azienda.",
             skipBooking: "Salta questo passaggio e torna alla home",
             footerNote: "Oppure puoi scriverci direttamente a:",
             emailLink: "contact@scalia.do"
@@ -783,7 +783,7 @@ export const dictionaries = {
             },
             submit: "Anfrage senden",
             success: "Danke. Ihre Anfrage wurde erfolgreich empfangen.",
-            successSubtitle: "Wählen Sie unten eine Zeit aus, um direkt mit dem CEO zu sprechen und zu besprechen, wie unsere Methodik in Ihr Unternehmen integriert werden kann.",
+            successSubtitle: "Wenn Sie möchten, wählen Sie unten eine Zeit aus, um direkt mit uns zu sprechen und zu besprechen, wie unsere Methodik in Ihr Unternehmen integriert werden kann.",
             skipBooking: "Diesen Schritt überspringen und zur Startseite zurückkehren",
             footerNote: "Oder Sie können uns auch direkt schreiben:",
             emailLink: "contact@scalia.do"

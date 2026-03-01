@@ -1,14 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function ContactForm() {
     const { t, locale } = useLanguage();
+    const router = useRouter();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+
+    useEffect(() => {
+        const handleCalendlyEvent = (e: MessageEvent) => {
+            if (e.data.event && e.data.event === 'calendly.event_scheduled') {
+                router.push('/');
+            }
+        };
+
+        if (isSuccess) {
+            window.addEventListener('message', handleCalendlyEvent);
+        }
+
+        return () => {
+            window.removeEventListener('message', handleCalendlyEvent);
+        };
+    }, [isSuccess, router]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
