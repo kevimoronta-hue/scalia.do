@@ -55,7 +55,8 @@ export default function Navbar({ forceDark = false }: { forceDark?: boolean }) {
                     </Link>
                     <button
                         onClick={() => {
-                            window.open('https://calendar.app.google/vD24jBuWwThDGF8u5', '_blank');
+                            // @ts-expect-error Calendly is injected externally
+                            if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale });
                         }}
                         className="text-white/90 border border-white/20 hover:border-white/50 px-5 py-2 rounded-full text-sm transition-all duration-300 uppercase tracking-widest"
                     >
@@ -109,7 +110,8 @@ export default function Navbar({ forceDark = false }: { forceDark?: boolean }) {
                             <button
                                 onClick={() => {
                                     setIsOpen(false);
-                                    window.open('https://calendar.app.google/vD24jBuWwThDGF8u5', '_blank');
+                                    // @ts-expect-error Calendly is injected externally
+                                    if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale });
                                 }}
                                 className="text-3xl text-white font-semibold transition-colors uppercase tracking-widest"
                             >

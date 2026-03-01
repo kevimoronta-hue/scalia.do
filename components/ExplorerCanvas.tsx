@@ -250,7 +250,8 @@ export default function ExplorerCanvas() {
                     </p>
                     <button
                         onClick={() => {
-                            window.open('https://calendar.app.google/vD24jBuWwThDGF8u5', '_blank');
+                            // @ts-expect-error Calendly is injected externally
+                            if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale });
                         }}
                         className="px-6 md:px-8 py-3 md:py-4 bg-white text-black text-xs md:text-sm uppercase tracking-widest font-semibold rounded-full hover:bg-white/90 transition-transform hover:scale-105"
                     >
