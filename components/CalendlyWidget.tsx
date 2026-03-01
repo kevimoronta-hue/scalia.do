@@ -1,6 +1,5 @@
 "use client";
 
-import Script from "next/script";
 import Image from "next/image";
 import { useLanguage } from "@/components/LanguageProvider";
 import { useState, useEffect } from "react";
@@ -35,23 +34,11 @@ export default function CalendlyWidget() {
     }, []);
 
     const openCalendly = () => {
-        // @ts-expect-error Calendly is injected externally
-        if (window.Calendly) {
-            // @ts-expect-error Calendly is injected externally
-            window.Calendly.initPopupWidget({
-                url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale,
-            });
-        }
+        window.open('https://calendar.app.google/vD24jBuWwThDGF8u5', '_blank');
     };
 
     return (
         <>
-            <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
-            <Script
-                src="https://assets.calendly.com/assets/external/widget.js"
-                strategy="lazyOnload"
-            />
-
             <div className={"fixed bottom-6 right-6 z-[100] md:bottom-8 md:right-8 transition-all duration-700 " + (isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none')}>
                 <button
                     onClick={openCalendly}
