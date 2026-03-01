@@ -54,89 +54,54 @@ export default function ZeroRiskOffer() {
                 </div>
 
                 {/* Main Content Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 auto-rows-min">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 auto-rows-min">
 
-                    {/* Offer Section (Spans 2 columns on desktop) */}
+                    {/* Conditions */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-                        className="lg:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden group hover:border-white/20 transition-colors"
+                        className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 relative overflow-hidden flex-1"
                     >
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/5 blur-[80px] rounded-full pointer-events-none transition-opacity group-hover:opacity-100 opacity-50" />
-
-                        <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-10 text-white flex items-center gap-4">
-                            <span className="w-1.5 h-8 bg-red-600 rounded-full inline-block"></span>
+                        <h3 className="text-xl font-bold tracking-tight mb-6 text-white pb-4 border-b border-white/10">
                             {/* @ts-ignore */}
-                            {t.zeroRisk.offer.title}
+                            {t.zeroRisk.conditions.title}
                         </h3>
-
-                        <div className="grid gap-8">
+                        <ul className="flex flex-col gap-5 text-white/70 font-light text-base leading-relaxed">
                             {/* @ts-ignore */}
-                            {t.zeroRisk.offer.points.map((point: any, idx: number) => (
-                                <div key={idx} className="flex flex-col gap-2 relative pl-6 border-l border-white/10">
-                                    <div className="absolute left-[-5px] top-1.5 w-2 h-2 rounded-full bg-red-600" />
-                                    <h4 className="text-xl font-semibold text-white tracking-wide">
-                                        {point.title}
-                                    </h4>
-                                    <p className="text-white/60 font-light leading-relaxed text-lg">
-                                        {point.desc}
-                                    </p>
-                                </div>
+                            {t.zeroRisk.conditions.points.map((point: string, idx: number) => (
+                                <li key={idx} className="flex gap-3">
+                                    <span className="text-red-500 mt-0.5 opacity-80">✔</span>
+                                    <span>{point}</span>
+                                </li>
                             ))}
-                        </div>
+                        </ul>
                     </motion.div>
 
-                    {/* Right Column: Conditions & Limits */}
-                    <div className="flex flex-col gap-6 md:gap-8 lg:col-span-1">
+                    {/* Limits (Scarcity Banner) */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
+                        className="bg-gradient-to-br from-red-950/40 to-[#0A0A0A] border border-red-500/20 rounded-3xl p-8 relative overflow-hidden flex-1 flex flex-col justify-center"
+                    >
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/5 blur-[80px] rounded-full pointer-events-none" />
 
-                        {/* Conditions */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
-                            className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 relative overflow-hidden flex-1"
-                        >
-                            <h3 className="text-xl font-bold tracking-tight mb-6 text-white pb-4 border-b border-white/10">
+                        <div className="relative z-10 flex flex-col gap-4">
+                            <h3 className="text-2xl font-bold tracking-wider uppercase text-red-500 flex items-center gap-3">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                                 {/* @ts-ignore */}
-                                {t.zeroRisk.conditions.title}
+                                {t.zeroRisk.limits.title}
                             </h3>
-                            <ul className="flex flex-col gap-5 text-white/70 font-light text-base leading-relaxed">
+                            {/* @ts-ignore */}
+                            <p className="text-white font-medium text-xl leading-snug">
                                 {/* @ts-ignore */}
-                                {t.zeroRisk.conditions.points.map((point: string, idx: number) => (
-                                    <li key={idx} className="flex gap-3">
-                                        <span className="text-red-500 mt-0.5 opacity-80">✔</span>
-                                        <span>{point}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </motion.div>
-
-                        {/* Limits (Scarcity Banner) */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
-                            className="bg-gradient-to-br from-red-950/40 to-[#0A0A0A] border border-red-500/20 rounded-3xl p-8 relative overflow-hidden"
-                        >
-                            <div className="relative z-10 flex flex-col gap-3">
-                                <h3 className="text-xl font-bold tracking-wider uppercase text-red-500 flex items-center gap-2">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                    {/* @ts-ignore */}
-                                    {t.zeroRisk.limits.title}
-                                </h3>
-                                {/* @ts-ignore */}
-                                <p className="text-white font-medium text-lg leading-snug">
-                                    {/* @ts-ignore */}
-                                    {t.zeroRisk.limits.desc}
-                                </p>
-                            </div>
-                        </motion.div>
-
-                    </div>
+                                {t.zeroRisk.limits.desc}
+                            </p>
+                        </div>
+                    </motion.div>
 
                     {/* Process Section (Full Width Bottom) */}
                     <motion.div
