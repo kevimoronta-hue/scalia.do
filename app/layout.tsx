@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import Footer from "@/components/Footer";
+import CalendlyWidget from "@/components/CalendlyWidget";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -25,6 +26,7 @@ export default function RootLayout({
         <LanguageProvider>
           {children}
           <Footer />
+          <CalendlyWidget />
         </LanguageProvider>
       </body>
     </html>
