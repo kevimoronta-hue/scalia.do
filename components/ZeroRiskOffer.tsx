@@ -42,26 +42,63 @@ export default function ZeroRiskOffer() {
                     >
                         {t.zeroRisk.title}
                     </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-                        className="text-lg md:text-2xl text-white/50 max-w-3xl mx-auto font-light leading-relaxed"
-                    >
-                        {t.zeroRisk.subtitle}
-                    </motion.p>
+                    {t.zeroRisk.subtitle && (
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                            className="text-lg md:text-2xl text-white/50 max-w-3xl mx-auto font-light leading-relaxed"
+                        >
+                            {t.zeroRisk.subtitle}
+                        </motion.p>
+                    )}
                 </div>
 
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 auto-rows-min">
 
-                    {/* Conditions */}
+                    {/* Process Section (Full Width Top) */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                        className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden"
+                    >
+                        <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-12 text-white text-center">
+                            {/* @ts-ignore */}
+                            {t.zeroRisk.process.title}
+                        </h3>
+
+                        <div className="flex flex-col md:flex-row gap-8 md:gap-4 relative">
+                            {/* Desktop timeline connecting line */}
+                            <div className="hidden md:block absolute top-[28px] left-[5%] right-[5%] h-px bg-white/10 z-0"></div>
+
+                            {/* @ts-ignore */}
+                            {t.zeroRisk.process.points.map((point: any, idx: number) => (
+                                <div key={idx} className="flex-1 flex flex-col items-start md:items-center relative z-10 group">
+                                    {/* Step Number Badge */}
+                                    <div className="w-14 h-14 rounded-2xl bg-[#111] border border-white/10 flex items-center justify-center text-xl font-bold text-white mb-6 group-hover:border-red-500/50 group-hover:bg-red-500/10 transition-all shadow-lg">
+                                        {idx + 1}
+                                    </div>
+                                    <h4 className="text-lg font-bold text-white mb-3 md:text-center">
+                                        {point.title.split('. ')[1] || point.title}
+                                    </h4>
+                                    <p className="text-white/50 text-sm font-light leading-relaxed md:text-center">
+                                        {point.desc}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+
+                    {/* Conditions (Bottom Left) */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
                         className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 relative overflow-hidden flex-1"
                     >
                         <h3 className="text-xl font-bold tracking-tight mb-6 text-white pb-4 border-b border-white/10">
@@ -79,12 +116,12 @@ export default function ZeroRiskOffer() {
                         </ul>
                     </motion.div>
 
-                    {/* Limits (Scarcity Banner) */}
+                    {/* Limits (Scarcity Banner - Bottom Right) */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
+                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
                         className="bg-gradient-to-br from-red-950/40 to-[#0A0A0A] border border-red-500/20 rounded-3xl p-8 relative overflow-hidden flex-1 flex flex-col justify-center"
                     >
                         <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/5 blur-[80px] rounded-full pointer-events-none" />
@@ -100,41 +137,6 @@ export default function ZeroRiskOffer() {
                                 {/* @ts-ignore */}
                                 {t.zeroRisk.limits.desc}
                             </p>
-                        </div>
-                    </motion.div>
-
-                    {/* Process Section (Full Width Bottom) */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
-                        className="lg:col-span-3 bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden"
-                    >
-                        <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-12 text-white text-center">
-                            {/* @ts-ignore */}
-                            {t.zeroRisk.process.title}
-                        </h3>
-
-                        <div className="flex flex-col lg:flex-row gap-8 lg:gap-4 relative">
-                            {/* Desktop timeline connecting line */}
-                            <div className="hidden lg:block absolute top-[28px] left-[5%] right-[5%] h-px bg-white/10 z-0"></div>
-
-                            {/* @ts-ignore */}
-                            {t.zeroRisk.process.points.map((point: any, idx: number) => (
-                                <div key={idx} className="flex-1 flex flex-col items-start lg:items-center relative z-10 group">
-                                    {/* Step Number Badge */}
-                                    <div className="w-14 h-14 rounded-2xl bg-[#111] border border-white/10 flex items-center justify-center text-xl font-bold text-white mb-6 group-hover:border-red-500/50 group-hover:bg-red-500/10 transition-all shadow-lg">
-                                        {idx + 1}
-                                    </div>
-                                    <h4 className="text-lg font-bold text-white mb-3 lg:text-center">
-                                        {point.title.split('. ')[1] || point.title}
-                                    </h4>
-                                    <p className="text-white/50 text-sm font-light leading-relaxed lg:text-center">
-                                        {point.desc}
-                                    </p>
-                                </div>
-                            ))}
                         </div>
                     </motion.div>
 

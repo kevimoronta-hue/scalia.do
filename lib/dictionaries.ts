@@ -117,8 +117,8 @@ export const dictionaries = {
         },
         zeroRisk: {
             badge: "Programa Fundador",
-            title: "En Scalia creemos que la eficiencia nace de sistemas claros, simples y bien estructurados.",
-            subtitle: "Actualmente buscamos 3 empresas en República Dominicana 🇩🇴 para implementar nuestro modelo de optimización operativa.",
+            title: "Seleccionamos únicamente 3 empresas para implementar el sistema SCALIA bajo condiciones especiales.",
+            subtitle: "",
             offer: {
                 title: "Oferta de implementación sin riesgo",
                 points: [
@@ -311,8 +311,8 @@ export const dictionaries = {
         },
         zeroRisk: {
             badge: "Programa Fundador",
-            title: "En Scalia creemos que la eficiencia nace de sistemas claros, simples y bien estructurados.",
-            subtitle: "Actualmente buscamos 3 empresas en República Dominicana 🇩🇴 para implementar nuestro modelo de optimización operativa.",
+            title: "Seleccionamos únicamente 3 empresas para implementar el sistema SCALIA bajo condiciones especiales.",
+            subtitle: "",
             offer: {
                 title: "Oferta de implementación sin riesgo",
                 points: [
@@ -505,8 +505,8 @@ export const dictionaries = {
         },
         zeroRisk: {
             badge: "Programa Fundador",
-            title: "En Scalia creemos que la eficiencia nace de sistemas claros, simples y bien estructurados.",
-            subtitle: "Actualmente buscamos 3 empresas en República Dominicana 🇩🇴 para implementar nuestro modelo de optimización operativa.",
+            title: "Seleccionamos únicamente 3 empresas para implementar el sistema SCALIA bajo condiciones especiales.",
+            subtitle: "",
             offer: {
                 title: "Oferta de implementación sin riesgo",
                 points: [
@@ -699,8 +699,8 @@ export const dictionaries = {
         },
         zeroRisk: {
             badge: "Programa Fundador",
-            title: "En Scalia creemos que la eficiencia nace de sistemas claros, simples y bien estructurados.",
-            subtitle: "Actualmente buscamos 3 empresas en República Dominicana 🇩🇴 para implementar nuestro modelo de optimización operativa.",
+            title: "Seleccionamos únicamente 3 empresas para implementar el sistema SCALIA bajo condiciones especiales.",
+            subtitle: "",
             offer: {
                 title: "Oferta de implementación sin riesgo",
                 points: [
@@ -893,8 +893,8 @@ export const dictionaries = {
         },
         zeroRisk: {
             badge: "Programa Fundador",
-            title: "En Scalia creemos que la eficiencia nace de sistemas claros, simples y bien estructurados.",
-            subtitle: "Actualmente buscamos 3 empresas en República Dominicana 🇩🇴 para implementar nuestro modelo de optimización operativa.",
+            title: "Seleccionamos únicamente 3 empresas para implementar el sistema SCALIA bajo condiciones especiales.",
+            subtitle: "",
             offer: {
                 title: "Oferta de implementación sin riesgo",
                 points: [
