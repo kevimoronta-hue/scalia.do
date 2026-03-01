@@ -193,10 +193,10 @@ export default function ExplorerCanvas() {
                 </motion.div>
 
                 {/* --- SCROLLYTELLING TEXT BEATS --- */}
-                {/* BEAT A (Top-Left aligned, prominent) */}
+                {/* BEAT A (Top aligned on both) */}
                 <motion.div
                     style={{ opacity: opacityA, y: yA }}
-                    className="absolute inset-0 flex flex-col justify-start pt-32 px-6 md:px-24 pointer-events-none"
+                    className="absolute inset-0 flex flex-col justify-start pt-24 md:pt-32 px-6 md:px-24 pointer-events-none"
                 >
                     <div className="max-w-4xl">
                         <h2 className="text-3xl md:text-6xl font-bold tracking-tight text-white/90 leading-tight">
@@ -208,10 +208,10 @@ export default function ExplorerCanvas() {
                     </div>
                 </motion.div>
 
-                {/* BEAT B (Left aligned) */}
+                {/* BEAT B (Bottom aligned on mobile, Center aligned on desktop) */}
                 <motion.div
                     style={{ opacity: opacityB, y: yB }}
-                    className="absolute inset-0 flex flex-col justify-center px-6 md:px-24 pointer-events-none"
+                    className="absolute inset-0 flex flex-col justify-end md:justify-center pb-24 md:pb-0 px-6 md:px-24 pointer-events-none"
                 >
                     <div className="max-w-xl">
                         <h2 className="text-4xl md:text-7xl font-bold tracking-tight text-white/90 leading-tight">
@@ -223,10 +223,10 @@ export default function ExplorerCanvas() {
                     </div>
                 </motion.div>
 
-                {/* BEAT C (Right aligned) */}
+                {/* BEAT C (Top aligned on mobile, Center aligned on desktop) */}
                 <motion.div
                     style={{ opacity: opacityC, y: yC }}
-                    className="absolute inset-0 flex flex-col items-end justify-center px-6 md:px-24 text-right pointer-events-none"
+                    className="absolute inset-0 flex flex-col items-end justify-start md:justify-center pt-24 md:pt-0 px-6 md:px-24 text-right pointer-events-none"
                 >
                     <div className="max-w-xl">
                         <h2 className="text-3xl md:text-6xl font-bold tracking-tight text-white/90 leading-tight">
