@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+"use client";
 
 const tiers = [
     {
@@ -34,7 +34,7 @@ export default function PricingCards() {
             {tiers.map((tier) => (
                 <div
                     key={tier.name}
-                    className={`relative group rounded-2xl border border-white/10 bg-[#0A0A0A]/80 backdrop-blur-md p-8 overflow-hidden transition-all duration-500 hover:border-white/30 hover:-translate-y-2 ${tier.popular ? 'md:-translate-y-4 md:hover:-translate-y-6 shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.1)]' : ''}`}
+                    className={`relative group rounded - 2xl border border - white / 10 bg - [#0A0A0A] / 80 backdrop - blur - md p - 8 overflow - hidden transition - all duration - 500 hover: border - white / 30 hover: -translate - y - 2 ${tier.popular ? 'md:-translate-y-4 md:hover:-translate-y-6 shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.1)]' : ''} `}
                 >
                     {tier.popular && (
                         <div className="absolute top-0 right-0 bg-white text-black text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl tracking-wider z-10">
@@ -42,7 +42,7 @@ export default function PricingCards() {
                         </div>
                     )}
 
-                    <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${tier.accent} opacity-70 group-hover:opacity-100 transition-opacity duration-500`} />
+                    <div className={`absolute top - 0 left - 0 w - full h - 1 bg - gradient - to - r ${tier.accent} opacity - 70 group - hover: opacity - 100 transition - opacity duration - 500`} />
 
                     <h3 className="text-2xl font-bold tracking-tight text-white/90 mb-1">{tier.name}</h3>
                     <p className="text-sm font-medium text-white/40 mb-6">{tier.subtitle}</p>
@@ -60,7 +60,7 @@ export default function PricingCards() {
                         ))}
                     </ul>
 
-                    <button className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all duration-300 ${tier.popular ? 'bg-white text-black hover:bg-white/90' : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'}`}>
+                    <button className={`w - full py - 3 px - 4 rounded - lg font - medium text - sm transition - all duration - 300 ${tier.popular ? 'bg-white text-black hover:bg-white/90' : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'} `}>
                         Commencer
                     </button>
                 </div>

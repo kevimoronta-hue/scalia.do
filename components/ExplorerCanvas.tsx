@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import { useLanguage } from "@/components/LanguageProvider";
-import Link from "next/link";
 
 const FRAME_COUNT = 168; // frame_0 to frame_167
 
 export default function ExplorerCanvas() {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -249,14 +248,18 @@ export default function ExplorerCanvas() {
                     <p className="mt-4 md:mt-6 text-base md:text-2xl text-white/60 font-light tracking-wide text-center mb-8 md:mb-10 px-2">
                         {t.hero.beatD.subtitle}
                     </p>
-                    <Link href="/contacto">
-                        <button className="px-6 md:px-8 py-3 md:py-4 bg-white text-black text-xs md:text-sm uppercase tracking-widest font-semibold rounded-full hover:bg-white/90 transition-transform hover:scale-105">
-                            {t.hero.beatD.btn}
-                        </button>
-                    </Link>
+                    <button
+                        onClick={() => {
+                            // @ts-expect-error Calendly is injected externally
+                            if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale });
+                        }}
+                        className="px-6 md:px-8 py-3 md:py-4 bg-white text-black text-xs md:text-sm uppercase tracking-widest font-semibold rounded-full hover:bg-white/90 transition-transform hover:scale-105"
+                    >
+                        {t.hero.beatD.btn}
+                    </button>
                 </motion.div>
 
             </div>
-        </div>
+        </div >
     );
 }

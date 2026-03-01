@@ -3,10 +3,9 @@
 import { motion } from "framer-motion";
 import { ShimmerButton } from "@/components/ShimmerButton";
 import { useLanguage } from "@/components/LanguageProvider";
-import Link from "next/link";
 
 export default function SalesCTA() {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
 
     return (
         <section className="w-full bg-white text-black py-40 px-6 md:px-12 flex flex-col items-center justify-center text-center">
@@ -28,7 +27,10 @@ export default function SalesCTA() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-8">
-                    <Link href="/contacto">
+                    <button onClick={() => {
+                        // @ts-expect-error Calendly is injected externally
+                        if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale });
+                    }}>
                         <ShimmerButton
                             className="w-full sm:w-auto text-sm uppercase tracking-widest font-bold shadow-xl shadow-black/10 transition-transform hover:scale-105"
                             background="#050505"
@@ -36,7 +38,7 @@ export default function SalesCTA() {
                         >
                             <span>{t.sales.btnPrimary}</span>
                         </ShimmerButton>
-                    </Link>
+                    </button>
                 </div>
             </motion.div>
         </section>

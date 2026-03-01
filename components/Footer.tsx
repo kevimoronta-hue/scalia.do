@@ -14,6 +14,8 @@ export default function Footer() {
                         alt="Scalia Logo"
                         className="h-8 md:h-10 w-auto object-contain drop-shadow-sm"
                     />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/logo-red.png" alt="Scalia Logo" className="h-6 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300" />
                     <div className="flex items-center text-center">
                         <span className="text-zinc-300">{t.footer.copy}</span>
                     </div>

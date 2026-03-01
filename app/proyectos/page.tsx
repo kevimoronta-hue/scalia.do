@@ -18,6 +18,7 @@ export default function ProjectsPage() {
         },
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const itemVariants: any = {
         hidden: { opacity: 0, y: 40 },
         visible: {

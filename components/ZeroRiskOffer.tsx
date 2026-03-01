@@ -67,7 +67,7 @@ export default function ZeroRiskOffer() {
                         className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden"
                     >
                         <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-12 text-white text-center">
-                            {/* @ts-ignore */}
+
                             {t.zeroRisk.process.title}
                         </h3>
 
@@ -75,8 +75,8 @@ export default function ZeroRiskOffer() {
                             {/* Desktop timeline connecting line */}
                             <div className="hidden md:block absolute top-[28px] left-[5%] right-[5%] h-px bg-white/10 z-0"></div>
 
-                            {/* @ts-ignore */}
-                            {t.zeroRisk.process.points.map((point: any, idx: number) => (
+
+                            {t.zeroRisk.process.points.map((point: { title: string; desc: string }, idx: number) => (
                                 <div key={idx} className="flex-1 flex flex-col items-start md:items-center relative z-10 group">
                                     {/* Step Number Badge */}
                                     <div className="w-14 h-14 rounded-2xl bg-[#111] border border-white/10 flex items-center justify-center text-xl font-bold text-white mb-6 group-hover:border-red-500/50 group-hover:bg-red-500/10 transition-all shadow-lg">
@@ -102,11 +102,11 @@ export default function ZeroRiskOffer() {
                         className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 relative overflow-hidden flex-1"
                     >
                         <h3 className="text-xl font-bold tracking-tight mb-6 text-white pb-4 border-b border-white/10">
-                            {/* @ts-ignore */}
+
                             {t.zeroRisk.conditions.title}
                         </h3>
                         <ul className="flex flex-col gap-5 text-white/70 font-light text-base leading-relaxed">
-                            {/* @ts-ignore */}
+
                             {t.zeroRisk.conditions.points.map((point: string, idx: number) => (
                                 <li key={idx} className="flex gap-3">
                                     <span className="text-red-500 mt-0.5 opacity-80">✔</span>
@@ -129,12 +129,12 @@ export default function ZeroRiskOffer() {
                         <div className="relative z-10 flex flex-col gap-4">
                             <h3 className="text-2xl font-bold tracking-wider uppercase text-red-500 flex items-center gap-3">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                {/* @ts-ignore */}
+
                                 {t.zeroRisk.limits.title}
                             </h3>
-                            {/* @ts-ignore */}
+
                             <p className="text-white font-medium text-xl leading-snug">
-                                {/* @ts-ignore */}
+
                                 {t.zeroRisk.limits.desc}
                             </p>
                         </div>
