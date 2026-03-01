@@ -311,7 +311,7 @@ export const dictionaries = {
         },
         zeroRisk: {
             badge: "Programme Fondateur",
-            title: "Nous sélectionnons uniquement 3 entreprises pour le lancement officiel de SCALIA en République Dominicaine, sous des conditions spéciales.",
+            title: "Nous sélectionnerons uniquement 3 entreprises pour le lancement officiel de SCALIA en République Dominicaine, sous des conditions spéciales.",
             subtitle: "",
             offer: {
                 title: "Offre d'implémentation sans risque",
@@ -505,7 +505,7 @@ export const dictionaries = {
         },
         zeroRisk: {
             badge: "Founder Program",
-            title: "We are selecting only 3 companies for the official launch of SCALIA in the Dominican Republic, under special conditions.",
+            title: "We will select only 3 companies for the official launch of SCALIA in the Dominican Republic, under special conditions.",
             subtitle: "",
             offer: {
                 title: "Risk-Free Implementation Offer",
@@ -699,7 +699,7 @@ export const dictionaries = {
         },
         zeroRisk: {
             badge: "Programma Fondatore",
-            title: "Selezioniamo solo 3 aziende per il lancio ufficiale di SCALIA nella Repubblica Dominicana, a condizioni speciali.",
+            title: "Selezioneremo solo 3 aziende per il lancio ufficiale di SCALIA nella Repubblica Dominicana, a condizioni speciali.",
             subtitle: "",
             offer: {
                 title: "Offerta di implementazione senza rischi",
@@ -893,7 +893,7 @@ export const dictionaries = {
         },
         zeroRisk: {
             badge: "Gründerprogramm",
-            title: "Wir wählen nur 3 Unternehmen für den offiziellen Start von SCALIA in der Dominikanischen Republik unter Sonderbedingungen aus.",
+            title: "Wir werden nur 3 Unternehmen für den offiziellen Start von SCALIA in der Dominikanischen Republik unter Sonderbedingungen auswählen.",
             subtitle: "",
             offer: {
                 title: "Risikofreies Implementierungsangebot",
