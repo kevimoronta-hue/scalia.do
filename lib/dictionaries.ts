@@ -117,7 +117,7 @@ export const dictionaries = {
         },
         zeroRisk: {
             badge: "Programa Fundador",
-            title: "Seleccionamos únicamente 3 empresas para el lanzamiento oficial de SCALIA en República Dominicana, bajo condiciones especiales.",
+            title: "Seleccionaremos únicamente 3 empresas para el lanzamiento oficial de SCALIA en República Dominicana, bajo condiciones especiales.",
             subtitle: "",
             offer: {
                 title: "Oferta de implementación sin riesgo",
