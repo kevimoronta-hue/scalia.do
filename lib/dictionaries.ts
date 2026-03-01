@@ -116,25 +116,63 @@ export const dictionaries = {
             tag: "Hecho con rigor y precisión."
         },
         zeroRisk: {
-            badge: "Disponibilidad a partir del 30 de marzo",
+            badge: "Programa Fundador",
             title: "En Scalia creemos que la eficiencia nace de sistemas claros, simples y bien estructurados.",
             subtitle: "Actualmente buscamos 3 empresas en República Dominicana 🇩🇴 para implementar nuestro modelo de optimización operativa.",
-            offerTitle: "Oferta de implementación sin riesgo",
-            offerDesc: "",
-            points: [
-                {
-                    title: "Despliegue completo",
-                    desc: "Diseñamos y automatizamos su infraestructura operativa sin coste inicial."
-                },
-                {
-                    title: "Garantía de resultados",
-                    desc: "Si el sistema implementado no cumple con los estándares definidos, no tendrá ningún coste."
-                },
-                {
-                    title: "Compromiso mutuo",
-                    desc: "Si el sistema mejora su operativa y queda plenamente satisfecho, solo le pediremos un testimonio en video sobre su experiencia con nuestra metodología."
-                }
-            ]
+            offer: {
+                title: "Oferta de implementación sin riesgo",
+                points: [
+                    {
+                        title: "Despliegue completo",
+                        desc: "Diseñamos y automatizamos su infraestructura operativa sin coste inicial."
+                    },
+                    {
+                        title: "Garantía de resultados",
+                        desc: "Si el sistema implementado no cumple con los estándares definidos, no tendrá ningún coste."
+                    },
+                    {
+                        title: "Compromiso mutuo",
+                        desc: "Si el sistema mejora su operativa y queda plenamente satisfecho, solo le pediremos un testimonio en video."
+                    }
+                ]
+            },
+            process: {
+                title: "Proceso",
+                points: [
+                    {
+                        title: "1. Onboarding estratégico",
+                        desc: "Sesión de alineación para entender tu negocio y definir objetivos claros."
+                    },
+                    {
+                        title: "2. Diseño del sistema",
+                        desc: "Diseño de la estructura web y operativa. Primera entrega en un máximo de 14 días."
+                    },
+                    {
+                        title: "3. Validación",
+                        desc: "Ajustes y optimización hasta obtener una estructura sólida y lista para operar."
+                    },
+                    {
+                        title: "4. Automatizaciones clave",
+                        desc: "Implementación de los sistemas esenciales para simplificar y escalar tu operativa."
+                    },
+                    {
+                        title: "5. Activación",
+                        desc: "Puesta en marcha y validación en condiciones reales."
+                    }
+                ]
+            },
+            conditions: {
+                title: "Condiciones",
+                points: [
+                    "Implementación completa sin coste inicial.",
+                    "Si el sistema no cumple los estándares definidos, no pagas.",
+                    "Si el sistema mejora tu operativa, el único requisito es un testimonio en video validando la experiencia."
+                ]
+            },
+            limits: {
+                title: "Cupos limitados",
+                desc: "Solo 3 empresas. Cuando se completen, el programa se cerrará."
+            }
         },
         contact: {
             title: "Contacto",
@@ -272,25 +310,63 @@ export const dictionaries = {
             tag: "Fait avec rigueur et précision."
         },
         zeroRisk: {
-            badge: "Disponibilité à partir du 30 mars",
-            title: "Chez Scalia, nous croyons que l'efficacité naît de systèmes clairs, simples et bien structurés.",
-            subtitle: "Nous recherchons actuellement 3 entreprises en République Dominicaine 🇩🇴 pour mettre en œuvre notre modèle d'optimisation opérationnelle.",
-            offerTitle: "Offre d'implémentation sans risque",
-            offerDesc: "",
-            points: [
-                {
-                    title: "Déploiement complet",
-                    desc: "Nous concevons et automatisons votre infrastructure opérationnelle sans coût initial."
-                },
-                {
-                    title: "Garantie de résultats",
-                    desc: "Si le système implémenté ne répond pas aux normes définies, vous n'aurez aucun coût."
-                },
-                {
-                    title: "Engagement mutuel",
-                    desc: "Si le système améliore vos opérations et que vous êtes pleinement satisfait, nous vous demanderons uniquement un témoignage vidéo sur votre expérience avec notre méthodologie."
-                }
-            ]
+            badge: "Programa Fundador",
+            title: "En Scalia creemos que la eficiencia nace de sistemas claros, simples y bien estructurados.",
+            subtitle: "Actualmente buscamos 3 empresas en República Dominicana 🇩🇴 para implementar nuestro modelo de optimización operativa.",
+            offer: {
+                title: "Oferta de implementación sin riesgo",
+                points: [
+                    {
+                        title: "Despliegue completo",
+                        desc: "Diseñamos y automatizamos su infraestructura operativa sin coste inicial."
+                    },
+                    {
+                        title: "Garantía de resultados",
+                        desc: "Si el sistema implementado no cumple con los estándares definidos, no tendrá ningún coste."
+                    },
+                    {
+                        title: "Compromiso mutuo",
+                        desc: "Si el sistema mejora su operativa y queda plenamente satisfecho, solo le pediremos un testimonio en video."
+                    }
+                ]
+            },
+            process: {
+                title: "Proceso",
+                points: [
+                    {
+                        title: "1. Onboarding estratégico",
+                        desc: "Sesión de alineación para entender tu negocio y definir objetivos claros."
+                    },
+                    {
+                        title: "2. Diseño del sistema",
+                        desc: "Diseño de la estructura web y operativa. Primera entrega en un máximo de 14 días."
+                    },
+                    {
+                        title: "3. Validación",
+                        desc: "Ajustes y optimización hasta obtener una estructura sólida y lista para operar."
+                    },
+                    {
+                        title: "4. Automatizaciones clave",
+                        desc: "Implementación de los sistemas esenciales para simplificar y escalar tu operativa."
+                    },
+                    {
+                        title: "5. Activación",
+                        desc: "Puesta en marcha y validación en condiciones reales."
+                    }
+                ]
+            },
+            conditions: {
+                title: "Condiciones",
+                points: [
+                    "Implementación completa sin coste inicial.",
+                    "Si el sistema no cumple los estándares definidos, no pagas.",
+                    "Si el sistema mejora tu operativa, el único requisito es un testimonio en video validando la experiencia."
+                ]
+            },
+            limits: {
+                title: "Cupos limitados",
+                desc: "Solo 3 empresas. Cuando se completen, el programa se cerrará."
+            }
         },
         contact: {
             title: "Contact",
@@ -428,25 +504,63 @@ export const dictionaries = {
             tag: "Made with rigor and precision."
         },
         zeroRisk: {
-            badge: "Availability starting March 30th",
-            title: "At Scalia, we believe efficiency is born from clear, simple, and well-structured systems.",
-            subtitle: "We are currently looking for 3 companies in the Dominican Republic 🇩🇴 to implement our operational optimization model.",
-            offerTitle: "Risk-free implementation offer",
-            offerDesc: "",
-            points: [
-                {
-                    title: "Full deployment",
-                    desc: "We design and automate your operational infrastructure with no upfront cost."
-                },
-                {
-                    title: "Results guarantee",
-                    desc: "If the implemented system does not meet the defined standards, there will be no cost."
-                },
-                {
-                    title: "Mutual commitment",
-                    desc: "If the system improves your operations and you are fully satisfied, we will only ask for a video testimonial about your experience with our methodology."
-                }
-            ]
+            badge: "Programa Fundador",
+            title: "En Scalia creemos que la eficiencia nace de sistemas claros, simples y bien estructurados.",
+            subtitle: "Actualmente buscamos 3 empresas en República Dominicana 🇩🇴 para implementar nuestro modelo de optimización operativa.",
+            offer: {
+                title: "Oferta de implementación sin riesgo",
+                points: [
+                    {
+                        title: "Despliegue completo",
+                        desc: "Diseñamos y automatizamos su infraestructura operativa sin coste inicial."
+                    },
+                    {
+                        title: "Garantía de resultados",
+                        desc: "Si el sistema implementado no cumple con los estándares definidos, no tendrá ningún coste."
+                    },
+                    {
+                        title: "Compromiso mutuo",
+                        desc: "Si el sistema mejora su operativa y queda plenamente satisfecho, solo le pediremos un testimonio en video."
+                    }
+                ]
+            },
+            process: {
+                title: "Proceso",
+                points: [
+                    {
+                        title: "1. Onboarding estratégico",
+                        desc: "Sesión de alineación para entender tu negocio y definir objetivos claros."
+                    },
+                    {
+                        title: "2. Diseño del sistema",
+                        desc: "Diseño de la estructura web y operativa. Primera entrega en un máximo de 14 días."
+                    },
+                    {
+                        title: "3. Validación",
+                        desc: "Ajustes y optimización hasta obtener una estructura sólida y lista para operar."
+                    },
+                    {
+                        title: "4. Automatizaciones clave",
+                        desc: "Implementación de los sistemas esenciales para simplificar y escalar tu operativa."
+                    },
+                    {
+                        title: "5. Activación",
+                        desc: "Puesta en marcha y validación en condiciones reales."
+                    }
+                ]
+            },
+            conditions: {
+                title: "Condiciones",
+                points: [
+                    "Implementación completa sin coste inicial.",
+                    "Si el sistema no cumple los estándares definidos, no pagas.",
+                    "Si el sistema mejora tu operativa, el único requisito es un testimonio en video validando la experiencia."
+                ]
+            },
+            limits: {
+                title: "Cupos limitados",
+                desc: "Solo 3 empresas. Cuando se completen, el programa se cerrará."
+            }
         },
         contact: {
             title: "Contact",
@@ -584,25 +698,63 @@ export const dictionaries = {
             tag: "Realizzato con rigore e precisione."
         },
         zeroRisk: {
-            badge: "Disponibilità dal 30 marzo",
-            title: "In Scalia crediamo che l'efficienza nasca da sistemi chiari, semplici e ben strutturati.",
-            subtitle: "Attualmente stiamo cercando 3 aziende nella Repubblica Dominicana 🇩🇴 per implementare il nostro modello di ottimizzazione operativa.",
-            offerTitle: "Offerta di implementazione senza rischi",
-            offerDesc: "",
-            points: [
-                {
-                    title: "Implementazione completa",
-                    desc: "Progettiamo e automatizziamo la tua infrastruttura operativa senza costi iniziali."
-                },
-                {
-                    title: "Garanzia di risultati",
-                    desc: "Se il sistema implementato non soddisfa gli standard definiti, non ci sarà alcun costo."
-                },
-                {
-                    title: "Impegno reciproco",
-                    desc: "Se il sistema migliora le tue operazioni e sei pienamente soddisfatto, ti chiederemo solo una testimonianza video sulla tua esperienza con la nostra metodologia."
-                }
-            ]
+            badge: "Programa Fundador",
+            title: "En Scalia creemos que la eficiencia nace de sistemas claros, simples y bien estructurados.",
+            subtitle: "Actualmente buscamos 3 empresas en República Dominicana 🇩🇴 para implementar nuestro modelo de optimización operativa.",
+            offer: {
+                title: "Oferta de implementación sin riesgo",
+                points: [
+                    {
+                        title: "Despliegue completo",
+                        desc: "Diseñamos y automatizamos su infraestructura operativa sin coste inicial."
+                    },
+                    {
+                        title: "Garantía de resultados",
+                        desc: "Si el sistema implementado no cumple con los estándares definidos, no tendrá ningún coste."
+                    },
+                    {
+                        title: "Compromiso mutuo",
+                        desc: "Si el sistema mejora su operativa y queda plenamente satisfecho, solo le pediremos un testimonio en video."
+                    }
+                ]
+            },
+            process: {
+                title: "Proceso",
+                points: [
+                    {
+                        title: "1. Onboarding estratégico",
+                        desc: "Sesión de alineación para entender tu negocio y definir objetivos claros."
+                    },
+                    {
+                        title: "2. Diseño del sistema",
+                        desc: "Diseño de la estructura web y operativa. Primera entrega en un máximo de 14 días."
+                    },
+                    {
+                        title: "3. Validación",
+                        desc: "Ajustes y optimización hasta obtener una estructura sólida y lista para operar."
+                    },
+                    {
+                        title: "4. Automatizaciones clave",
+                        desc: "Implementación de los sistemas esenciales para simplificar y escalar tu operativa."
+                    },
+                    {
+                        title: "5. Activación",
+                        desc: "Puesta en marcha y validación en condiciones reales."
+                    }
+                ]
+            },
+            conditions: {
+                title: "Condiciones",
+                points: [
+                    "Implementación completa sin coste inicial.",
+                    "Si el sistema no cumple los estándares definidos, no pagas.",
+                    "Si el sistema mejora tu operativa, el único requisito es un testimonio en video validando la experiencia."
+                ]
+            },
+            limits: {
+                title: "Cupos limitados",
+                desc: "Solo 3 empresas. Cuando se completen, el programa se cerrará."
+            }
         },
         contact: {
             title: "Contatto",
@@ -740,25 +892,63 @@ export const dictionaries = {
             tag: "Mit Strenge und Präzision gemacht."
         },
         zeroRisk: {
-            badge: "Verfügbarkeit ab dem 30. März",
-            title: "Wir bei Scalia glauben, dass Effizienz aus klaren, einfachen und gut strukturierten Systemen entsteht.",
-            subtitle: "Wir suchen derzeit 3 Unternehmen in der Dominikanischen Republik 🇩🇴, um unser operatives Optimierungsmodell umzusetzen.",
-            offerTitle: "Risikofreies Implementierungsangebot",
-            offerDesc: "",
-            points: [
-                {
-                    title: "Vollständige Implementierung",
-                    desc: "Wir entwerfen und automatisieren Ihre operative Infrastruktur ohne Vorlaufkosten."
-                },
-                {
-                    title: "Erfolgsgarantie",
-                    desc: "Wenn das implementierte System nicht den definierten Standards entspricht, entstehen keine Kosten."
-                },
-                {
-                    title: "Gegenseitiges Bekenntnis",
-                    desc: "Wenn das System Ihre Abläufe verbessert und Sie vollauf zufrieden sind, bitten wir Sie lediglich um ein Video-Testimonial über Ihre Erfahrung mit unserer Methodik."
-                }
-            ]
+            badge: "Programa Fundador",
+            title: "En Scalia creemos que la eficiencia nace de sistemas claros, simples y bien estructurados.",
+            subtitle: "Actualmente buscamos 3 empresas en República Dominicana 🇩🇴 para implementar nuestro modelo de optimización operativa.",
+            offer: {
+                title: "Oferta de implementación sin riesgo",
+                points: [
+                    {
+                        title: "Despliegue completo",
+                        desc: "Diseñamos y automatizamos su infraestructura operativa sin coste inicial."
+                    },
+                    {
+                        title: "Garantía de resultados",
+                        desc: "Si el sistema implementado no cumple con los estándares definidos, no tendrá ningún coste."
+                    },
+                    {
+                        title: "Compromiso mutuo",
+                        desc: "Si el sistema mejora su operativa y queda plenamente satisfecho, solo le pediremos un testimonio en video."
+                    }
+                ]
+            },
+            process: {
+                title: "Proceso",
+                points: [
+                    {
+                        title: "1. Onboarding estratégico",
+                        desc: "Sesión de alineación para entender tu negocio y definir objetivos claros."
+                    },
+                    {
+                        title: "2. Diseño del sistema",
+                        desc: "Diseño de la estructura web y operativa. Primera entrega en un máximo de 14 días."
+                    },
+                    {
+                        title: "3. Validación",
+                        desc: "Ajustes y optimización hasta obtener una estructura sólida y lista para operar."
+                    },
+                    {
+                        title: "4. Automatizaciones clave",
+                        desc: "Implementación de los sistemas esenciales para simplificar y escalar tu operativa."
+                    },
+                    {
+                        title: "5. Activación",
+                        desc: "Puesta en marcha y validación en condiciones reales."
+                    }
+                ]
+            },
+            conditions: {
+                title: "Condiciones",
+                points: [
+                    "Implementación completa sin coste inicial.",
+                    "Si el sistema no cumple los estándares definidos, no pagas.",
+                    "Si el sistema mejora tu operativa, el único requisito es un testimonio en video validando la experiencia."
+                ]
+            },
+            limits: {
+                title: "Cupos limitados",
+                desc: "Solo 3 empresas. Cuando se completen, el programa se cerrará."
+            }
         },
         contact: {
             title: "Kontakt",
