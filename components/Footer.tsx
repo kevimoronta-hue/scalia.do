@@ -57,7 +57,7 @@ export default function Footer() {
                             className="h-10 w-auto object-contain drop-shadow-sm"
                         />
                         <div className="w-px h-6 bg-white/10"></div>
-                        <span className="text-zinc-500">{t.footer.copy}</span>
+                        <span className="text-zinc-500 whitespace-nowrap">{t.footer.copy}</span>
                     </div>
 
                     {/* Right — Empty spacer for symmetry */}
