@@ -64,7 +64,7 @@ export default function ZeroRiskOffer() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-                        className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden"
+                        className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden hover:border-red-500/30 transition-colors duration-500"
                     >
                         <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-12 text-white text-center">
 
@@ -79,7 +79,7 @@ export default function ZeroRiskOffer() {
                             {t.zeroRisk.process.points.map((point: { title: string; desc: string }, idx: number) => (
                                 <div key={idx} className="flex-1 flex flex-col items-start md:items-center relative z-10 group">
                                     {/* Step Number Badge */}
-                                    <div className="w-14 h-14 rounded-2xl bg-[#111] border border-white/10 flex items-center justify-center text-xl font-bold text-white mb-6 group-hover:border-red-500/50 group-hover:bg-red-500/10 transition-all shadow-lg">
+                                    <div className="w-14 h-14 rounded-2xl bg-[#111] border border-white/10 flex items-center justify-center text-xl font-bold text-white mb-6 group-hover:border-red-500/50 group-hover:bg-red-500/10 transition-all duration-500 shadow-lg group-hover:shadow-red-500/10">
                                         {idx + 1}
                                     </div>
                                     <h4 className="text-lg font-bold text-white mb-3 md:text-center">
@@ -99,7 +99,7 @@ export default function ZeroRiskOffer() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
-                        className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 relative overflow-hidden flex-1"
+                        className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 relative overflow-hidden flex-1 hover:border-red-500/30 transition-colors duration-500"
                     >
                         <h3 className="text-xl font-bold tracking-tight mb-6 text-white pb-4 border-b border-white/10">
 

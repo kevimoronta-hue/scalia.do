@@ -58,7 +58,7 @@ export default function Navbar({ forceDark = false }: { forceDark?: boolean }) {
                             // @ts-expect-error Calendly is injected externally
                             if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale });
                         }}
-                        className="text-white/90 border border-white/20 hover:border-white/50 px-5 py-2 rounded-full text-sm transition-all duration-300 uppercase tracking-widest"
+                        className="text-white/90 border border-white/20 hover:border-white/50 px-5 py-2 rounded-full text-sm transition-all duration-300 uppercase tracking-widest active:scale-95"
                     >
                         {t.nav.contact}
                     </button>
@@ -84,44 +84,55 @@ export default function Navbar({ forceDark = false }: { forceDark?: boolean }) {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="md:hidden fixed inset-0 top-[60px] h-[calc(100vh-60px)] bg-[#050505] flex flex-col justify-between px-6 pb-12 pt-8"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="md:hidden fixed inset-0 top-[60px] h-[calc(100vh-60px)] bg-black/70 backdrop-blur-2xl flex flex-col justify-between px-6 pb-12 pt-8"
                     >
                         <div className="flex flex-col gap-8 text-center mt-8">
-                            <Link
-                                href="/sobre-nosotros"
-                                onClick={() => setIsOpen(false)}
-                                className="text-3xl text-white font-semibold transition-colors uppercase tracking-widest"
-                            >
-                                {t.nav.about}
-                            </Link>
-                            <div className="w-12 h-[1px] bg-white/20 mx-auto"></div>
-                            <Link
-                                href="/proyectos"
-                                onClick={() => setIsOpen(false)}
-                                className="text-3xl text-white font-semibold transition-colors uppercase tracking-widest"
-                            >
-                                {t.nav.work}
-                            </Link>
-                            <div className="w-12 h-[1px] bg-white/20 mx-auto"></div>
-                            <button
-                                onClick={() => {
-                                    setIsOpen(false);
-                                    // @ts-expect-error Calendly is injected externally
-                                    if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale });
-                                }}
-                                className="text-3xl text-white font-semibold transition-colors uppercase tracking-widest"
-                            >
-                                {t.nav.contact}
-                            </button>
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4 }}>
+                                <Link
+                                    href="/sobre-nosotros"
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-3xl text-white font-semibold transition-colors uppercase tracking-widest active:scale-95 inline-block"
+                                >
+                                    {t.nav.about}
+                                </Link>
+                            </motion.div>
+                            <div className="w-12 h-[1px] bg-white/10 mx-auto"></div>
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.4 }}>
+                                <Link
+                                    href="/proyectos"
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-3xl text-white font-semibold transition-colors uppercase tracking-widest active:scale-95 inline-block"
+                                >
+                                    {t.nav.work}
+                                </Link>
+                            </motion.div>
+                            <div className="w-12 h-[1px] bg-white/10 mx-auto"></div>
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}>
+                                <button
+                                    onClick={() => {
+                                        setIsOpen(false);
+                                        // @ts-expect-error Calendly is injected externally
+                                        if (window.Calendly) window.Calendly.initPopupWidget({ url: 'https://calendly.com/contact-scalia?primary_color=000000&locale=' + locale });
+                                    }}
+                                    className="text-3xl text-white font-semibold transition-all uppercase tracking-widest active:scale-95"
+                                >
+                                    {t.nav.contact}
+                                </button>
+                            </motion.div>
                         </div>
 
-                        <div className="text-center text-white/40 text-xs mt-12 mb-8">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.5, duration: 0.6 }}
+                            className="text-center text-white/30 text-xs mt-12 mb-8"
+                        >
                             SCALIA AI © {new Date().getFullYear()}
-                        </div>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
