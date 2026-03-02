@@ -70,19 +70,22 @@ export default function Footer() {
                         <span className="text-zinc-500 whitespace-nowrap">{t.footer.copy}</span>
                     </div>
 
-                    {/* Right — SSL Badge + Privacy */}
-                    <div className="flex items-center justify-end gap-4">
-                        <Link href="/privacidad" className="text-zinc-600 hover:text-zinc-400 text-xs transition-colors duration-300">
-                            {t.footer.privacy}
-                        </Link>
-                        <div className="w-px h-4 bg-white/10"></div>
-                        <div className="flex items-center gap-1.5 text-green-600/60">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                            <span className="text-[10px] uppercase tracking-widest">SSL</span>
-                        </div>
+                    {/* Right — Empty spacer for Calendly widget */}
+                    <div></div>
+                </div>
+
+                {/* Desktop: Privacy + SSL row below main grid */}
+                <div className="hidden md:flex items-center justify-center gap-4 mt-6 pt-4 border-t border-white/5">
+                    <Link href="/privacidad" className="text-zinc-600 hover:text-zinc-400 text-xs transition-colors duration-300">
+                        {t.footer.privacy}
+                    </Link>
+                    <div className="w-px h-3 bg-white/10"></div>
+                    <div className="flex items-center gap-1.5 text-green-600/60">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <span className="text-[10px] uppercase tracking-widest">{t.footer.ssl}</span>
                     </div>
                 </div>
 
