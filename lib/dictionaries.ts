@@ -167,7 +167,7 @@ export const dictionaries = {
                 points: [
                     "Implementación completa sin coste inicial.",
                     "Si el sistema no cumple los estándares definidos, no pagas.",
-                    "Si el sistema mejora tu operativa, el único requisito es un testimonio en video validando la experiencia."
+                    "Si entregamos el valor prometido, solo solicitaremos un testimonio en video que refleje su experiencia."
                 ]
             },
             limits: {
@@ -362,7 +362,7 @@ export const dictionaries = {
                 points: [
                     "Implémentation complète sans coût initial.",
                     "Si le système ne répond pas aux standards définis, vous ne payez pas.",
-                    "Si le système améliore vos opérations, la seule exigence est un témoignage vidéo validant l'expérience."
+                    "Si nous livrons la valeur promise, nous ne demanderons qu'un témoignage vidéo reflétant votre expérience."
                 ]
             },
             limits: {
@@ -557,7 +557,7 @@ export const dictionaries = {
                 points: [
                     "Complete implementation with zero upfront cost.",
                     "If the system does not meet the defined standards, you do not pay.",
-                    "If the system improves your operations, the only requirement is a video testimonial validating the experience."
+                    "If we deliver the promised value, we will only request a video testimonial reflecting your experience."
                 ]
             },
             limits: {
@@ -752,7 +752,7 @@ export const dictionaries = {
                 points: [
                     "Implementazione completa senza costi iniziali.",
                     "Se il sistema non soddisfa gli standard definiti, non paghi.",
-                    "Se il sistema migliora le tue operazioni, l'unico requisito è una video testimonianza che convalidi l'esperienza."
+                    "Se forniamo il valore promesso, richiederemo solo una video-testimonianza che rifletta la tua esperienza."
                 ]
             },
             limits: {
@@ -947,7 +947,7 @@ export const dictionaries = {
                 points: [
                     "Vollständige Implementierung ohne Vorlaufkosten.",
                     "Wenn das System die definierten Standards nicht erfüllt, zahlen Sie nichts.",
-                    "Wenn das System Ihren Betrieb verbessert, ist die einzige Anforderung ein Video-Testimonial, das die Erfahrung bestätigt."
+                    "Wenn wir den versprochenen Mehrwert liefern, fordern wir lediglich ein Video-Testimonial an, das Ihre Erfahrung widerspiegelt."
                 ]
             },
             limits: {
