@@ -156,14 +156,19 @@ export default function ExplorerCanvas() {
             {/* LOADING STATE DIV (Overlays the sticky container before ready) */}
             {!isReady && (
                 <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505]">
-                    <div className="w-64 mb-4">
-                        <div className="flex justify-between text-xs text-white/40 uppercase tracking-widest mb-2">
-                            <span>Initializing Sequence</span>
-                            <span>{Math.round((loaded / FRAME_COUNT) * 100)}%</span>
+                    <div className="w-64 md:w-80 flex flex-col items-center">
+                        <img
+                            src="/logo-red.png"
+                            alt="Scalia Logo"
+                            className="h-16 md:h-20 mb-8 object-contain animate-pulse duration-2000"
+                        />
+                        <div className="flex justify-between w-full text-[10px] md:text-xs text-red-500/70 uppercase tracking-widest mb-3">
+                            <span>{t.hero.loading}</span>
+                            <span className="font-mono">{Math.round((loaded / FRAME_COUNT) * 100)}%</span>
                         </div>
-                        <div className="h-[2px] w-full bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-[1px] w-full bg-red-900/30 overflow-hidden">
                             <div
-                                className="h-full bg-white transition-all duration-300 ease-out"
+                                className="h-full bg-red-600 transition-all duration-300 ease-out shadow-[0_0_10px_rgba(220,38,38,0.5)]"
                                 style={{ width: `${(loaded / FRAME_COUNT) * 100}%` }}
                             />
                         </div>

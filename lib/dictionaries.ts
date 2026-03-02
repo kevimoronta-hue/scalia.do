@@ -16,6 +16,7 @@ export const dictionaries = {
             contact: "Contacto",
         },
         hero: {
+            loading: "Preparando su experiencia...",
             scroll: "Desliza para descubrir",
             beatA: {
                 title: "Ingeniería de sistemas para el hipercrecimiento.",
@@ -210,6 +211,7 @@ export const dictionaries = {
             contact: "Contact",
         },
         hero: {
+            loading: "Préparation de votre expérience...",
             scroll: "Faites défiler pour découvrir",
             beatA: {
                 title: "Ingénierie de systèmes pour l'hypercroissance.",
@@ -404,6 +406,7 @@ export const dictionaries = {
             contact: "Contact",
         },
         hero: {
+            loading: "Preparing your experience...",
             scroll: "Scroll to Explore",
             beatA: {
                 title: "Systems engineering for hypergrowth.",
@@ -598,6 +601,7 @@ export const dictionaries = {
             contact: "Contatto",
         },
         hero: {
+            loading: "Preparazione della tua esperienza...",
             scroll: "Scorri per esplorare",
             beatA: {
                 title: "Ingegneria di sistema per l'ipercrescita.",
@@ -792,6 +796,7 @@ export const dictionaries = {
             contact: "Kontakt",
         },
         hero: {
+            loading: "Ihre Erfahrung wird vorbereitet...",
             scroll: "Scrollen zum Entdecken",
             beatA: {
                 title: "System-Engineering für Hyperwachstum.",
