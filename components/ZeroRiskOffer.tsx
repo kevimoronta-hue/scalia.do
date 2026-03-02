@@ -76,20 +76,42 @@ export default function ZeroRiskOffer() {
                             <div className="hidden md:block absolute top-[28px] left-[5%] right-[5%] h-px bg-white/10 z-0"></div>
 
 
-                            {t.zeroRisk.process.points.map((point: { title: string; desc: string }, idx: number) => (
-                                <div key={idx} className="flex-1 flex flex-col items-start md:items-center relative z-10 group">
-                                    {/* Step Number Badge */}
-                                    <div className="w-14 h-14 rounded-2xl bg-[#111] border border-white/10 flex items-center justify-center text-xl font-bold text-white mb-6 group-hover:border-red-500/50 group-hover:bg-red-500/10 transition-all duration-500 shadow-lg group-hover:shadow-red-500/10">
-                                        {idx + 1}
+                            {t.zeroRisk.process.points.map((point: { title: string; desc: string }, idx: number) => {
+                                const isLast = idx === t.zeroRisk.process.points.length - 1;
+                                const ringColor = isLast ? "rgba(34,197,94,0.6)" : "rgba(239,68,68,0.6)";
+                                const glowColor = isLast ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)";
+                                const textColor = isLast ? "text-green-500" : "text-red-500";
+
+                                return (
+                                    <div key={idx} className="flex-1 flex flex-col items-start md:items-center relative z-10 group">
+                                        {/* Step Number Badge */}
+                                        {/* Desktop: static with hover */}
+                                        <div className={`hidden md:flex w-14 h-14 rounded-2xl bg-[#111] border border-white/10 items-center justify-center text-xl font-bold text-white mb-6 group-hover:border-red-500/50 group-hover:bg-red-500/10 transition-all duration-500 shadow-lg group-hover:shadow-red-500/10`}>
+                                            {idx + 1}
+                                        </div>
+                                        {/* Mobile: animated ring */}
+                                        <motion.div
+                                            initial={{ borderColor: "rgba(255,255,255,0.1)", boxShadow: "0 0 0px transparent", scale: 0.9 }}
+                                            whileInView={{
+                                                borderColor: ringColor,
+                                                boxShadow: `0 0 20px ${glowColor}`,
+                                                scale: 1,
+                                            }}
+                                            viewport={{ once: true, margin: "-50px" }}
+                                            transition={{ duration: 0.6, delay: idx * 0.3, ease: "easeOut" }}
+                                            className={`md:hidden w-14 h-14 rounded-2xl bg-[#111] border-2 flex items-center justify-center text-xl font-bold mb-6 ${textColor}`}
+                                        >
+                                            {idx + 1}
+                                        </motion.div>
+                                        <h4 className="text-lg font-bold text-white mb-3 md:text-center">
+                                            {point.title.split('. ')[1] || point.title}
+                                        </h4>
+                                        <p className="text-white/50 text-sm font-light leading-relaxed md:text-center">
+                                            {point.desc}
+                                        </p>
                                     </div>
-                                    <h4 className="text-lg font-bold text-white mb-3 md:text-center">
-                                        {point.title.split('. ')[1] || point.title}
-                                    </h4>
-                                    <p className="text-white/50 text-sm font-light leading-relaxed md:text-center">
-                                        {point.desc}
-                                    </p>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </motion.div>
 
