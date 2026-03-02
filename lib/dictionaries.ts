@@ -114,7 +114,44 @@ export const dictionaries = {
         },
         footer: {
             copy: "© 2026 Scalia. Todos los derechos reservados.",
-            tag: "Hecho con rigor y precisión."
+            tag: "Hecho con rigor y precisión.",
+            ssl: "Conexión cifrada",
+            privacy: "Política de privacidad"
+        },
+        privacyPolicy: {
+            title: "Política de Privacidad",
+            lastUpdated: "Última actualización: Marzo 2026",
+            intro: "En Scalia, la protección de sus datos personales es una prioridad absoluta. Esta política describe cómo recopilamos, utilizamos y protegemos la información que usted nos proporciona.",
+            sections: [
+                {
+                    title: "1. Datos que recopilamos",
+                    content: "Recopilamos únicamente la información que usted nos proporciona voluntariamente a través de nuestro formulario de contacto: nombre completo, empresa, cargo, correo electrónico profesional, teléfono (opcional), sitio web (opcional) y tamaño de la empresa."
+                },
+                {
+                    title: "2. Uso de los datos",
+                    content: "Utilizamos sus datos exclusivamente para: responder a su solicitud de contacto, evaluar la posibilidad de colaboración, y comunicarnos con usted sobre nuestros servicios. No vendemos, alquilamos ni compartimos sus datos con terceros."
+                },
+                {
+                    title: "3. Almacenamiento y seguridad",
+                    content: "Sus datos son transmitidos de forma segura mediante cifrado SSL/TLS. Utilizamos Web3Forms para el procesamiento de formularios, un servicio que cumple con los estándares de seguridad de la industria. No almacenamos datos sensibles en nuestros servidores."
+                },
+                {
+                    title: "4. Servicios de terceros",
+                    content: "Nuestro sitio utiliza los siguientes servicios de terceros: Vercel (alojamiento), Web3Forms (procesamiento de formularios) y Calendly (programación de citas). Cada uno de estos servicios tiene sus propias políticas de privacidad."
+                },
+                {
+                    title: "5. Cookies",
+                    content: "Nuestro sitio no utiliza cookies de seguimiento ni herramientas de análisis. Solo se utilizan cookies técnicas esenciales para el funcionamiento del sitio."
+                },
+                {
+                    title: "6. Sus derechos",
+                    content: "Usted tiene derecho a solicitar el acceso, la rectificación o la eliminación de sus datos personales en cualquier momento. Para ejercer estos derechos, puede contactarnos en contact@scalia.do."
+                },
+                {
+                    title: "7. Contacto",
+                    content: "Para cualquier consulta sobre esta política o sobre sus datos personales, puede escribirnos a contact@scalia.do."
+                }
+            ]
         },
         zeroRisk: {
             badge: "Programa Fundador",
@@ -309,7 +346,44 @@ export const dictionaries = {
         },
         footer: {
             copy: "© 2026 Scalia. Tous droits réservés.",
-            tag: "Fait avec rigueur et précision."
+            tag: "Fait avec rigueur et précision.",
+            ssl: "Connexion chiffrée",
+            privacy: "Politique de confidentialité"
+        },
+        privacyPolicy: {
+            title: "Politique de Confidentialité",
+            lastUpdated: "Dernière mise à jour : Mars 2026",
+            intro: "Chez Scalia, la protection de vos données personnelles est une priorité absolue. Cette politique décrit comment nous collectons, utilisons et protégeons les informations que vous nous fournissez.",
+            sections: [
+                {
+                    title: "1. Données collectées",
+                    content: "Nous collectons uniquement les informations que vous nous fournissez volontairement via notre formulaire de contact : nom complet, entreprise, poste, email professionnel, téléphone (optionnel), site web (optionnel) et taille de l'entreprise."
+                },
+                {
+                    title: "2. Utilisation des données",
+                    content: "Nous utilisons vos données exclusivement pour : répondre à votre demande de contact, évaluer la possibilité de collaboration, et communiquer avec vous au sujet de nos services. Nous ne vendons, ne louons ni ne partageons vos données avec des tiers."
+                },
+                {
+                    title: "3. Stockage et sécurité",
+                    content: "Vos données sont transmises de manière sécurisée via un chiffrement SSL/TLS. Nous utilisons Web3Forms pour le traitement des formulaires, un service conforme aux normes de sécurité de l'industrie. Nous ne stockons aucune donnée sensible sur nos serveurs."
+                },
+                {
+                    title: "4. Services tiers",
+                    content: "Notre site fait appel aux services tiers suivants : Vercel (hébergement), Web3Forms (traitement des formulaires) et Calendly (prise de rendez-vous). Chacun de ces services dispose de sa propre politique de confidentialité."
+                },
+                {
+                    title: "5. Cookies",
+                    content: "Notre site n'utilise pas de cookies de suivi ni d'outils d'analyse. Seuls des cookies techniques essentiels au fonctionnement du site sont utilisés."
+                },
+                {
+                    title: "6. Vos droits",
+                    content: "Vous avez le droit de demander l'accès, la rectification ou la suppression de vos données personnelles à tout moment. Pour exercer ces droits, contactez-nous à contact@scalia.do."
+                },
+                {
+                    title: "7. Contact",
+                    content: "Pour toute question concernant cette politique ou vos données personnelles, écrivez-nous à contact@scalia.do."
+                }
+            ]
         },
         zeroRisk: {
             badge: "Programme Fondateur",
@@ -504,7 +578,44 @@ export const dictionaries = {
         },
         footer: {
             copy: "© 2026 Scalia. All rights reserved.",
-            tag: "Made with rigor and precision."
+            tag: "Made with rigor and precision.",
+            ssl: "Encrypted connection",
+            privacy: "Privacy Policy"
+        },
+        privacyPolicy: {
+            title: "Privacy Policy",
+            lastUpdated: "Last updated: March 2026",
+            intro: "At Scalia, the protection of your personal data is an absolute priority. This policy describes how we collect, use and protect the information you provide to us.",
+            sections: [
+                {
+                    title: "1. Data We Collect",
+                    content: "We only collect information that you voluntarily provide through our contact form: full name, company, job title, professional email, phone (optional), website (optional) and company size."
+                },
+                {
+                    title: "2. Use of Data",
+                    content: "We use your data exclusively to: respond to your contact request, evaluate collaboration possibilities, and communicate with you about our services. We do not sell, rent or share your data with third parties."
+                },
+                {
+                    title: "3. Storage and Security",
+                    content: "Your data is transmitted securely via SSL/TLS encryption. We use Web3Forms for form processing, a service that complies with industry security standards. We do not store sensitive data on our servers."
+                },
+                {
+                    title: "4. Third-Party Services",
+                    content: "Our site uses the following third-party services: Vercel (hosting), Web3Forms (form processing) and Calendly (appointment scheduling). Each of these services has its own privacy policy."
+                },
+                {
+                    title: "5. Cookies",
+                    content: "Our site does not use tracking cookies or analytics tools. Only essential technical cookies for site functionality are used."
+                },
+                {
+                    title: "6. Your Rights",
+                    content: "You have the right to request access, rectification or deletion of your personal data at any time. To exercise these rights, contact us at contact@scalia.do."
+                },
+                {
+                    title: "7. Contact",
+                    content: "For any questions about this policy or your personal data, you can write to us at contact@scalia.do."
+                }
+            ]
         },
         zeroRisk: {
             badge: "Founder Program",
@@ -699,7 +810,23 @@ export const dictionaries = {
         },
         footer: {
             copy: "© 2026 Scalia. Tutti i diritti riservati.",
-            tag: "Realizzato con rigore e precisione."
+            tag: "Realizzato con rigore e precisione.",
+            ssl: "Connessione cifrata",
+            privacy: "Informativa sulla privacy"
+        },
+        privacyPolicy: {
+            title: "Informativa sulla Privacy",
+            lastUpdated: "Ultimo aggiornamento: Marzo 2026",
+            intro: "In Scalia, la protezione dei vostri dati personali è una priorità assoluta. Questa informativa descrive come raccogliamo, utilizziamo e proteggiamo le informazioni che ci fornite.",
+            sections: [
+                { title: "1. Dati raccolti", content: "Raccogliamo esclusivamente le informazioni che ci fornite volontariamente tramite il nostro modulo di contatto: nome completo, azienda, qualifica, email professionale, telefono (opzionale), sito web (opzionale) e dimensioni dell'azienda." },
+                { title: "2. Utilizzo dei dati", content: "Utilizziamo i vostri dati esclusivamente per: rispondere alla vostra richiesta di contatto, valutare la possibilità di collaborazione e comunicare con voi in merito ai nostri servizi. Non vendiamo, affittiamo né condividiamo i vostri dati con terzi." },
+                { title: "3. Archiviazione e sicurezza", content: "I vostri dati vengono trasmessi in modo sicuro tramite crittografia SSL/TLS. Utilizziamo Web3Forms per l'elaborazione dei moduli. Non memorizziamo dati sensibili sui nostri server." },
+                { title: "4. Servizi di terze parti", content: "Il nostro sito utilizza: Vercel (hosting), Web3Forms (elaborazione moduli) e Calendly (pianificazione appuntamenti). Ciascuno ha la propria informativa sulla privacy." },
+                { title: "5. Cookie", content: "Il nostro sito non utilizza cookie di tracciamento né strumenti di analisi. Vengono utilizzati solo cookie tecnici essenziali." },
+                { title: "6. I vostri diritti", content: "Avete il diritto di richiedere l'accesso, la rettifica o la cancellazione dei vostri dati personali in qualsiasi momento. Contattateci a contact@scalia.do." },
+                { title: "7. Contatti", content: "Per qualsiasi domanda riguardante questa informativa o i vostri dati personali, scriverci a contact@scalia.do." }
+            ]
         },
         zeroRisk: {
             badge: "Programma Fondatore",
@@ -894,7 +1021,23 @@ export const dictionaries = {
         },
         footer: {
             copy: "© 2026 Scalia. Alle Rechte vorbehalten.",
-            tag: "Mit Strenge und Präzision gemacht."
+            tag: "Mit Strenge und Präzision gemacht.",
+            ssl: "Verschlüsselte Verbindung",
+            privacy: "Datenschutz"
+        },
+        privacyPolicy: {
+            title: "Datenschutzerklärung",
+            lastUpdated: "Letzte Aktualisierung: März 2026",
+            intro: "Bei Scalia hat der Schutz Ihrer personenbezogenen Daten höchste Priorität. Diese Erklärung beschreibt, wie wir die von Ihnen bereitgestellten Informationen erfassen, verwenden und schützen.",
+            sections: [
+                { title: "1. Erhobene Daten", content: "Wir erfassen ausschließlich Informationen, die Sie uns freiwillig über unser Kontaktformular bereitstellen: vollständiger Name, Unternehmen, Position, berufliche E-Mail, Telefon (optional), Website (optional) und Unternehmensgröße." },
+                { title: "2. Verwendung der Daten", content: "Wir verwenden Ihre Daten ausschließlich, um: auf Ihre Kontaktanfrage zu antworten, Möglichkeiten der Zusammenarbeit zu prüfen und mit Ihnen über unsere Dienstleistungen zu kommunizieren. Wir verkaufen, vermieten oder teilen Ihre Daten nicht mit Dritten." },
+                { title: "3. Speicherung und Sicherheit", content: "Ihre Daten werden sicher über SSL/TLS-Verschlüsselung übertragen. Wir verwenden Web3Forms für die Formularverarbeitung. Wir speichern keine sensiblen Daten auf unseren Servern." },
+                { title: "4. Drittanbieterdienste", content: "Unsere Website nutzt: Vercel (Hosting), Web3Forms (Formularverarbeitung) und Calendly (Terminplanung). Jeder dieser Dienste hat seine eigene Datenschutzerklärung." },
+                { title: "5. Cookies", content: "Unsere Website verwendet keine Tracking-Cookies oder Analysetools. Es werden nur wesentliche technische Cookies für die Funktionalität der Website verwendet." },
+                { title: "6. Ihre Rechte", content: "Sie haben das Recht, jederzeit Auskunft über Ihre personenbezogenen Daten zu verlangen, diese berichtigen oder löschen zu lassen. Kontaktieren Sie uns unter contact@scalia.do." },
+                { title: "7. Kontakt", content: "Bei Fragen zu dieser Erklärung oder zu Ihren personenbezogenen Daten können Sie uns unter contact@scalia.do schreiben." }
+            ]
         },
         zeroRisk: {
             badge: "Gründerprogramm",
