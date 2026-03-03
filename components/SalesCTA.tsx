@@ -8,7 +8,9 @@ export default function SalesCTA() {
     const { t, locale } = useLanguage();
 
     return (
-        <section className="w-full bg-white text-black py-40 px-6 md:px-12 flex flex-col items-center justify-center text-center">
+        <section className="w-full bg-white text-black py-40 px-6 md:px-12 flex flex-col items-center justify-center text-center relative overflow-hidden">
+            {/* Bottom fade: white → dark */}
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-b from-transparent via-white/60 to-[#050505] z-10" />
             <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
