@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useLanguage } from "@/components/LanguageProvider";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import Link from "next/link";
 
 export default function PrivacyPolicyPage() {
@@ -135,7 +135,7 @@ export default function PrivacyPolicyPage() {
                 </div>
             </section>
 
-            <Footer />
+
         </main>
     );
 }
