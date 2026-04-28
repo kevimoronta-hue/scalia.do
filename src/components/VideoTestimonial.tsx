@@ -7,45 +7,10 @@ import { useTranslations } from 'next-intl';
 export default function VideoTestimonial() {
   const t = useTranslations('VideoTestimonial');
   const [isPlaying, setIsPlaying] = useState(false);
-  const [posterUrl, setPosterUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Force first-frame display on ALL browsers incl. iOS Safari
-  // The 0.001s seek trick forces the browser to decode and display frame 1
-  useEffect(() => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video) return;
-
-    const captureFrame = () => {
-      if (!canvas || video.videoWidth === 0) return;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        setPosterUrl(canvas.toDataURL('image/jpeg', 0.8));
-      }
-    };
-
-    const onSeeked = () => captureFrame();
-
-    const onLoadedMeta = () => {
-      video.currentTime = 0.001; // Triggers seeked event + frame decode
-    };
-
-    video.addEventListener('loadedmetadata', onLoadedMeta);
-    video.addEventListener('seeked', onSeeked);
-    // Fallback for browsers that immediately have data
-    video.addEventListener('loadeddata', captureFrame);
-
-    return () => {
-      video.removeEventListener('loadedmetadata', onLoadedMeta);
-      video.removeEventListener('seeked', onSeeked);
-      video.removeEventListener('loadeddata', captureFrame);
-    };
-  }, []);
+  // We use the #t=0.001 trick in the src to force iOS/mobile to load the first frame natively.
+  // No canvas needed.
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -58,9 +23,6 @@ export default function VideoTestimonial() {
 
   return (
     <section className="py-24 md:py-32 lg:py-40 px-6 md:px-12 max-w-7xl mx-auto bg-black relative z-10">
-      {/* Hidden canvas for poster extraction */}
-      <canvas ref={canvasRef} className="hidden" />
-
       <div className="flex flex-col items-center">
         
         {/* Title Above Video */}
@@ -85,21 +47,12 @@ export default function VideoTestimonial() {
           transition={{ duration: 0.8, delay: 0.1 }}
           className="relative w-full max-w-md aspect-[9/16] bg-[#0A0A0A] rounded-3xl md:rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl group"
         >
-          {/* Poster image shown before play */}
-          {posterUrl && !isPlaying && (
-            <img
-              src={posterUrl}
-              alt="Testimonio video thumbnail"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          )}
-
-          {/* Main Video Element — hidden until play */}
-          <div className={`absolute inset-0 bg-[#0A0A0A] transition-opacity duration-300 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}>
+          {/* Main Video Element — #t=0.001 forces first frame load on iOS */}
+          <div className={`absolute inset-0 bg-[#0A0A0A] transition-opacity duration-300 ${isPlaying ? 'opacity-100' : 'opacity-100'}`}>
             <video 
               ref={videoRef}
-              src="/scalia-2-assets/testimonio.mp4"
-              preload="auto"
+              src="/scalia-2-assets/testimonio.mp4#t=0.001"
+              preload="metadata"
               playsInline
               muted={!isPlaying}
               controls={isPlaying}
@@ -107,7 +60,7 @@ export default function VideoTestimonial() {
               onPause={() => setIsPlaying(false)}
               onEnded={() => setIsPlaying(false)}
             >
-              <source src="/scalia-2-assets/testimonio.mp4" type="video/mp4" />
+              <source src="/scalia-2-assets/testimonio.mp4#t=0.001" type="video/mp4" />
             </video>
           </div>
           

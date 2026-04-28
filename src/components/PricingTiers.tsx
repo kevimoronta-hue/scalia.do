@@ -70,23 +70,14 @@ export default function PricingTiers() {
         </div>
 
         {/* Pricing Cards Grid */}
-        <motion.div
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.18, delayChildren: 0.05 } }
-          }}
-        >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
           {tiers.map((tier, index) => (
             <motion.div 
               key={tier.id}
-              variants={{
-                hidden: { opacity: 0, y: 40 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
-              }}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: index * 0.15 }}
               className={`relative flex flex-col h-full bg-[#0A0A0A]/80 backdrop-blur-xl border rounded-[2rem] p-8 md:p-10 transition-all duration-500 
                 ${tier.isHighlight 
                   ? 'border-gold-base/30 lg:-translate-y-4 lg:scale-105 z-20 bg-gradient-to-b from-[#0A0A0A] to-gold-base/5' 
@@ -179,7 +170,7 @@ export default function PricingTiers() {
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
