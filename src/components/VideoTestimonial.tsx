@@ -48,13 +48,17 @@ export default function VideoTestimonial() {
           <div className="absolute inset-0 bg-[#0A0A0A]">
             <video 
               ref={videoRef}
-              src="/scalia-2-assets/testimonio.mp4" 
-              playsInline 
-              controls={isPlaying} // Native controls appear seamlessly after play
+              src="/scalia-2-assets/testimonio.mp4"
+              preload="metadata"
+              playsInline
+              muted={!isPlaying}
+              controls={isPlaying}
               className={`w-full h-full object-cover transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-80'}`}
               onPause={() => setIsPlaying(false)}
-              onEnded={() => setIsPlaying(false)} // Reveal custom play button when video finishes
-            />
+              onEnded={() => setIsPlaying(false)}
+            >
+              <source src="/scalia-2-assets/testimonio.mp4" type="video/mp4" />
+            </video>
           </div>
           
           {/* Custom Overlay & Play Button - Fades out seamlessly when playing */}

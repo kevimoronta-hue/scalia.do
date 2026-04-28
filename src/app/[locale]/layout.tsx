@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import GhostNav from '@/components/GhostNav';
 import SmoothScroll from '@/components/SmoothScroll';
+import LoadingScreen from '@/components/LoadingScreen';
 import "../globals.css";
 
 const outfit = Outfit({
@@ -43,6 +44,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={`${outfit.variable} ${jakarta.variable} dark`}>
       <body className="antialiased bg-[#050505]">
+        <LoadingScreen />
         <SmoothScroll>
           <NextIntlClientProvider messages={messages}>
             <GhostNav />
