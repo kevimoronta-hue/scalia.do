@@ -1,11 +1,21 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, Clapperboard, Star, Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function PricingTiers() {
   const t = useTranslations('PricingTiers');
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    // Detect desktop screens to conditionally apply stagger delay
+    const checkSize = () => setIsDesktop(window.innerWidth >= 1024);
+    checkSize(); // Initial check
+    window.addEventListener('resize', checkSize);
+    return () => window.removeEventListener('resize', checkSize);
+  }, []);
 
   const tiers = [
     {
@@ -76,8 +86,12 @@ export default function PricingTiers() {
               key={tier.id}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: index * 0.15 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ 
+                duration: 0.7, 
+                ease: [0.22, 1, 0.36, 1], 
+                delay: isDesktop ? index * 0.15 : 0 
+              }}
               className={`relative flex flex-col h-full bg-[#0A0A0A]/80 backdrop-blur-xl border rounded-[2rem] p-8 md:p-10 transition-all duration-500 
                 ${tier.isHighlight 
                   ? 'border-gold-base/30 lg:-translate-y-4 lg:scale-105 z-20 bg-gradient-to-b from-[#0A0A0A] to-gold-base/5' 

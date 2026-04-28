@@ -9,9 +9,22 @@ export default function LoadingScreen() {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
+    // Force scroll to top on mount to ensure a normal sequence
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+    }
+
     // Start fade-out after 1.6s, then unmount at 2.2s
     const fadeTimer = setTimeout(() => setFadeOut(true), 1600);
-    const unmountTimer = setTimeout(() => setVisible(false), 2200);
+    const unmountTimer = setTimeout(() => {
+      setVisible(false);
+      // Ensure we are STILL at the top when the loader finishes
+      window.scrollTo(0, 0);
+    }, 2200);
+    
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(unmountTimer);
