@@ -135,7 +135,7 @@ export default function DroneCanvas() {
   useMotionValueEvent(frameMotion, 'change', (latest) => {
     // Only call draw if the canvas has been sized and initialized
     if (lastDrawnRef.current !== -1 || canvasRef.current?.width) {
-      draw(latest);
+      drawRef.current(latest);
     }
   });
 
