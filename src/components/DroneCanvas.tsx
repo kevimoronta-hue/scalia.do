@@ -63,15 +63,19 @@ export default function DroneCanvas() {
 
     // Preload images
     const loadedImages: HTMLImageElement[] = [];
+    // Track if frame 1 has been drawn yet (for cache case)
+    let frame1Drawn = false;
 
     for (let i = 1; i <= frameCount; i++) {
       const img = new Image();
       const paddedIndex = i.toString().padStart(4, '0');
       
       img.onload = () => {
+        // frameIndex.get() is always the latest value — safe to call directly
         const currentNeededFrame = Math.floor(frameIndex.get()) || 1;
-        if (i === currentNeededFrame || i === 1) {
-          renderFrame(currentNeededFrame, loadedImages);
+        if (i === currentNeededFrame || (i === 1 && !frame1Drawn)) {
+          frame1Drawn = true;
+          renderFrame(i === 1 ? 1 : currentNeededFrame, loadedImages);
         }
       };
       
@@ -79,17 +83,16 @@ export default function DroneCanvas() {
       loadedImages.push(img);
 
       // --- STEP 2: Handle images already in browser cache ---
-      // When src is cached, .complete is true BEFORE onload fires, so the callback is NEVER called.
-      // We detect this and draw synchronously right now.
-      if (img.complete && img.naturalHeight !== 0) {
-        if (i === 1) {
-          // Use setTimeout(0) to ensure canvas is initialized first
-          setTimeout(() => renderFrame(1, loadedImages), 0);
-        }
+      // When cached, .complete=true BEFORE onload fires → callback is NEVER called.
+      if (img.complete && img.naturalHeight !== 0 && i === 1 && !frame1Drawn) {
+        frame1Drawn = true;
+        setTimeout(() => renderFrame(1, loadedImages), 0);
       }
     }
     setImages(loadedImages);
-  }, [frameCount, frameIndex]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [frameCount]); // ← frameIndex intentionally excluded: it's a stable MotionValue ref, not state
+
 
   const renderFrame = (index: number, imgArray: HTMLImageElement[]) => {
     if (!canvasRef.current || !imgArray[index - 1]) return;
