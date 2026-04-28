@@ -53,24 +53,26 @@ export default function DroneCanvas() {
 
     // Preload images
     const loadedImages: HTMLImageElement[] = [];
-    let loadedCount = 0;
 
     for (let i = 1; i <= frameCount; i++) {
       const img = new Image();
-      // Ensure zero-padding, e.g., frame_0001.jpg
       const paddedIndex = i.toString().padStart(4, '0');
-      img.src = `/scalia-2-assets/${prefix}/frame_${paddedIndex}.jpg`;
+      
+      // Setup the onload BEFORE setting src to catch cached images
       img.onload = () => {
-        loadedCount++;
-        if (loadedCount === 1) {
-          // Draw first frame as soon as it loads
-          renderFrame(1, loadedImages);
+        // If the image that just loaded is the one we currently need to display, draw it!
+        // This prevents black screens when images load out of order from cache
+        const currentNeededFrame = Math.floor(frameIndex.get()) || 1;
+        if (i === currentNeededFrame || i === 1) {
+          renderFrame(currentNeededFrame, loadedImages);
         }
       };
+      
+      img.src = `/scalia-2-assets/${prefix}/frame_${paddedIndex}.jpg`;
       loadedImages.push(img);
     }
     setImages(loadedImages);
-  }, [frameCount]);
+  }, [frameCount, frameIndex]);
 
   const renderFrame = (index: number, imgArray: HTMLImageElement[]) => {
     if (!canvasRef.current || !imgArray[index - 1]) return;
@@ -111,7 +113,8 @@ export default function DroneCanvas() {
         const ctx = canvasRef.current.getContext('2d');
         ctx?.scale(dpr, dpr);
         
-        renderFrame(Math.floor(frameIndex.get()), images);
+        const currentFrame = Math.floor(frameIndex.get()) || 1;
+        renderFrame(currentFrame, images);
       }
     };
 
