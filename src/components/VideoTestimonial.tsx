@@ -1,13 +1,44 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 
 export default function VideoTestimonial() {
   const t = useTranslations('VideoTestimonial');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [posterUrl, setPosterUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Extract first frame as poster image using canvas API
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const extractFrame = () => {
+      if (video.readyState >= 2) {
+        canvas.width = video.videoWidth || 360;
+        canvas.height = video.videoHeight || 640;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          setPosterUrl(canvas.toDataURL('image/jpeg', 0.85));
+        }
+      }
+    };
+
+    video.addEventListener('loadeddata', extractFrame);
+    // Some browsers fire canplay instead
+    video.addEventListener('canplay', extractFrame);
+    video.currentTime = 0;
+
+    return () => {
+      video.removeEventListener('loadeddata', extractFrame);
+      video.removeEventListener('canplay', extractFrame);
+    };
+  }, []);
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -20,13 +51,16 @@ export default function VideoTestimonial() {
 
   return (
     <section className="py-24 md:py-32 lg:py-40 px-6 md:px-12 max-w-7xl mx-auto bg-black relative z-10">
+      {/* Hidden canvas for poster extraction */}
+      <canvas ref={canvasRef} className="hidden" />
+
       <div className="flex flex-col items-center">
         
         {/* Title Above Video */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.8 }}
           className="text-center mb-12 flex flex-col items-center"
         >
@@ -40,20 +74,29 @@ export default function VideoTestimonial() {
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.8, delay: 0.1 }}
           className="relative w-full max-w-md aspect-[9/16] bg-[#0A0A0A] rounded-3xl md:rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl group"
         >
-          {/* Main Video Element */}
-          <div className="absolute inset-0 bg-[#0A0A0A]">
+          {/* Poster image shown before play */}
+          {posterUrl && !isPlaying && (
+            <img
+              src={posterUrl}
+              alt="Testimonio video thumbnail"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
+
+          {/* Main Video Element — hidden until play */}
+          <div className={`absolute inset-0 bg-[#0A0A0A] transition-opacity duration-300 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}>
             <video 
               ref={videoRef}
               src="/scalia-2-assets/testimonio.mp4"
-              preload="metadata"
+              preload="auto"
               playsInline
               muted={!isPlaying}
               controls={isPlaying}
-              className={`w-full h-full object-cover transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-80'}`}
+              className="w-full h-full object-cover"
               onPause={() => setIsPlaying(false)}
               onEnded={() => setIsPlaying(false)}
             >
@@ -61,7 +104,7 @@ export default function VideoTestimonial() {
             </video>
           </div>
           
-          {/* Custom Overlay & Play Button - Fades out seamlessly when playing */}
+          {/* Custom Overlay & Play Button */}
           <div 
             className={`absolute inset-0 transition-opacity duration-500 cursor-pointer ${isPlaying ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
             onClick={handlePlay}
@@ -85,7 +128,7 @@ export default function VideoTestimonial() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mt-12 text-center max-w-2xl px-4 flex flex-col items-center gap-6"
         >
