@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  /* Design System SCALIA */
+  --background: #000000;
+  --foreground: #F5F5F5;
+  
+  /* Or / Cuivre extrait du logo */
+  --gold-light: #FCD34D;
+  --gold-base: #F59E0B;
+  --gold-dark: #B45309;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-gold-light: var(--gold-light);
+  --color-gold-base: var(--gold-base);
+  --color-gold-dark: var(--gold-dark);
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Utilitaires globaux pour l'effet Métallique */
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-base), var(--gold-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-gold {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-base), var(--gold-dark));
+}
+
+.border-gradient-gold {
+  border-image: linear-gradient(135deg, var(--gold-light), var(--gold-base), var(--gold-dark)) 1;
+}
+
+::selection {
+  background-color: rgba(245, 158, 11, 0.3);
+}
