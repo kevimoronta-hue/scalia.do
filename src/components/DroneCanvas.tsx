@@ -27,7 +27,6 @@ export default function DroneCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef    = useRef<HTMLCanvasElement>(null);
 
-  // All animation state in refs — zero React re-renders in the hot path
   const imagesRef    = useRef<(HTMLImageElement | undefined)[]>([]);
   const totalRef     = useRef(148);
   const lastDrawnRef = useRef(-1);
@@ -37,17 +36,14 @@ export default function DroneCanvas() {
     offset: ['start start', 'end end'],
   });
 
-  // Derived frame number — always re-reads totalRef so mobile (180) works correctly
   const frameMotion = useTransform(
     scrollYProgress,
     (p) => Math.max(1, Math.min(totalRef.current, Math.floor(p * (totalRef.current - 1)) + 1))
   );
 
   useEffect(() => {
-    const canvas = canvasRef.current!;
-    const ctx    = canvas.getContext('2d', { alpha: false })!; // alpha:false = faster clears
-    ctx.imageSmoothingEnabled  = true;
-    ctx.imageSmoothingQuality  = 'high';
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
     // ── Device detection ────────────────────────────────────────────────────
     const isMobile = window.innerWidth < 768;
@@ -55,7 +51,7 @@ export default function DroneCanvas() {
     const total    = isMobile ? 180 : 148;
     totalRef.current = total;
 
-    // ── Canvas sizing — cap DPR at 2 to keep draw calls fast ────────────────
+    // ── Canvas sizing (DPR capped at 2 for perf) ────────────────────────────
     const DPR = Math.min(window.devicePixelRatio || 1, 2);
     const sizeCanvas = () => {
       const W = (canvas.parentElement?.clientWidth  ?? window.innerWidth)  * DPR;
@@ -63,7 +59,7 @@ export default function DroneCanvas() {
       if (canvas.width !== W || canvas.height !== H) {
         canvas.width  = W;
         canvas.height = H;
-        lastDrawnRef.current = -1; // force redraw
+        lastDrawnRef.current = -1;
       }
     };
     sizeCanvas();
@@ -72,10 +68,13 @@ export default function DroneCanvas() {
     // ── Core draw ────────────────────────────────────────────────────────────
     const draw = (frame: number) => {
       const safe = Math.max(1, Math.min(total, frame));
-      if (safe === lastDrawnRef.current) return; // no change, skip
+      if (safe === lastDrawnRef.current) return;
 
       const img = imagesRef.current[safe - 1];
-      if (!img?.complete || img.naturalHeight === 0) return;
+      if (!img || !img.complete || img.naturalHeight === 0) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
       const W = canvas.width, H = canvas.height;
       const s = Math.max(W / img.width, H / img.height);
@@ -87,7 +86,7 @@ export default function DroneCanvas() {
       lastDrawnRef.current = safe;
     };
 
-    // ── rAF loop — synchronized with the display refresh rate ───────────────
+    // ── rAF loop ─────────────────────────────────────────────────────────────
     let rafId: number;
     const tick = () => {
       draw(frameMotion.get());
@@ -95,35 +94,25 @@ export default function DroneCanvas() {
     };
     rafId = requestAnimationFrame(tick);
 
-    // ── Image preloading with async decode() ─────────────────────────────────
-    // img.decode() decodes the JPEG off the main thread, so drawImage is instant.
+    // ── Preload frames ────────────────────────────────────────────────────────
     const imgs: (HTMLImageElement | undefined)[] = new Array(total).fill(undefined);
     imagesRef.current = imgs;
 
-    // Load all frames, but decode frame 1 first for instant first-frame display
-    const loadFrame = (i: number) => {
+    for (let i = 1; i <= total; i++) {
       const img    = new Image();
       const padded = i.toString().padStart(4, '0');
+      img.onload   = () => { imgs[i - 1] = img; };
       img.src      = `/scalia-2-assets/${prefix}/frame_${padded}.jpg`;
-
-      img.decode()
-        .then(() => { imgs[i - 1] = img; })
-        .catch(() => {
-          // Fallback: mark as loaded even if decode() fails
-          if (img.complete && img.naturalHeight !== 0) imgs[i - 1] = img;
-        });
-    };
-
-    // Load frame 1 first, then all others in parallel
-    loadFrame(1);
-    for (let i = 2; i <= total; i++) loadFrame(i);
+      // Already cached
+      if (img.complete && img.naturalHeight !== 0) imgs[i - 1] = img;
+    }
 
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', sizeCanvas);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Runs once — everything is read via stable refs / MotionValues
+  }, []);
 
   const words = t('subtitle').split(' ');
 
@@ -139,7 +128,6 @@ export default function DroneCanvas() {
 
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-black/50 via-transparent to-transparent" />
-
           <div className="text-center px-6 flex flex-col items-center max-w-5xl mx-auto relative z-10">
             <h1 className="font-sans text-4xl md:text-6xl lg:text-7xl text-white font-extrabold tracking-tighter leading-[1.1] drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
               {words.map((word, i) => (
@@ -147,7 +135,6 @@ export default function DroneCanvas() {
               ))}
             </h1>
           </div>
-
           <div className="absolute bottom-8 md:bottom-12 left-0 right-0 flex flex-col items-center gap-3 opacity-40">
             <span className="text-[8px] font-sans tracking-[0.5em] uppercase text-white/70">{t('scroll')}</span>
             <div className="w-[1px] h-10 md:h-16 bg-gradient-to-b from-white/40 to-transparent" />
