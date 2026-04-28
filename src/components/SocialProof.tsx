@@ -30,15 +30,18 @@ export default function SocialProof() {
         <div className="absolute top-0 bottom-0 left-0 w-32 md:w-64 bg-gradient-to-r from-[#050505] to-transparent z-10" />
         <div className="absolute top-0 bottom-0 right-0 w-32 md:w-64 bg-gradient-to-l from-[#050505] to-transparent z-10" />
 
-        <motion.div 
-          className="flex w-max gap-20 md:gap-40 px-12 items-center"
-          animate={{ x: ["0%", "-25%"] }} // Exactly 1 out of 4 sets
-          transition={{
-            repeat: Infinity,
-            ease: "linear",
-            duration: 20 // Adjusted speed for the larger width
-          }}
-        >
+        <style>{`
+          @keyframes infiniteScroll {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-25%, 0, 0); }
+          }
+          .marquee-container {
+            animation: infiniteScroll 35s linear infinite;
+            will-change: transform;
+          }
+        `}</style>
+
+        <div className="flex w-max gap-20 md:gap-40 px-12 items-center marquee-container">
           {logos.map((logo, idx) => (
             <div 
               key={idx} 
@@ -52,7 +55,7 @@ export default function SocialProof() {
               />
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
