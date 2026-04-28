@@ -95,6 +95,8 @@ export default function DroneCanvas() {
     imagesRef.current = imgs;
 
     let initialFrameDrawn = false;
+    let loadedCount = 0;
+    const requiredForStart = Math.min(25, total);
 
     for (let i = 1; i <= total; i++) {
       const img    = new Image();
@@ -102,6 +104,12 @@ export default function DroneCanvas() {
       
       const handleLoad = () => {
         imgs[i - 1] = img;
+        loadedCount++;
+        
+        // Notify LoadingScreen when the first batch of frames is ready for fluid start
+        if (loadedCount === requiredForStart) {
+          window.dispatchEvent(new Event('scalia-frames-ready'));
+        }
         
         // If this is the first frame and we haven't drawn it yet, draw it
         if (i === 1 && !initialFrameDrawn) {

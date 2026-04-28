@@ -9,13 +9,25 @@ export default function LoadingScreen() {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // 1. Démarrer les timers immédiatement en tout premier pour garantir le déverrouillage
-    const fadeTimer = setTimeout(() => setFadeOut(true), 1600);
-    const unmountTimer = setTimeout(() => {
-      setVisible(false);
-      // ← Removed scrollTo(0,0) here: if user already scrolled during loading, resetting
-      // would snap them back to top and restart the animation (the 'goes down then back up' bug)
-    }, 2200);
+    // 1. Déverrouiller quand les frames sont prêtes, ou après un délai max (réseau très lent)
+    let isFading = false;
+    let fadeTimer: NodeJS.Timeout;
+    let unmountTimer: NodeJS.Timeout;
+
+    const startFade = () => {
+      if (isFading) return;
+      isFading = true;
+      setFadeOut(true);
+      unmountTimer = setTimeout(() => {
+        setVisible(false);
+      }, 700); // 700ms correspond à la durée de la transition CSS
+    };
+
+    // Écouter le signal de DroneCanvas (les 25 premières frames sont chargées)
+    window.addEventListener('scalia-frames-ready', startFade);
+
+    // Fallback de sécurité : forcer l'ouverture après 4.5s max
+    fadeTimer = setTimeout(startFade, 4500);
     
     // 2. Tenter de modifier l'historique et le scroll
     try {
@@ -30,6 +42,7 @@ export default function LoadingScreen() {
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(unmountTimer);
+      window.removeEventListener('scalia-frames-ready', startFade);
     };
   }, []);
 
