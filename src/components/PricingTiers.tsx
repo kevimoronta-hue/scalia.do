@@ -87,14 +87,16 @@ export default function PricingTiers() {
                 hidden: { opacity: 0, y: 40 },
                 visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
               }}
-              className={`relative flex flex-col h-full bg-[#0A0A0A]/80 backdrop-blur-xl border rounded-[2rem] p-8 md:p-10 transition-all duration-500 
+              className="h-full"
+            >
+              <div className={`relative flex flex-col h-full bg-[#0A0A0A]/80 backdrop-blur-xl border rounded-[2rem] p-8 md:p-10 transition-all duration-500 
                 ${tier.isHighlight 
                   ? 'border-gold-base/30 lg:-translate-y-4 lg:scale-105 z-20 bg-gradient-to-b from-[#0A0A0A] to-gold-base/5' 
                   : tier.isPlatinum 
                     ? 'border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.05)] bg-gradient-to-b from-[#0A0A0A] to-white/5' 
                     : 'border-white/10 z-10'
                 }`}
-            >
+              >
               
               {/* Animated Glow for Highlight */}
               {tier.isHighlight && (
@@ -175,6 +177,7 @@ export default function PricingTiers() {
                     {tier.cta}
                   </motion.a>
                 </div>
+              </div>
               </div>
             </motion.div>
           ))}
