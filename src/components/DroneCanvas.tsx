@@ -51,6 +51,16 @@ export default function DroneCanvas() {
     setDevicePrefix(prefix);
     setFrameCount(totalFrames);
 
+    // --- STEP 1: Initialize canvas size IMMEDIATELY so it can receive drawings ---
+    if (canvasRef.current) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvasRef.current.parentElement?.getBoundingClientRect() || { width: window.innerWidth, height: window.innerHeight };
+      canvasRef.current.width = rect.width * dpr;
+      canvasRef.current.height = rect.height * dpr;
+      const ctx = canvasRef.current.getContext('2d');
+      ctx?.scale(dpr, dpr);
+    }
+
     // Preload images
     const loadedImages: HTMLImageElement[] = [];
 
@@ -58,10 +68,7 @@ export default function DroneCanvas() {
       const img = new Image();
       const paddedIndex = i.toString().padStart(4, '0');
       
-      // Setup the onload BEFORE setting src to catch cached images
       img.onload = () => {
-        // If the image that just loaded is the one we currently need to display, draw it!
-        // This prevents black screens when images load out of order from cache
         const currentNeededFrame = Math.floor(frameIndex.get()) || 1;
         if (i === currentNeededFrame || i === 1) {
           renderFrame(currentNeededFrame, loadedImages);
@@ -70,6 +77,16 @@ export default function DroneCanvas() {
       
       img.src = `/scalia-2-assets/${prefix}/frame_${paddedIndex}.jpg`;
       loadedImages.push(img);
+
+      // --- STEP 2: Handle images already in browser cache ---
+      // When src is cached, .complete is true BEFORE onload fires, so the callback is NEVER called.
+      // We detect this and draw synchronously right now.
+      if (img.complete && img.naturalHeight !== 0) {
+        if (i === 1) {
+          // Use setTimeout(0) to ensure canvas is initialized first
+          setTimeout(() => renderFrame(1, loadedImages), 0);
+        }
+      }
     }
     setImages(loadedImages);
   }, [frameCount, frameIndex]);
