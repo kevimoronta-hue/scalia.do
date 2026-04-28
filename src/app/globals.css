@@ -28,10 +28,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 /* Utilitaires globaux pour l'effet Métallique */
 .text-gradient-gold {
   background: linear-gradient(135deg, var(--gold-light), var(--gold-base), var(--gold-dark));

@@ -9,52 +9,40 @@ export default function LoadingScreen() {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // 1. Déverrouiller quand les frames sont prêtes, ou après un délai max (réseau très lent)
-    let isFading = false;
-    let fadeTimer: NodeJS.Timeout;
-    let unmountTimer: NodeJS.Timeout;
-
-    const startFade = () => {
-      if (isFading) return;
-      isFading = true;
-      setFadeOut(true);
-      unmountTimer = setTimeout(() => {
-        setVisible(false);
-      }, 700); // 700ms correspond à la durée de la transition CSS
-    };
-
-    // Écouter le signal de DroneCanvas (les 25 premières frames sont chargées)
-    window.addEventListener('scalia-frames-ready', startFade);
-
-    // Fallback de sécurité : forcer l'ouverture après 4.5s max
-    fadeTimer = setTimeout(startFade, 4500);
-    
-    // 2. Tenter de modifier l'historique et le scroll
-    try {
-      if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+    // Force scroll to top on mount to ensure a normal sequence
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in window.history) {
         window.history.scrollRestoration = 'manual';
       }
       window.scrollTo(0, 0);
-    } catch (err) {
-      console.warn("Scroll restoration not supported", err);
     }
 
+    // Start fade-out after 1.6s, then unmount at 2.2s
+    const fadeTimer = setTimeout(() => setFadeOut(true), 1600);
+    const unmountTimer = setTimeout(() => {
+      setVisible(false);
+      // Ensure we are STILL at the top when the loader finishes
+      window.scrollTo(0, 0);
+    }, 2200);
+    
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(unmountTimer);
-      window.removeEventListener('scalia-frames-ready', startFade);
     };
   }, []);
 
-  if (!visible) return null;
-
   return (
-    <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#050505] transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
-      }`}
-      aria-hidden="true"
-    >
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          key="loader"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: fadeOut ? 0 : 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050505]"
+          aria-hidden="true"
+        >
           {/* Subtle ambient glow — same gold as the brand */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#B8860B]/8 blur-[120px]" />
@@ -90,6 +78,8 @@ export default function LoadingScreen() {
               />
             </motion.div>
           </div>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
