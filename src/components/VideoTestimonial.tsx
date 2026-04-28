@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 export default function VideoTestimonial() {
   const t = useTranslations('VideoTestimonial');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlay = () => {
@@ -44,8 +45,9 @@ export default function VideoTestimonial() {
           transition={{ duration: 0.8, delay: 0.1 }}
           className="relative w-full max-w-md aspect-[9/16] bg-[#0A0A0A] rounded-3xl md:rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl group"
         >
-          {/* Main Video Element — Trick: autoPlay + muted + instant pause ensures first frame loads everywhere */}
-          <div className={`absolute inset-0 bg-[#0A0A0A] transition-opacity duration-300 ${isPlaying ? 'opacity-100' : 'opacity-100'}`}>
+          {/* Main Video Element — Trick: autoPlay + muted + instant pause ensures first frame loads everywhere. 
+              Smooth fade-in (opacity-0 to 100) masks the initial native black flash. */}
+          <div className={`absolute inset-0 bg-[#0A0A0A] transition-opacity duration-1000 ${isLoaded || isPlaying ? 'opacity-100' : 'opacity-0'}`}>
             <video 
               ref={videoRef}
               src="/scalia-2-assets/testimonio.mp4"
@@ -56,6 +58,7 @@ export default function VideoTestimonial() {
                 if (!isPlaying) {
                   e.currentTarget.pause();
                 }
+                setIsLoaded(true);
               }}
               controls={isPlaying}
               className="w-full h-full object-cover"
