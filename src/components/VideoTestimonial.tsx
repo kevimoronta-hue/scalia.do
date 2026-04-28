@@ -9,9 +9,6 @@ export default function VideoTestimonial() {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // We use the #t=0.001 trick in the src to force iOS/mobile to load the first frame natively.
-  // No canvas needed.
-
   const handlePlay = () => {
     if (videoRef.current) {
       videoRef.current.muted = false;
@@ -47,20 +44,25 @@ export default function VideoTestimonial() {
           transition={{ duration: 0.8, delay: 0.1 }}
           className="relative w-full max-w-md aspect-[9/16] bg-[#0A0A0A] rounded-3xl md:rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl group"
         >
-          {/* Main Video Element — #t=0.001 forces first frame load on iOS */}
+          {/* Main Video Element — Trick: autoPlay + muted + instant pause ensures first frame loads everywhere */}
           <div className={`absolute inset-0 bg-[#0A0A0A] transition-opacity duration-300 ${isPlaying ? 'opacity-100' : 'opacity-100'}`}>
             <video 
               ref={videoRef}
-              src="/scalia-2-assets/testimonio.mp4#t=0.001"
-              preload="metadata"
+              src="/scalia-2-assets/testimonio.mp4"
               playsInline
-              muted={!isPlaying}
+              muted
+              autoPlay
+              onCanPlay={(e) => {
+                if (!isPlaying) {
+                  e.currentTarget.pause();
+                }
+              }}
               controls={isPlaying}
               className="w-full h-full object-cover"
               onPause={() => setIsPlaying(false)}
               onEnded={() => setIsPlaying(false)}
             >
-              <source src="/scalia-2-assets/testimonio.mp4#t=0.001" type="video/mp4" />
+              <source src="/scalia-2-assets/testimonio.mp4" type="video/mp4" />
             </video>
           </div>
           

@@ -1,21 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, Clapperboard, Star, Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function PricingTiers() {
   const t = useTranslations('PricingTiers');
-  const [isDesktop, setIsDesktop] = useState(true);
-
-  useEffect(() => {
-    // Detect desktop screens to conditionally apply stagger delay
-    const checkSize = () => setIsDesktop(window.innerWidth >= 1024);
-    checkSize(); // Initial check
-    window.addEventListener('resize', checkSize);
-    return () => window.removeEventListener('resize', checkSize);
-  }, []);
 
   const tiers = [
     {
@@ -79,18 +69,23 @@ export default function PricingTiers() {
           <div className="w-20 h-[1px] bg-gradient-gold mx-auto" />
         </div>
 
-        {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-          {tiers.map((tier, index) => (
+        {/* Pricing Cards Grid — Guaranteed 1-by-1 Stagger */}
+        <motion.div 
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.2 } }
+          }}
+        >
+          {tiers.map((tier) => (
             <motion.div 
               key={tier.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.1 }}
-              transition={{ 
-                duration: 0.7, 
-                ease: [0.22, 1, 0.36, 1], 
-                delay: isDesktop ? index * 0.15 : 0 
+              variants={{
+                hidden: { opacity: 0, y: 40 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
               }}
               className={`relative flex flex-col h-full bg-[#0A0A0A]/80 backdrop-blur-xl border rounded-[2rem] p-8 md:p-10 transition-all duration-500 
                 ${tier.isHighlight 
@@ -180,11 +175,10 @@ export default function PricingTiers() {
                     {tier.cta}
                   </motion.a>
                 </div>
-
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
