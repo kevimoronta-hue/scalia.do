@@ -13,7 +13,8 @@ export default function LoadingScreen() {
     const fadeTimer = setTimeout(() => setFadeOut(true), 1600);
     const unmountTimer = setTimeout(() => {
       setVisible(false);
-      try { window.scrollTo(0, 0); } catch(e) {}
+      // ← Removed scrollTo(0,0) here: if user already scrolled during loading, resetting
+      // would snap them back to top and restart the animation (the 'goes down then back up' bug)
     }, 2200);
     
     // 2. Tenter de modifier l'historique et le scroll

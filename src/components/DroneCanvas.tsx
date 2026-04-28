@@ -51,16 +51,10 @@ export default function DroneCanvas() {
     const total = frameCountRef.current;
     const safeIndex = Math.max(1, Math.min(total, Math.floor(requestedIndex)));
 
-    // Try exact frame first, then search backward for nearest loaded frame
-    let img: HTMLImageElement | undefined;
-    for (let offset = 0; offset < total; offset++) {
-      const candidate = imagesRef.current[safeIndex - 1 - offset];
-      if (candidate?.complete && candidate.naturalHeight !== 0) {
-        img = candidate;
-        break;
-      }
-    }
-    if (!img) return;
+    // Only draw if the exact frame is loaded — no backward fallback
+    // (backward fallback caused visual jumps that looked like the animation reversing)
+    const img = imagesRef.current[safeIndex - 1];
+    if (!img?.complete || img.naturalHeight === 0) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
