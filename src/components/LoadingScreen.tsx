@@ -9,40 +9,38 @@ export default function LoadingScreen() {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Force scroll to top on mount to ensure a normal sequence
-    if (typeof window !== 'undefined') {
-      if ('scrollRestoration' in window.history) {
-        window.history.scrollRestoration = 'manual';
-      }
-      window.scrollTo(0, 0);
-    }
-
-    // Start fade-out after 1.6s, then unmount at 2.2s
+    // 1. Démarrer les timers immédiatement en tout premier pour garantir le déverrouillage
     const fadeTimer = setTimeout(() => setFadeOut(true), 1600);
     const unmountTimer = setTimeout(() => {
       setVisible(false);
-      // Ensure we are STILL at the top when the loader finishes
-      window.scrollTo(0, 0);
+      try { window.scrollTo(0, 0); } catch(e) {}
     }, 2200);
     
+    // 2. Tenter de modifier l'historique et le scroll
+    try {
+      if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+    } catch (err) {
+      console.warn("Scroll restoration not supported", err);
+    }
+
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(unmountTimer);
     };
   }, []);
 
+  if (!visible) return null;
+
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          key="loader"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: fadeOut ? 0 : 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050505]"
-          aria-hidden="true"
-        >
+    <div
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#050505] transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}
+      aria-hidden="true"
+    >
           {/* Subtle ambient glow — same gold as the brand */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#B8860B]/8 blur-[120px]" />
@@ -78,8 +76,6 @@ export default function LoadingScreen() {
               />
             </motion.div>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    </div>
   );
 }
