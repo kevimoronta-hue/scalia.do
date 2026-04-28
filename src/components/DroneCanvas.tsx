@@ -5,15 +5,12 @@ import { useScroll, useTransform, motion, useMotionTemplate, MotionValue } from 
 import { useTranslations } from 'next-intl';
 
 function AnimatedWord({ word, index, scrollYProgress }: { word: string, index: number, scrollYProgress: MotionValue<number> }) {
-  // Apparition beaucoup plus rapide pour garantir que le texte ait le temps de finir (surtout pour le français)
   const start = 0.005 + (index * 0.008);
   const end = start + 0.03;
-  
   const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
   const y = useTransform(scrollYProgress, [start, end], [20, 0]);
   const blurRaw = useTransform(scrollYProgress, [start, end], [10, 0]);
   const filter = useMotionTemplate`blur(${blurRaw}px)`;
-
   return (
     <motion.span style={{ opacity, y, filter }} className="inline-block mr-[0.25em]">
       {word}
@@ -25,8 +22,11 @@ export default function DroneCanvas() {
   const t = useTranslations('HomePage');
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [images, setImages] = useState<HTMLImageElement[]>([]);
-  const [devicePrefix, setDevicePrefix] = useState('desktop');
+
+  // Use refs for mutable data that shouldn't trigger re-renders
+  const imagesRef = useRef<HTMLImageElement[]>([]);
+  const prefixRef = useRef('desktop');
+
   const [frameCount, setFrameCount] = useState(148);
 
   const { scrollYProgress } = useScroll({
@@ -34,118 +34,110 @@ export default function DroneCanvas() {
     offset: ["start start", "end end"]
   });
 
-  // Map scroll progress (0 to 1) dynamically to the current frameCount
   const frameIndex = useTransform(scrollYProgress, (latest) => {
     return latest * (frameCount - 1) + 1;
   });
 
-  // Animation pour le bouton CTA
-  const ctaOpacity = useTransform(scrollYProgress, [0.15, 0.25], [0, 1]);
-  const ctaY = useTransform(scrollYProgress, [0.15, 0.25], [20, 0]);
-
-  useEffect(() => {
-    // Determine device
-    const isMobile = window.innerWidth < 768;
-    const prefix = isMobile ? 'mobile' : 'desktop';
-    const totalFrames = isMobile ? 180 : 148;
-    setDevicePrefix(prefix);
-    setFrameCount(totalFrames);
-
-    // --- STEP 1: Initialize canvas size IMMEDIATELY so it can receive drawings ---
-    if (canvasRef.current) {
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvasRef.current.parentElement?.getBoundingClientRect() || { width: window.innerWidth, height: window.innerHeight };
-      canvasRef.current.width = rect.width * dpr;
-      canvasRef.current.height = rect.height * dpr;
-      const ctx = canvasRef.current.getContext('2d');
-      ctx?.scale(dpr, dpr);
-    }
-
-    // Preload images
-    const loadedImages: HTMLImageElement[] = [];
-    // Track if frame 1 has been drawn yet (for cache case)
-    let frame1Drawn = false;
-
-    for (let i = 1; i <= frameCount; i++) {
-      const img = new Image();
-      const paddedIndex = i.toString().padStart(4, '0');
-      
-      img.onload = () => {
-        // frameIndex.get() is always the latest value — safe to call directly
-        const currentNeededFrame = Math.floor(frameIndex.get()) || 1;
-        if (i === currentNeededFrame || (i === 1 && !frame1Drawn)) {
-          frame1Drawn = true;
-          renderFrame(i === 1 ? 1 : currentNeededFrame, loadedImages);
-        }
-      };
-      
-      img.src = `/scalia-2-assets/${prefix}/frame_${paddedIndex}.jpg`;
-      loadedImages.push(img);
-
-      // --- STEP 2: Handle images already in browser cache ---
-      // When cached, .complete=true BEFORE onload fires → callback is NEVER called.
-      if (img.complete && img.naturalHeight !== 0 && i === 1 && !frame1Drawn) {
-        frame1Drawn = true;
-        setTimeout(() => renderFrame(1, loadedImages), 0);
-      }
-    }
-    setImages(loadedImages);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [frameCount]); // ← frameIndex intentionally excluded: it's a stable MotionValue ref, not state
-
-
-  const renderFrame = (index: number, imgArray: HTMLImageElement[]) => {
-    if (!canvasRef.current || !imgArray[index - 1]) return;
+  // ─── Core render function — uses refs, no stale closures ──────────────────
+  const renderFrame = (index: number) => {
     const canvas = canvasRef.current;
+    const imgArray = imagesRef.current;
+    const safeIndex = Math.max(1, Math.floor(index));
+    const img = imgArray[safeIndex - 1];
+
+    if (!canvas || !img || !img.complete || img.naturalHeight === 0) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const img = imgArray[index - 1];
-    if (img.complete && img.naturalHeight !== 0) {
-      // Draw image to cover canvas using CSS dimensions
-      const rect = canvas.getBoundingClientRect();
-      const scale = Math.max(rect.width / img.width, rect.height / img.height);
-      const x = (rect.width / 2) - (img.width / 2) * scale;
-      const y = (rect.height / 2) - (img.height / 2) * scale;
-      
-      ctx.clearRect(0, 0, rect.width, rect.height);
-      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-    }
+    // Canvas internal dimensions (already DPR-aware)
+    const w = canvas.width;
+    const h = canvas.height;
+    const scale = Math.max(w / img.width, h / img.height);
+    const x = (w - img.width * scale) / 2;
+    const y = (h - img.height * scale) / 2;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
   };
 
+  // ─── Resize canvas (sets raw pixel dimensions, no ctx.scale needed) ───────
+  const resizeCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const parent = canvas.parentElement;
+    const w = parent ? parent.clientWidth : window.innerWidth;
+    const h = parent ? parent.clientHeight : window.innerHeight;
+    // Only resize if dimensions changed
+    if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      // No ctx.scale() — we handle DPR in renderFrame with raw canvas dimensions
+    }
+    renderFrame(Math.floor(frameIndex.get()) || 1);
+  };
+
+  // ─── Load images ──────────────────────────────────────────────────────────
   useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    const prefix = isMobile ? 'mobile' : 'desktop';
+    const total = isMobile ? 180 : 148;
+    prefixRef.current = prefix;
+    setFrameCount(total);
+
+    // Initialize canvas dimensions before images arrive
+    resizeCanvas();
+
+    const loadedImages: HTMLImageElement[] = new Array(total);
+    let firstFrameDrawn = false;
+
+    for (let i = 1; i <= total; i++) {
+      const img = new Image();
+      const padded = i.toString().padStart(4, '0');
+
+      img.onload = () => {
+        loadedImages[i - 1] = img;
+        // Draw first frame as soon as it loads
+        if (!firstFrameDrawn && i === 1) {
+          firstFrameDrawn = true;
+          imagesRef.current = loadedImages;
+          renderFrame(1);
+        }
+        // Also update ref so scroll handler always has latest images
+        imagesRef.current = loadedImages;
+      };
+
+      img.src = `/scalia-2-assets/${prefix}/frame_${padded}.jpg`;
+
+      // If already cached, onload won't fire — handle synchronously
+      if (img.complete && img.naturalHeight !== 0) {
+        loadedImages[i - 1] = img;
+        imagesRef.current = loadedImages;
+        if (!firstFrameDrawn && i === 1) {
+          firstFrameDrawn = true;
+          // Defer to ensure canvas has been sized
+          setTimeout(() => renderFrame(1), 0);
+        }
+      }
+    }
+
+    imagesRef.current = loadedImages;
+
+    // Attach scroll-driven frame rendering
     const unsubscribe = frameIndex.on('change', (latest) => {
-      renderFrame(Math.floor(latest), images);
+      renderFrame(Math.floor(latest));
     });
 
-    // Handle resize with Retina Display Support (devicePixelRatio)
-    const handleResize = () => {
-      if (canvasRef.current) {
-        const dpr = window.devicePixelRatio || 1;
-        // Use parent container dimensions
-        const rect = canvasRef.current.parentElement?.getBoundingClientRect() || { width: window.innerWidth, height: window.innerHeight };
-        
-        // Set actual canvas resolution multiplied by DPR
-        canvasRef.current.width = rect.width * dpr;
-        canvasRef.current.height = rect.height * dpr;
-        
-        // Normalize coordinate system to use CSS pixels
-        const ctx = canvasRef.current.getContext('2d');
-        ctx?.scale(dpr, dpr);
-        
-        const currentFrame = Math.floor(frameIndex.get()) || 1;
-        renderFrame(currentFrame, images);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
+    // Resize listener
+    window.addEventListener('resize', resizeCanvas);
 
     return () => {
       unsubscribe();
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', resizeCanvas);
     };
-  }, [frameIndex, images]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount only — frameIndex and resizeCanvas are stable refs
 
   const subtitleWords = t('subtitle').split(" ");
 
@@ -155,12 +147,12 @@ export default function DroneCanvas() {
         
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 w-full h-full object-cover opacity-70"
+          className="absolute inset-0 w-full h-full opacity-70"
+          style={{ imageRendering: 'auto' }}
         />
         
-        {/* TEXTE D'INTRODUCTION (Spawn Effect Pro Max) */}
+        {/* TEXTE D'INTRODUCTION */}
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
-          {/* Subtle dark halo to guarantee text readability over any video frame */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-black/50 via-transparent to-transparent opacity-100" />
           
           <div className="text-center px-6 flex flex-col items-center max-w-5xl mx-auto relative z-10">
@@ -177,9 +169,7 @@ export default function DroneCanvas() {
           </div>
         </div>
 
-
-
-        {/* Fallback glow to blend video with background */}
+        {/* Fallback glow */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/40 to-[#050505] z-10 pointer-events-none" />
       </div>
     </section>
