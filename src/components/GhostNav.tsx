@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useScroll, useMotionValueEvent, motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useTranslations, useLocale } from 'next-intl';
@@ -87,12 +87,29 @@ export default function GhostNav() {
   const locale = useLocale();
   const router = useRouter();
   const t = useTranslations('GhostNav');
+  const navRef = useRef<HTMLElement>(null);
 
   const switchLocale = (newLocale: string) => {
     router.replace(pathname, { locale: newLocale });
     setLangMenuOpen(false);
     setMenuOpen(false);
   };
+
+  // Close menus on outside click (mobile UX)
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+        setLangMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, []);
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
     const isHome = pathname === '/';
@@ -106,6 +123,7 @@ export default function GhostNav() {
 
   return (
     <header
+      ref={navRef}
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
         scrolled
           ? 'py-4 bg-black/80 backdrop-blur-3xl border-b border-white/5 shadow-2xl'
@@ -171,10 +189,16 @@ export default function GhostNav() {
           </AnimatePresence>
         </div>
 
-        {/* Logo SCALIA — centered absolutely (Hard refresh for cinematic effect) */}
+        {/* Logo SCALIA — hard reload + scroll to top */}
         <a
           href={`/${locale}`}
-          className="hover:opacity-80 transition-opacity absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0 md:mr-auto w-[140px] h-[70px] z-[60]"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'auto' });
+            // Hard reload to homepage in current locale
+            window.location.href = `/${locale}`;
+          }}
+          className="hover:opacity-80 transition-opacity absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0 md:mr-auto w-[140px] h-[70px] z-[60] cursor-pointer"
         >
           <Image
             src="/logo.png"

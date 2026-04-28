@@ -11,32 +11,39 @@ export default function VideoTestimonial() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Extract first frame as poster image using canvas API
+  // Force first-frame display on ALL browsers incl. iOS Safari
+  // The 0.001s seek trick forces the browser to decode and display frame 1
   useEffect(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video) return;
 
-    const extractFrame = () => {
-      if (video.readyState >= 2) {
-        canvas.width = video.videoWidth || 360;
-        canvas.height = video.videoHeight || 640;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          setPosterUrl(canvas.toDataURL('image/jpeg', 0.85));
-        }
+    const captureFrame = () => {
+      if (!canvas || video.videoWidth === 0) return;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        setPosterUrl(canvas.toDataURL('image/jpeg', 0.8));
       }
     };
 
-    video.addEventListener('loadeddata', extractFrame);
-    // Some browsers fire canplay instead
-    video.addEventListener('canplay', extractFrame);
-    video.currentTime = 0;
+    const onSeeked = () => captureFrame();
+
+    const onLoadedMeta = () => {
+      video.currentTime = 0.001; // Triggers seeked event + frame decode
+    };
+
+    video.addEventListener('loadedmetadata', onLoadedMeta);
+    video.addEventListener('seeked', onSeeked);
+    // Fallback for browsers that immediately have data
+    video.addEventListener('loadeddata', captureFrame);
 
     return () => {
-      video.removeEventListener('loadeddata', extractFrame);
-      video.removeEventListener('canplay', extractFrame);
+      video.removeEventListener('loadedmetadata', onLoadedMeta);
+      video.removeEventListener('seeked', onSeeked);
+      video.removeEventListener('loadeddata', captureFrame);
     };
   }, []);
 
