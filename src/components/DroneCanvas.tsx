@@ -9,10 +9,10 @@ function AnimatedWord({ word, index, scrollYProgress }: {
   index: number;
   scrollYProgress: MotionValue<number>;
 }) {
-  const start = 0.005 + index * 0.008;
-  const end = start + 0.03;
+  const start   = 0.005 + index * 0.008;
+  const end     = start + 0.03;
   const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
-  const y      = useTransform(scrollYProgress, [start, end], [20, 0]);
+  const y       = useTransform(scrollYProgress, [start, end], [20, 0]);
   const blurRaw = useTransform(scrollYProgress, [start, end], [10, 0]);
   const filter  = useMotionTemplate`blur(${blurRaw}px)`;
   return (
@@ -23,56 +23,59 @@ function AnimatedWord({ word, index, scrollYProgress }: {
 }
 
 export default function DroneCanvas() {
-  const t = useTranslations('HomePage');
+  const t            = useTranslations('HomePage');
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef    = useRef<HTMLCanvasElement>(null);
+
+  // All animation state in refs — zero React re-renders in the hot path
   const imagesRef    = useRef<(HTMLImageElement | undefined)[]>([]);
   const totalRef     = useRef(148);
-  const lastFrameRef = useRef(-1); // avoid redundant draws
+  const lastDrawnRef = useRef(-1);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start start', 'end end'],
   });
 
-  // Derived frame index — reads totalRef on every call, never stale
-  const frameIndex = useTransform(
+  // Derived frame number — always re-reads totalRef so mobile (180) works correctly
+  const frameMotion = useTransform(
     scrollYProgress,
-    (p) => Math.max(1, Math.min(totalRef.current, Math.round(p * (totalRef.current - 1) + 1)))
+    (p) => Math.max(1, Math.min(totalRef.current, Math.floor(p * (totalRef.current - 1)) + 1))
   );
 
   useEffect(() => {
-    // ── 1. Detect device ────────────────────────────────────────────────────
+    const canvas = canvasRef.current!;
+    const ctx    = canvas.getContext('2d', { alpha: false })!; // alpha:false = faster clears
+    ctx.imageSmoothingEnabled  = true;
+    ctx.imageSmoothingQuality  = 'high';
+
+    // ── Device detection ────────────────────────────────────────────────────
     const isMobile = window.innerWidth < 768;
     const prefix   = isMobile ? 'mobile' : 'desktop';
     const total    = isMobile ? 180 : 148;
     totalRef.current = total;
 
-    // ── 2. Size canvas to physical pixels (DPR-aware, no ctx.scale) ────────
-    const canvas = canvasRef.current!;
+    // ── Canvas sizing — cap DPR at 2 to keep draw calls fast ────────────────
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
     const sizeCanvas = () => {
-      const dpr    = window.devicePixelRatio || 1;
-      const parent = canvas.parentElement!;
-      const W = parent.clientWidth  * dpr;
-      const H = parent.clientHeight * dpr;
+      const W = (canvas.parentElement?.clientWidth  ?? window.innerWidth)  * DPR;
+      const H = (canvas.parentElement?.clientHeight ?? window.innerHeight) * DPR;
       if (canvas.width !== W || canvas.height !== H) {
         canvas.width  = W;
         canvas.height = H;
-        lastFrameRef.current = -1; // force redraw after resize
+        lastDrawnRef.current = -1; // force redraw
       }
     };
     sizeCanvas();
+    window.addEventListener('resize', sizeCanvas);
 
-    // ── 3. Core draw — called from rAF loop, never from events ─────────────
-    const draw = (idx: number) => {
-      const safe = Math.max(1, Math.min(total, Math.floor(idx)));
-      if (safe === lastFrameRef.current) return; // nothing changed
+    // ── Core draw ────────────────────────────────────────────────────────────
+    const draw = (frame: number) => {
+      const safe = Math.max(1, Math.min(total, frame));
+      if (safe === lastDrawnRef.current) return; // no change, skip
 
       const img = imagesRef.current[safe - 1];
-      if (!img?.complete || img.naturalHeight === 0) return; // frame not ready
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      if (!img?.complete || img.naturalHeight === 0) return;
 
       const W = canvas.width, H = canvas.height;
       const s = Math.max(W / img.width, H / img.height);
@@ -81,50 +84,48 @@ export default function DroneCanvas() {
 
       ctx.clearRect(0, 0, W, H);
       ctx.drawImage(img, x, y, img.width * s, img.height * s);
-      lastFrameRef.current = safe;
+      lastDrawnRef.current = safe;
     };
 
-    // ── 4. rAF loop — runs continuously, picks correct frame each tick ──────
-    // This is the most reliable approach: no subscriptions, no missed events.
+    // ── rAF loop — synchronized with the display refresh rate ───────────────
     let rafId: number;
-    const loop = () => {
-      draw(frameIndex.get());
-      rafId = requestAnimationFrame(loop);
+    const tick = () => {
+      draw(frameMotion.get());
+      rafId = requestAnimationFrame(tick);
     };
-    rafId = requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(tick);
 
-    // ── 5. Preload all frames ───────────────────────────────────────────────
+    // ── Image preloading with async decode() ─────────────────────────────────
+    // img.decode() decodes the JPEG off the main thread, so drawImage is instant.
     const imgs: (HTMLImageElement | undefined)[] = new Array(total).fill(undefined);
     imagesRef.current = imgs;
 
-    for (let i = 1; i <= total; i++) {
+    // Load all frames, but decode frame 1 first for instant first-frame display
+    const loadFrame = (i: number) => {
       const img    = new Image();
       const padded = i.toString().padStart(4, '0');
+      img.src      = `/scalia-2-assets/${prefix}/frame_${padded}.jpg`;
 
-      const onReady = () => {
-        imgs[i - 1] = img;
-        // No explicit draw call needed — rAF loop will pick it up next tick
-      };
+      img.decode()
+        .then(() => { imgs[i - 1] = img; })
+        .catch(() => {
+          // Fallback: mark as loaded even if decode() fails
+          if (img.complete && img.naturalHeight !== 0) imgs[i - 1] = img;
+        });
+    };
 
-      img.onload = onReady;
-      img.src    = `/scalia-2-assets/${prefix}/frame_${padded}.jpg`;
+    // Load frame 1 first, then all others in parallel
+    loadFrame(1);
+    for (let i = 2; i <= total; i++) loadFrame(i);
 
-      // Already cached → onload won't fire
-      if (img.complete && img.naturalHeight !== 0) onReady();
-    }
-
-    // ── 6. Resize listener ──────────────────────────────────────────────────
-    window.addEventListener('resize', sizeCanvas);
-
-    // ── 7. Cleanup ──────────────────────────────────────────────────────────
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', sizeCanvas);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // intentional: all reads via refs / MotionValues
+  }, []); // Runs once — everything is read via stable refs / MotionValues
 
-  const subtitleWords = t('subtitle').split(' ');
+  const words = t('subtitle').split(' ');
 
   return (
     <section ref={containerRef} className="relative h-[400vh] md:h-[300vh] bg-black">
@@ -136,23 +137,23 @@ export default function DroneCanvas() {
           aria-hidden="true"
         />
 
-        {/* Text overlay */}
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-black/50 via-transparent to-transparent" />
+
           <div className="text-center px-6 flex flex-col items-center max-w-5xl mx-auto relative z-10">
             <h1 className="font-sans text-4xl md:text-6xl lg:text-7xl text-white font-extrabold tracking-tighter leading-[1.1] drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
-              {subtitleWords.map((word, i) => (
+              {words.map((word, i) => (
                 <AnimatedWord key={i} word={word} index={i} scrollYProgress={scrollYProgress} />
               ))}
             </h1>
           </div>
+
           <div className="absolute bottom-8 md:bottom-12 left-0 right-0 flex flex-col items-center gap-3 opacity-40">
             <span className="text-[8px] font-sans tracking-[0.5em] uppercase text-white/70">{t('scroll')}</span>
             <div className="w-[1px] h-10 md:h-16 bg-gradient-to-b from-white/40 to-transparent" />
           </div>
         </div>
 
-        {/* Bottom fade */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/40 to-[#050505] z-10 pointer-events-none" />
       </div>
     </section>
