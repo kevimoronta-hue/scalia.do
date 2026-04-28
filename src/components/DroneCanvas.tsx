@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useScroll, useTransform, motion, useMotionTemplate, MotionValue } from 'framer-motion';
+import { useScroll, useTransform, motion, useMotionTemplate, MotionValue, useMotionValueEvent } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 
 function AnimatedWord({ word, index, scrollYProgress }: {
@@ -30,6 +30,7 @@ export default function DroneCanvas() {
   const imagesRef    = useRef<(HTMLImageElement | undefined)[]>([]);
   const totalRef     = useRef(148);
   const lastDrawnRef = useRef(-1);
+  const drawRef      = useRef<(f: number) => void>(() => {});
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -65,9 +66,12 @@ export default function DroneCanvas() {
     sizeCanvas();
     window.addEventListener('resize', sizeCanvas);
 
+    const draw = (frame: number) => drawRef.current(frame);
+
     // ── Core draw ────────────────────────────────────────────────────────────
-    const draw = (frame: number) => {
-      const safe = Math.max(1, Math.min(total, frame));
+    // Attach draw to a ref so useMotionValueEvent can access the latest version without being in deps
+    drawRef.current = (frame: number) => {
+      const safe = Math.max(1, Math.min(total, Math.floor(frame)));
       if (safe === lastDrawnRef.current) return;
 
       const img = imagesRef.current[safe - 1];
@@ -86,33 +90,54 @@ export default function DroneCanvas() {
       lastDrawnRef.current = safe;
     };
 
-    // ── rAF loop ─────────────────────────────────────────────────────────────
-    let rafId: number;
-    const tick = () => {
-      draw(frameMotion.get());
-      rafId = requestAnimationFrame(tick);
-    };
-    rafId = requestAnimationFrame(tick);
-
     // ── Preload frames ────────────────────────────────────────────────────────
     const imgs: (HTMLImageElement | undefined)[] = new Array(total).fill(undefined);
     imagesRef.current = imgs;
 
+    let initialFrameDrawn = false;
+
     for (let i = 1; i <= total; i++) {
       const img    = new Image();
       const padded = i.toString().padStart(4, '0');
-      img.onload   = () => { imgs[i - 1] = img; };
-      img.src      = `/scalia-2-assets/${prefix}/frame_${padded}.jpg`;
+      
+      const handleLoad = () => {
+        imgs[i - 1] = img;
+        
+        // If this is the first frame and we haven't drawn it yet, draw it
+        if (i === 1 && !initialFrameDrawn) {
+          initialFrameDrawn = true;
+          draw(1);
+        }
+        
+        // If the user is currently waiting for THIS frame to load, draw it immediately!
+        const currentNeeded = Math.floor(frameMotion.get());
+        if (i === currentNeeded) {
+          draw(currentNeeded);
+        }
+      };
+
+      img.onload = handleLoad;
+      img.src    = `/scalia-2-assets/${prefix}/frame_${padded}.jpg`;
+      
       // Already cached
-      if (img.complete && img.naturalHeight !== 0) imgs[i - 1] = img;
+      if (img.complete && img.naturalHeight !== 0) {
+        handleLoad();
+      }
     }
 
     return () => {
-      cancelAnimationFrame(rafId);
       window.removeEventListener('resize', sizeCanvas);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Drive animation from scroll ──────────────────────────────────────────
+  useMotionValueEvent(frameMotion, 'change', (latest) => {
+    // Only call draw if the canvas has been sized and initialized
+    if (lastDrawnRef.current !== -1 || canvasRef.current?.width) {
+      draw(latest);
+    }
+  });
 
   const words = t('subtitle').split(' ');
 
