@@ -17,7 +17,7 @@ html, body {
   color-scheme: dark;
 }
 
-/* Fullscreen page wrapper */
+/* Page wrapper centering stage in viewport */
 .page-container {
   position: relative;
   width: 100vw;
@@ -25,41 +25,36 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: #030303;
 }
 
-/* Fullscreen stage container taking 100% of viewport */
+/* Base stage container holding picture and hotspots */
 .scalia-stage {
   position: relative;
-  width: 100vw;
-  height: 100dvh;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+  display: block;
+  margin: auto;
 }
 
-.scalia-picture {
+.scalia-picture,
+.scalia-img {
   width: 100%;
   height: 100%;
   display: block;
-}
-
-.scalia-img {
-  width: 100vw;
-  height: 100dvh;
-  display: block;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   user-select: none;
   -webkit-user-drag: none;
 }
 
-/* Hotspots container layer - exact mathematical bounds matching object-fit: cover */
+/* Hotspots container layer - locked to the exact aspect ratio stage */
 .hotspots-layer {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
@@ -143,11 +138,13 @@ html, body {
 
 /* ----------------------------------------------------
    MOBILE / PORTRAIT CONFIGURATION (578 x 1024 Aspect)
+   Entire image contained within viewport - NO CROP, NO OVERFLOW
    ---------------------------------------------------- */
 @media (max-width: 768px), (orientation: portrait) {
-  .hotspots-layer {
-    width: max(100vw, calc(100dvh * (578 / 1024)));
-    height: max(100dvh, calc(100vw * (1024 / 578)));
+  .scalia-stage {
+    width: min(100vw, calc(100dvh * (578 / 1024)));
+    height: min(100dvh, calc(100vw * (1024 / 578)));
+    aspect-ratio: 578 / 1024;
   }
 
   .hotspot-instagram {
@@ -186,11 +183,13 @@ html, body {
 
 /* ----------------------------------------------------
    DESKTOP / LANDSCAPE CONFIGURATION (1024 x 578 Aspect)
+   Entire image contained within viewport - NO CROP, NO OVERFLOW
    ---------------------------------------------------- */
 @media (min-width: 769px) and (orientation: landscape) {
-  .hotspots-layer {
-    width: max(100vw, calc(100dvh * (1024 / 578)));
-    height: max(100dvh, calc(100vw * (578 / 1024)));
+  .scalia-stage {
+    width: min(100vw, calc(100dvh * (1024 / 578)));
+    height: min(100dvh, calc(100vw * (578 / 1024)));
+    aspect-ratio: 1024 / 578;
   }
 
   .hotspot-instagram {
