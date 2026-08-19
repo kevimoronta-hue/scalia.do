@@ -1,0 +1,212 @@
+/* Minimal reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  background-color: #030303;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+}
+
+/* Page wrapper centering stage */
+.page-container {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #030303;
+}
+
+/* Base stage container holding picture and hotspots */
+.scalia-stage {
+  position: relative;
+  display: block;
+}
+
+.scalia-picture,
+.scalia-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+  -webkit-user-drag: none;
+  /* Prevent anti-aliasing blur when scaling bitmaps */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Hotspots container layer */
+.hotspots-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Transparent clickable link hotspots */
+.hotspot {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s ease;
+  border-radius: 4px;
+}
+
+.hotspot:hover {
+  opacity: 0.85;
+}
+
+.hotspot:active {
+  opacity: 0.7;
+}
+
+/* Accessible focus ring only on keyboard navigation */
+.hotspot:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+}
+
+/* ----------------------------------------------------
+   FLOATING WHATSAPP BUTTON (MIDDLE-RIGHT)
+   ---------------------------------------------------- */
+.whatsapp-pill {
+  position: fixed;
+  right: clamp(12px, 2vw, 24px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 99;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #25D366;
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.35), 0 2px 8px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.25s ease,
+              background-color 0.2s ease;
+  animation: waEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
+}
+
+.whatsapp-pill:hover {
+  background-color: #20bd5a;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 6px 24px rgba(37, 211, 102, 0.5), 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.whatsapp-pill:active {
+  transform: translateY(-50%) scale(0.97);
+}
+
+.wa-icon {
+  flex-shrink: 0;
+}
+
+.wa-text {
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+@keyframes waEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(-50%) translateX(16px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0) scale(1);
+  }
+}
+
+/* ----------------------------------------------------
+   MOBILE / PORTRAIT CONFIGURATION (578 x 1024 Aspect)
+   Capped at 578px width / 1024px height to prevent bitmap blur
+   ---------------------------------------------------- */
+@media (max-width: 768px), (orientation: portrait) {
+  .scalia-stage {
+    width: min(100vw, 578px, calc(100dvh * (578 / 1024)));
+    height: min(100dvh, 1024px, calc(100vw * (1024 / 578)));
+    aspect-ratio: 578 / 1024;
+  }
+
+  .hotspot-instagram {
+    left: 20.0%;
+    top: 89.0%;
+    width: 18.5%;
+    height: 9.5%;
+  }
+
+  .hotspot-linkedin {
+    left: 40.75%;
+    top: 89.0%;
+    width: 18.5%;
+    height: 9.5%;
+  }
+
+  .hotspot-email {
+    left: 61.5%;
+    top: 89.0%;
+    width: 18.5%;
+    height: 9.5%;
+  }
+
+  .whatsapp-pill {
+    padding: 8px 13px;
+    font-size: 13px;
+    right: 12px;
+  }
+}
+
+/* ----------------------------------------------------
+   DESKTOP / LANDSCAPE CONFIGURATION (1024 x 578 Aspect)
+   Capped at 1024px width / 578px height to prevent bitmap blur
+   ---------------------------------------------------- */
+@media (min-width: 769px) and (orientation: landscape) {
+  .scalia-stage {
+    width: min(100vw, 1024px, calc(100dvh * (1024 / 578)));
+    height: min(100dvh, 578px, calc(100vw * (578 / 1024)));
+    aspect-ratio: 1024 / 578;
+  }
+
+  .hotspot-instagram {
+    left: 41.2%;
+    top: 85.5%;
+    width: 4.8%;
+    height: 11.5%;
+  }
+
+  .hotspot-linkedin {
+    left: 47.6%;
+    top: 85.5%;
+    width: 4.8%;
+    height: 11.5%;
+  }
+
+  .hotspot-email {
+    left: 54.0%;
+    top: 85.5%;
+    width: 4.8%;
+    height: 11.5%;
+  }
+}
