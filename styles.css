@@ -9,49 +9,57 @@ html, body {
   width: 100%;
   height: 100%;
   min-height: 100dvh;
+  margin: 0;
+  padding: 0;
   background-color: #030303;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color-scheme: dark;
 }
 
-/* Page wrapper centering stage */
+/* Fullscreen page wrapper */
 .page-container {
   position: relative;
-  width: 100%;
+  width: 100vw;
   height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
   background-color: #030303;
 }
 
-/* Base stage container holding picture and hotspots */
+/* Fullscreen stage container taking 100% of viewport */
 .scalia-stage {
   position: relative;
-  display: block;
+  width: 100vw;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
-.scalia-picture,
-.scalia-img {
+.scalia-picture {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: contain;
+}
+
+.scalia-img {
+  width: 100vw;
+  height: 100dvh;
+  display: block;
+  object-fit: cover;
   object-position: center;
   user-select: none;
   -webkit-user-drag: none;
-  /* Prevent anti-aliasing blur when scaling bitmaps */
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
 }
 
-/* Hotspots container layer */
+/* Hotspots container layer - exact mathematical bounds matching object-fit: cover */
 .hotspots-layer {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   pointer-events: none;
 }
 
@@ -137,10 +145,9 @@ html, body {
    MOBILE / PORTRAIT CONFIGURATION (578 x 1024 Aspect)
    ---------------------------------------------------- */
 @media (max-width: 768px), (orientation: portrait) {
-  .scalia-stage {
-    width: min(100vw, 578px, calc(100dvh * (578 / 1024)));
-    height: min(100dvh, 1024px, calc(100vw * (1024 / 578)));
-    aspect-ratio: 578 / 1024;
+  .hotspots-layer {
+    width: max(100vw, calc(100dvh * (578 / 1024)));
+    height: max(100dvh, calc(100vw * (1024 / 578)));
   }
 
   .hotspot-instagram {
@@ -181,10 +188,9 @@ html, body {
    DESKTOP / LANDSCAPE CONFIGURATION (1024 x 578 Aspect)
    ---------------------------------------------------- */
 @media (min-width: 769px) and (orientation: landscape) {
-  .scalia-stage {
-    width: min(100vw, 1024px, calc(100dvh * (1024 / 578)));
-    height: min(100dvh, 578px, calc(100vw * (578 / 1024)));
-    aspect-ratio: 1024 / 578;
+  .hotspots-layer {
+    width: max(100vw, calc(100dvh * (1024 / 578)));
+    height: max(100dvh, calc(100vw * (578 / 1024)));
   }
 
   .hotspot-instagram {
