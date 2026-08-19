@@ -83,65 +83,58 @@ html, body {
 }
 
 /* ----------------------------------------------------
-   FLOATING WHATSAPP BUTTON (MIDDLE-RIGHT)
+   ULTRA-PREMIUM ROUND WHATSAPP BUTTON (BOTTOM-RIGHT)
    ---------------------------------------------------- */
-.whatsapp-pill {
+.whatsapp-float {
   position: fixed;
-  right: clamp(12px, 2vw, 24px);
-  top: 50%;
-  transform: translateY(-50%);
+  right: clamp(16px, 3vw, 28px);
+  bottom: clamp(16px, 3vw, 28px);
   z-index: 99;
-  display: inline-flex;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  background-color: #25D366;
+  justify-content: center;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
   color: #ffffff;
-  padding: 10px 16px;
-  border-radius: 50px;
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.35), 0 2px 8px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 0.25s ease,
-              background-color 0.2s ease;
-  animation: waEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4), 0 2px 8px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              background 0.3s ease;
+  animation: waPopIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
 }
 
-.whatsapp-pill:hover {
-  background-color: #20bd5a;
-  transform: translateY(-50%) scale(1.05);
-  box-shadow: 0 6px 24px rgba(37, 211, 102, 0.5), 0 4px 12px rgba(0, 0, 0, 0.5);
+.whatsapp-float:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 12px 30px rgba(37, 211, 102, 0.55), 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.5);
 }
 
-.whatsapp-pill:active {
-  transform: translateY(-50%) scale(0.97);
+.whatsapp-float:active {
+  transform: scale(0.95);
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4), 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 .wa-icon {
-  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
-.wa-text {
-  letter-spacing: 0.2px;
-  white-space: nowrap;
-}
-
-@keyframes waEntrance {
+@keyframes waPopIn {
   0% {
     opacity: 0;
-    transform: translateY(-50%) translateX(16px) scale(0.92);
+    transform: scale(0) rotate(-45deg);
   }
   100% {
     opacity: 1;
-    transform: translateY(-50%) translateX(0) scale(1);
+    transform: scale(1) rotate(0deg);
   }
 }
 
 /* ----------------------------------------------------
    MOBILE / PORTRAIT CONFIGURATION (578 x 1024 Aspect)
-   Capped at 578px width / 1024px height to prevent bitmap blur
    ---------------------------------------------------- */
 @media (max-width: 768px), (orientation: portrait) {
   .scalia-stage {
@@ -171,16 +164,21 @@ html, body {
     height: 9.5%;
   }
 
-  .whatsapp-pill {
-    padding: 8px 13px;
-    font-size: 13px;
-    right: 12px;
+  .whatsapp-float {
+    width: 50px;
+    height: 50px;
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .wa-icon {
+    width: 25px;
+    height: 25px;
   }
 }
 
 /* ----------------------------------------------------
    DESKTOP / LANDSCAPE CONFIGURATION (1024 x 578 Aspect)
-   Capped at 1024px width / 578px height to prevent bitmap blur
    ---------------------------------------------------- */
 @media (min-width: 769px) and (orientation: landscape) {
   .scalia-stage {
