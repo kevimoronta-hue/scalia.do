@@ -364,9 +364,11 @@
   "Le formulaire de réservation ne dépose aucun cookie et ne charge aucun service tiers.": "El formulario de reserva no instala ninguna cookie ni carga ningún servicio de terceros.",
   "Indicatif pays": "Código de país",
   "Rechercher un pays ou un indicatif": "Buscar un país o un código",
-  "Pays ou indicatif, ex. France, +1": "País o código, p. ej. Francia, +1",
-  "Pays": "Países",
   "Aucun pays trouvé.": "No se encontró ningún país.",
   "Entrez un numéro valide.": "Introduce un número válido.",
-  "Si vous commencez une réservation sans la terminer, les informations saisies dans le formulaire sont conservées dans votre navigateur uniquement, pendant 7 jours au plus, pour vous éviter de les ressaisir. Elles ne sont envoyées qu’au moment où vous confirmez le rendez-vous et sont effacées dès qu’il est confirmé.": "Si empiezas una reserva sin terminarla, los datos introducidos en el formulario se conservan solo en tu navegador, durante 7 días como máximo, para que no tengas que volver a escribirlos. Solo se envían cuando confirmas la cita y se borran en cuanto se confirma."
+  "Si vous commencez une réservation sans la terminer, les informations saisies dans le formulaire sont conservées dans votre navigateur uniquement, pendant 7 jours au plus, pour vous éviter de les ressaisir. Elles ne sont envoyées qu’au moment où vous confirmez le rendez-vous et sont effacées dès qu’il est confirmé.": "Si empiezas una reserva sin terminarla, los datos introducidos en el formulario se conservan solo en tu navegador, durante 7 días como máximo, para que no tengas que volver a escribirlos. Solo se envían cuando confirmas la cita y se borran en cuanto se confirma.",
+  "Choisir un pays": "Elegir un país",
+  "Pays ou indicatif": "País o código",
+  "Pays fréquents": "Países frecuentes",
+  "Tous les pays": "Todos los países"
 };

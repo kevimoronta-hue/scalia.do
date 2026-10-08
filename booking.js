@@ -386,7 +386,6 @@
   var DIALS = ('AD376 AE971 AF93 AG1 AI1 AL355 AM374 AO244 AR54 AS1 AT43 AU61 AW297 AX358 AZ994 BA387 BB1 BD880 BE32 BF226 BG359 BH973 BI257 BJ229 BL590 BM1 BN673 BO591 BQ599 BR55 BS1 BT975 BW267 BY375 BZ501 CA1 CD243 CF236 CG242 CH41 CI225 CK682 CL56 CM237 CN86 CO57 CR506 CU53 CV238 CW599 CY357 CZ420 DE49 DJ253 DK45 DM1 DO1 DZ213 EC593 EE372 EG20 ER291 ES34 ET251 FI358 FJ679 FK500 FM691 FO298 FR33 GA241 GB44 GD1 GE995 GF594 GG44 GH233 GI350 GL299 GM220 GN224 GP590 GQ240 GR30 GT502 GU1 GW245 GY592 HK852 HN504 HR385 HT509 HU36 ID62 IE353 IL972 IM44 IN91 IQ964 IR98 IS354 IT39 JE44 JM1 JO962 JP81 KE254 KG996 KH855 KI686 KM269 KN1 KR82 KW965 KY1 KZ7 LA856 LB961 LC1 LI423 LK94 LR231 LS266 LT370 LU352 LV371 LY218 MA212 MC377 MD373 ME382 MF590 MG261 MH692 MK389 ML223 MM95 MN976 MO853 MP1 MQ596 MR222 MS1 MT356 MU230 MV960 MW265 MX52 MY60 MZ258 NA264 NC687 NE227 NG234 NI505 NL31 NO47 NP977 NR674 NU683 NZ64 OM968 PA507 PE51 PF689 PG675 PH63 PK92 PL48 PM508 PR1 PS970 PT351 PW680 PY595 QA974 RE262 RO40 RS381 RU7 RW250 SA966 SB677 SC248 SD249 SE46 SG65 SI386 SK421 SL232 SM378 SN221 SO252 SR597 SS211 ST239 SV503 SX1 SY963 SZ268 TC1 TD235 TG228 TH66 TJ992 TL670 TM993 TN216 TO676 TR90 TT1 TV688 TW886 TZ255 UA380 UG256 US1 UY598 UZ998 VA39 VC1 VE58 VG1 VI1 VN84 VU678 WF681 WS685 YE967 YT262 ZA27 ZM260 ZW263')
     .split(' ').reduce(function (m, x) { m[x.slice(0, 2)] = x.slice(2); return m; }, {});
   var CC_DEFAULT = { fr: 'FR', es: 'DO', en: 'US' };
-  var CC_LIKELY = ['FR', 'DO', 'US', 'ES', 'CA', 'BE', 'CH', 'GB', 'MX', 'PR', 'CO'];
   var KEEP_ZERO = { IT: 1, VA: 1, SM: 1 };   // numbers that keep their leading 0
   var CC_HINT = { FR: '6 12 34 56 78', DO: '809 123 4567', US: '202 555 0123', CA: '514 555 0123', PR: '787 555 0123' };
   S.cc = CC_DEFAULT[locale()] || 'FR';
@@ -406,24 +405,67 @@
     el.form.elements.phone.placeholder = CC_HINT[S.cc] || '';
     $('[data-bk-cc]').setAttribute('aria-label', L('Indicatif pays') + ' : ' + countryName(S.cc) + ' +' + DIALS[S.cc]);
   }
-  function ccList() {
-    var q = norm(ccSearch.value.trim().replace(/^\+/, ''));
-    var all = Object.keys(DIALS);
-    var picks;
-    if (!q) picks = [S.cc].concat(CC_LIKELY.filter(function (c) { return c !== S.cc; }));
-    else {
-      picks = all.filter(function (c) { return norm(countryName(c) + ' ' + c).indexOf(q) >= 0 || DIALS[c].indexOf(q) === 0; })
-        .sort(function (a, b) { return (norm(countryName(a)).indexOf(q) === 0 ? 0 : 1) - (norm(countryName(b)).indexOf(q) === 0 ? 0 : 1) || countryName(a).localeCompare(countryName(b)); });
-    }
-    ccListEl.innerHTML = picks.slice(0, 8).map(function (c) {
-      return '<li><button type="button" class="bk__tz-opt" data-cc="' + c + '" aria-pressed="' + (c === S.cc) + '">' + flagOf(c) + ' ' + countryName(c) + ' <span>+' + DIALS[c] + '</span></button></li>';
-    }).join('') || '<li class="bk__tz-none">' + L('Aucun pays trouvé.') + '</li>';
-  }
+  /* Picker UI: a bottom sheet on phones, a popover from 760px. "Pays
+     fréquents" then every country by name; the search matches the name,
+     the ISO code or the dialling code ("suisse", "ch", "41", "+41"). */
   var ccBtn = $('[data-bk-cc]'), ccPanel = $('[data-bk-cc-panel]'), ccSearch = $('[data-bk-cc-search]'), ccListEl = $('[data-bk-cc-list]');
+  var ccBox = $('[data-ccp-panel]');
+  var CC_COMMON = ['FR', 'DO', 'US', 'CH', 'LU', 'BE', 'CA', 'GB'];
+  var sheetMQ = matchMedia('(max-width: 759px)');
+  var ccHideT = 0;
+  function ccRow(c) {
+    return '<button type="button" class="bk__ccp-opt" data-cc="' + c + '" aria-current="' + (c === S.cc) + '">' +
+      '<svg class="bk__ccp-check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      '<span class="bk__ccp-flag" aria-hidden="true">' + flagOf(c) + '</span><span class="bk__ccp-name">' + countryName(c) + '</span><span class="bk__ccp-dial">+' + DIALS[c] + '</span></button>';
+  }
+  function ccList() {
+    var q = norm(ccSearch.value.trim());
+    var digits = q.replace(/^\+/, '').replace(/\s/g, '');
+    var all = Object.keys(DIALS);
+    var byName = function (a, b) { return countryName(a).localeCompare(countryName(b), intl()); };
+    if (!q) {
+      ccListEl.innerHTML = '<p class="bk__ccp-sec">' + L('Pays fréquents') + '</p>' + CC_COMMON.map(ccRow).join('') +
+        '<p class="bk__ccp-sec">' + L('Tous les pays') + '</p>' + all.sort(byName).map(ccRow).join('');
+      return;
+    }
+    var rank = function (c) {
+      var n = norm(countryName(c));
+      if (/^\d+$/.test(digits)) return DIALS[c] === digits ? 0 : DIALS[c].indexOf(digits) === 0 ? 1 : 9;
+      if (c.toLowerCase() === q) return 0;
+      if (n.indexOf(q) === 0) return 1;
+      return n.indexOf(q) >= 0 ? 2 : 9;
+    };
+    var hits = all.filter(function (c) { return rank(c) < 9; }).sort(function (a, b) { return rank(a) - rank(b) || byName(a, b); });
+    ccListEl.innerHTML = hits.length ? hits.map(ccRow).join('') : '<p class="bk__ccp-empty">' + L('Aucun pays trouvé.') + '</p>';
+  }
+  function placePopover() {
+    if (sheetMQ.matches) return;
+    var r = ccBtn.getBoundingClientRect(), h = 360, w = 340;
+    var above = r.bottom + 6 + h > innerHeight - 8 && r.top - 6 - h > 8;
+    ccPanel.classList.toggle('is-above', above);
+    ccPanel.style.setProperty('--ccp-x', Math.max(8, Math.min(r.left, innerWidth - w - 8)) + 'px');
+    ccPanel.style.setProperty('--ccp-y', (above ? r.top - 6 - Math.min(h, ccBox.offsetHeight || h) : r.bottom + 6) + 'px');
+  }
   function ccOpen(open) {
-    ccPanel.hidden = !open;
-    ccBtn.setAttribute('aria-expanded', String(open));
-    if (open) { ccSearch.value = ''; ccList(); ccSearch.focus(); }
+    clearTimeout(ccHideT);
+    if (open) {
+      ccSearch.value = '';
+      ccList();
+      ccPanel.hidden = false;
+      placePopover();
+      ccBtn.setAttribute('aria-expanded', 'true');
+      requestAnimationFrame(function () { ccPanel.classList.add('is-open'); });
+      var cur = ccListEl.querySelector('[aria-current="true"]');
+      // Phones: no keyboard popping up; focus the current country. Desktop:
+      // straight into the search.
+      if (sheetMQ.matches) { ccListEl.scrollTop = 0; setTimeout(function () { (cur || ccSearch).focus({ preventScroll: true }); }, 60); }
+      else ccSearch.focus({ preventScroll: true });
+    } else {
+      if (ccPanel.hidden) return;
+      ccPanel.classList.remove('is-open');
+      ccBtn.setAttribute('aria-expanded', 'false');
+      ccHideT = setTimeout(function () { ccPanel.hidden = true; ccBox.style.transform = ''; }, 220);
+    }
   }
   function setCc(iso, manual) {
     if (!DIALS[iso]) return;
@@ -431,19 +473,69 @@
     if (manual) S.ccManual = true;
     renderCc();
   }
-  ccBtn.addEventListener('click', function () { ccOpen(ccPanel.hidden); });
-  ccSearch.addEventListener('input', ccList);
-  ccSearch.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); var f = ccListEl.querySelector('[data-cc]'); if (f) { setCc(f.getAttribute('data-cc'), true); ccOpen(false); ccBtn.focus(); saveDraft(); } }
+  function pick(c) { setCc(c, true); ccOpen(false); el.form.elements.phone.focus({ preventScroll: true }); saveDraft(); }
+
+  ccBtn.addEventListener('click', function () { ccOpen(ccPanel.hidden || !ccPanel.classList.contains('is-open')); });
+  ccSearch.addEventListener('input', function () { ccList(); ccListEl.scrollTop = 0; });
+  ccListEl.addEventListener('click', function (e) { var b = e.target.closest('[data-cc]'); if (b) pick(b.getAttribute('data-cc')); });
+  Array.prototype.forEach.call(ccPanel.querySelectorAll('[data-ccp-close]'), function (x) {
+    x.addEventListener('click', function () { ccOpen(false); ccBtn.focus({ preventScroll: true }); });
   });
-  ccListEl.addEventListener('click', function (e) {
-    var b = e.target.closest('[data-cc]');
-    if (b) { setCc(b.getAttribute('data-cc'), true); ccOpen(false); el.form.elements.phone.focus(); saveDraft(); }
-  });
+  // Keyboard: arrows move through the countries, Enter picks, Escape closes.
   ccPanel.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape') return;
-    e.preventDefault(); e.stopPropagation(); ccOpen(false); ccBtn.focus();
+    var opts = Array.prototype.slice.call(ccListEl.querySelectorAll('[data-cc]'));
+    var i = opts.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); ccOpen(false); ccBtn.focus({ preventScroll: true }); return; }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      var n = e.key === 'ArrowDown' ? (i < 0 ? 0 : Math.min(opts.length - 1, i + 1)) : (i <= 0 ? -1 : i - 1);
+      if (n < 0) ccSearch.focus(); else opts[n].focus();
+      return;
+    }
+    if (e.key === 'Enter' && document.activeElement === ccSearch) { e.preventDefault(); if (opts[0]) pick(opts[0].getAttribute('data-cc')); }
   });
+  // Phones: drag the top of the sheet down to close it.
+  (function () {
+    var bar = $('[data-ccp-drag]'), y0 = null, dy = 0;
+    bar.addEventListener('touchstart', function (e) { y0 = e.touches[0].clientY; dy = 0; ccPanel.classList.add('is-dragging'); }, { passive: true });
+    bar.addEventListener('touchmove', function (e) {
+      if (y0 === null) return;
+      dy = Math.max(0, e.touches[0].clientY - y0);
+      ccBox.style.transform = 'translate3d(0,' + dy + 'px,0)';
+    }, { passive: true });
+    bar.addEventListener('touchend', function () {
+      ccPanel.classList.remove('is-dragging');
+      ccBox.style.transform = '';
+      if (dy > 70) ccOpen(false);
+      y0 = null;
+    });
+  })();
+  // The popover follows its button; it closes if the form scrolls under it.
+  $('.bk__body').addEventListener('scroll', function () { if (!sheetMQ.matches && !ccPanel.hidden) ccOpen(false); }, { passive: true });
+  window.addEventListener('resize', function () { if (!ccPanel.hidden) placePopover(); });
+
+  // A pasted international number (+41 …, 0041 …) selects its country and
+  // keeps only the national part in the field. +1 stays on the current +1
+  // country (Dominican area codes 809/829/849 select the Dominican Republic).
+  function adoptPrefix() {
+    var input = el.form.elements.phone, raw = input.value.trim();
+    var m = /^(?:\+|00)\s*([\d\s().-]+)$/.exec(raw);
+    if (!m) return;
+    var digits = m[1].replace(/\D/g, '');
+    for (var len = 4; len >= 1; len--) {
+      var code = digits.slice(0, len), rest = digits.slice(len);
+      var hits = Object.keys(DIALS).filter(function (c) { return DIALS[c] === code; });
+      if (!hits.length || rest.length < 4) continue;
+      var iso = hits.indexOf(S.cc) >= 0 ? S.cc : (code === '1' ? (/^8[024]9/.test(rest) ? 'DO' : 'US') : hits[0]);
+      if (code === '1' && /^8[024]9/.test(rest)) iso = 'DO';
+      setCc(iso, true);
+      input.value = rest;
+      saveDraft();
+      return;
+    }
+  }
+  el.form.elements.phone.addEventListener('paste', function () { setTimeout(adoptPrefix, 0); });
+  el.form.elements.phone.addEventListener('blur', adoptPrefix);
 
   // National number → E.164. A number typed with + or 00 is taken as is.
   function e164() {

@@ -232,7 +232,82 @@
 .bk__cc svg { color: var(--champagne); }
 .bk__cc-flag { font-size: 18px; line-height: 1; }
 .bk__phone input { flex: 1; min-width: 0; }
-.bk__cc-panel { display: grid; gap: 8px; margin-top: 6px; }
+
+/* Country picker. Phones: a bottom sheet over the booking sheet. From 760px:
+   a compact popover under the code button (placed by booking.js). Only
+   transform and opacity animate. */
+.bk__ccp { position: fixed; inset: 0; z-index: 20; }
+.bk__ccp-scrim { position: absolute; inset: 0; background: rgba(8, 6, 5, 0.55); opacity: 0; transition: opacity 200ms ease; }
+.bk__ccp-panel {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-height: min(78dvh, 640px); display: flex; flex-direction: column;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(180deg, #1D1714, #15100D);
+  box-shadow: inset 0 1px 0 rgba(237, 220, 196, 0.14), 0 -12px 40px -12px rgba(0, 0, 0, 0.6);
+  transform: translate3d(0, 100%, 0);
+  transition: transform 220ms var(--ease-out);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bk__ccp.is-open .bk__ccp-scrim { opacity: 1; }
+.bk__ccp.is-open .bk__ccp-panel { transform: none; }
+.bk__ccp.is-dragging .bk__ccp-panel { transition: none; }
+.bk__ccp-top { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 14px 8px 6px 20px; touch-action: none; }
+.bk__ccp-grab { position: absolute; top: 7px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: rgba(255, 255, 255, 0.22); }
+.bk__ccp-title { font-size: 16px; font-weight: 650; letter-spacing: -0.015em; color: var(--fg-inv); }
+.bk__ccp-search {
+  margin: 4px 16px 8px; display: flex; align-items: center; gap: 8px; padding: 0 12px;
+  border-radius: 12px; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px var(--bk-line-2);
+  color: var(--fg-inv-3);
+}
+.bk__ccp-search:focus-within { box-shadow: inset 0 0 0 1.5px var(--champagne); }
+.bk__ccp-search input {
+  flex: 1; min-width: 0; min-height: 44px; border: 0; background: transparent; outline: none;
+  color: var(--fg-inv); font: 400 16px/1.2 var(--font); -webkit-appearance: none; appearance: none;
+}
+.bk__ccp-search input::placeholder { color: var(--fg-inv-3); }
+/* The picker sits inside a form field: drop the field styling it inherits. */
+.bk__ccp .bk__ccp-search input, .bk__ccp .bk__ccp-search input:focus {
+  padding: 0; border-radius: 0; background: transparent; box-shadow: none;
+}
+.bk__ccp-list {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  padding: 0 8px 12px;
+}
+.bk__ccp-sec { padding: 12px 12px 6px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-inv-3); }
+.bk__ccp-opt {
+  width: 100%; min-height: 46px; padding: 0 12px;
+  display: grid; grid-template-columns: 16px 24px minmax(0, 1fr) auto; align-items: center; gap: 8px;
+  border: 0; border-radius: 10px; background: transparent; cursor: pointer; text-align: left;
+  color: var(--fg-inv); font: 500 15px/1.3 var(--font);
+}
+.bk__ccp-opt + .bk__ccp-opt { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+.bk__ccp-check { color: var(--champagne-hi); visibility: hidden; }
+.bk__ccp-flag { font-size: 18px; line-height: 1; }
+.bk__ccp-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk__ccp-dial { color: var(--fg-inv-2); font-variant-numeric: tabular-nums; }
+.bk__ccp-opt[aria-current="true"] { background: rgba(205, 169, 130, 0.1); }
+.bk__ccp-opt[aria-current="true"] .bk__ccp-check { visibility: visible; }
+.bk__ccp-opt[aria-current="true"] .bk__ccp-dial { color: var(--champagne-hi); }
+@media (hover: hover) and (pointer: fine) { .bk__ccp-opt:hover { background: rgba(255, 255, 255, 0.06); } }
+.bk__ccp-opt:focus-visible { outline: 2px solid var(--scalia-gold); outline-offset: -2px; }
+.bk__ccp-empty { padding: 16px 12px; color: var(--fg-inv-2); font-size: 14.5px; }
+
+@media (min-width: 760px) {
+  .bk__ccp-scrim { background: transparent; }
+  .bk__ccp-panel {
+    left: var(--ccp-x, 0px); top: var(--ccp-y, 0px); right: auto; bottom: auto;
+    width: 340px; max-height: 360px; border-radius: 14px; padding-bottom: 0;
+    box-shadow: inset 0 0 0 1px var(--bk-line-2), 0 18px 40px -16px rgba(0, 0, 0, 0.7);
+    transform: translate3d(0, -4px, 0); opacity: 0;
+    transition: transform 160ms var(--ease-out), opacity 160ms ease;
+  }
+  .bk__ccp.is-above .bk__ccp-panel { transform: translate3d(0, 4px, 0); }
+  .bk__ccp.is-open .bk__ccp-panel { opacity: 1; transform: none; }
+  .bk__ccp-top { display: none; }
+  .bk__ccp-search { margin: 10px 10px 6px; }
+  .bk__ccp-opt { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .bk__ccp-panel, .bk__ccp-scrim { transition: none; } }
 
 .bk__hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 .bk__fail { padding: 12px 14px; border-radius: 12px; background: rgba(229, 143, 122, 0.1); box-shadow: inset 0 0 0 1px rgba(229, 143, 122, 0.35); color: #F6D2C8; font-size: 14.5px; line-height: 1.45; }

@@ -365,9 +365,11 @@
   "Le formulaire de réservation ne dépose aucun cookie et ne charge aucun service tiers.": "The booking form sets no cookies and loads no third-party service.",
   "Indicatif pays": "Country code",
   "Rechercher un pays ou un indicatif": "Search for a country or a code",
-  "Pays ou indicatif, ex. France, +1": "Country or code, e.g. France, +1",
-  "Pays": "Countries",
   "Aucun pays trouvé.": "No country found.",
   "Entrez un numéro valide.": "Enter a valid number.",
-  "Si vous commencez une réservation sans la terminer, les informations saisies dans le formulaire sont conservées dans votre navigateur uniquement, pendant 7 jours au plus, pour vous éviter de les ressaisir. Elles ne sont envoyées qu’au moment où vous confirmez le rendez-vous et sont effacées dès qu’il est confirmé.": "If you start a booking without finishing it, the details entered in the form are kept in your browser only, for 7 days at most, so you do not have to type them again. They are only sent when you confirm the meeting and are erased as soon as it is confirmed."
+  "Si vous commencez une réservation sans la terminer, les informations saisies dans le formulaire sont conservées dans votre navigateur uniquement, pendant 7 jours au plus, pour vous éviter de les ressaisir. Elles ne sont envoyées qu’au moment où vous confirmez le rendez-vous et sont effacées dès qu’il est confirmé.": "If you start a booking without finishing it, the details entered in the form are kept in your browser only, for 7 days at most, so you do not have to type them again. They are only sent when you confirm the meeting and are erased as soon as it is confirmed.",
+  "Choisir un pays": "Choose a country",
+  "Pays ou indicatif": "Country or code",
+  "Pays fréquents": "Common countries",
+  "Tous les pays": "All countries"
 };
