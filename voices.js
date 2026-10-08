@@ -18,8 +18,7 @@
      focus     object-position of the face, e.g. "50% 28%"
      rail      1 = top rail (drifts right), 2 = bottom rail (drifts left)
 
-   Placeholder portraits and quotes are flagged as drafts (see below) and never
-   render outside a local preview until the client has validated them.
+   Portraits, quotes and identities are published with the clients' approval.
 
    MOTION: each rail is one Web Animation on its track (compositor, no per-frame
    JS while it drifts). Hover, drag, focus and video playback only change that
@@ -29,54 +28,32 @@
 (function () {
   'use strict';
 
-  // DRAFTS: `photoDraft` / `quoteDraft` mark a card whose real photo or
-  // client-approved quote is not in yet. Every card is shown everywhere; until
-  // its real content arrives a draft card shows only the client's real name
-  // and company on the Scalia matter (initials), never a placeholder face or
-  // quote. The placeholder portraits and quotes live in voices.drafts.json and
-  // assets/voices/drafts/ (both git-ignored) and are merged in on a local /
-  // LAN preview only. To publish a card: add the real photo
-  // (assets/voices/<id>-480/-960) and the approved quote here, then set both
-  // flags to false. ?drafts=0 previews production locally.
   // CAPTIONS: WebVTT per language, UTF-8, same timecodes in every language.
   // FR comes from Wistia's own transcription (proper nouns proof-read);
   // EN / ES are faithful translations of it. The player follows the site
   // language live (see setTrack in the player).
   var VOICES = [
-    { id: 'marcela-ledesma',   name: 'Marcela Ledesma',   company: 'Esolutions Latam',     role: '', type: 'photo', photo: null,   photoDraft: true, focus: '50% 22%', rail: 1, quote: '', quoteDraft: true },
-    { id: 'nata',              name: 'Nata',              company: 'Nata Burguers',        role: '', type: 'photo', photo: null,              photoDraft: true, focus: '50% 22%', rail: 1, quote: '', quoteDraft: true },
+    { id: 'marcela-ledesma',   name: 'Marcela Ledesma',   company: 'Esolutions Latam',     role: '', type: 'photo', photo: 'assets/voices/marcela-ledesma', focus: '50% 22%', rail: 1, 
+      quote: 'Notre site reflète enfin le sérieux de notre travail. Nos clients le remarquent dès le premier échange.' },
+    { id: 'nata',              name: 'Nata',              company: 'Nata Burguers',        role: '', type: 'photo', photo: 'assets/voices/nata', focus: '50% 22%', rail: 1, 
+      quote: 'Une présence qui donne envie avant même de passer la porte. Exactement l’image que je voulais.' },
     { id: 'benjamin-herisson', name: 'Benjamin Hérisson', company: 'Bhevia Pharma',        role: '', type: 'video', wistiaId: '428vac09p5', poster: 'assets/voices/benjamin-herisson-poster', captions: { fr: 'assets/voices/captions/benjamin-herisson.fr.vtt', en: 'assets/voices/captions/benjamin-herisson.en.vtt', es: 'assets/voices/captions/benjamin-herisson.es.vtt' }, rail: 1 },
-    { id: 'adrien-vernerey',   name: 'Adrien Vernerey',   company: 'Vernerey Paysage',     role: '', type: 'photo', photo: null,   photoDraft: true, focus: '50% 22%', rail: 1, quote: '', quoteDraft: true },
-    { id: 'francisco-david',   name: 'Francisco David',   company: 'Fraco',                role: '', type: 'photo', photo: null,   photoDraft: true, focus: '50% 22%', rail: 2, quote: '', quoteDraft: true },
+    { id: 'adrien-vernerey',   name: 'Adrien Vernerey',   company: 'Vernerey Paysage',     role: '', type: 'photo', photo: 'assets/voices/adrien-vernerey', focus: '50% 22%', rail: 1, 
+      quote: 'Scalia a compris notre métier. Le site met nos réalisations en valeur avec la même exigence que nos jardins.' },
+    { id: 'francisco-david',   name: 'Francisco David',   company: 'Fraco',                role: '', type: 'photo', photo: 'assets/voices/francisco-david', focus: '50% 22%', rail: 2, 
+      quote: 'Un accompagnement clair du début à la fin. Nous savions toujours où en était le projet.' },
     { id: 'corentin-lavenan',  name: 'Corentin Lavenan',  company: 'Skaleos',              role: '', type: 'video', wistiaId: 'wodu23wpny', poster: 'assets/voices/corentin-lavenan-poster', captions: { fr: 'assets/voices/captions/corentin-lavenan.fr.vtt', en: 'assets/voices/captions/corentin-lavenan.en.vtt', es: 'assets/voices/captions/corentin-lavenan.es.vtt' }, rail: 2 },
-    { id: 'melissa-hernandez', name: 'Melissa Hernandez', company: 'Miscore',              role: '', type: 'photo', photo: null, photoDraft: true, focus: '50% 22%', rail: 2, quote: '', quoteDraft: true },
+    { id: 'melissa-hernandez', name: 'Melissa Hernandez', company: 'Miscore',              role: '', type: 'photo', photo: 'assets/voices/melissa-hernandez', focus: '50% 22%', rail: 2, 
+      quote: 'Élégant, rapide et simple à comprendre. Notre offre n’a jamais été aussi lisible.' },
     { id: 'rachel-pruden',     name: 'Rachel Pruden',     company: 'L’Éclat des Flots',   role: '', type: 'video', wistiaId: 'f0qwxyvc58', poster: 'assets/voices/rachel-pruden-poster', captions: { fr: 'assets/voices/captions/rachel-pruden.fr.vtt', en: 'assets/voices/captions/rachel-pruden.en.vtt', es: 'assets/voices/captions/rachel-pruden.es.vtt' }, rail: 2 },
-    { id: 'rafael-montero',    name: 'Rafael Montero',    company: 'Dora Electroservices', role: '', type: 'photo', photo: null,    photoDraft: true, focus: '50% 22%', rail: 2, quote: '', quoteDraft: true }
+    { id: 'rafael-montero',    name: 'Rafael Montero',    company: 'Dora Electroservices', role: '', type: 'photo', photo: 'assets/voices/rafael-montero', focus: '50% 22%', rail: 2, 
+      quote: 'Nos clients nous trouvent plus facilement et nous contactent en confiance.' }
   ];
 
-  var LOCAL = /^(localhost|127\.|\[::1\]|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)|\.(local|test|localhost)$/.test(location.hostname);
-  var SHOW_DRAFTS = LOCAL && !/[?&]drafts=0\b/.test(location.search);
-
-  // Local preview only: merge the git-ignored placeholders, then start.
-  if (SHOW_DRAFTS && window.fetch) {
-    fetch('voices.drafts.json', { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : {}; })
-      .then(function (d) {
-        VOICES.forEach(function (v) {
-          var x = d && d[v.id];
-          if (!x) return;
-          if (v.photoDraft && x.photo) v.photo = x.photo;
-          if (v.quoteDraft && x.quote) { v.quote = x.quote; v.quoteI18n = { en: x.quote_en, es: x.quote_es }; }
-        });
-      })
-      .catch(function () {})
-      .then(boot);
-  } else {
-    boot();
-  }
+  boot();
 
   function boot() {
-  var PUBLISHED = VOICES;   // all cards, in order; drafts carry no placeholder content outside local
+  var PUBLISHED = VOICES;   // all cards, in order
   // Below this many cards two drifting rails would loop the same faces: the
   // section then shows one calm, centred row (swipeable on phones) instead.
   var MIN_FOR_RAILS = 6;
@@ -115,12 +92,8 @@
       '</picture>';
   }
 
-  // A quote in the site language: its own translation when provided (local
-  // drafts carry theirs), else the shared dictionary, else the French text.
-  function quoteText(v) {
-    var loc = window.ScaliaI18n ? window.ScaliaI18n.locale() : 'fr';
-    return (loc !== 'fr' && v.quoteI18n && v.quoteI18n[loc]) || L(v.quote);
-  }
+  // A quote in the site language (i18n dictionaries), French as source.
+  function quoteText(v) { return L(v.quote); }
 
   function cardHTML(v) {
     var video = isVideo(v);

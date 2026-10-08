@@ -307,5 +307,11 @@
   "Cette page n’existe pas ou a été déplacée.": "This page doesn’t exist or has moved.",
   "Erreur 404": "Error 404",
   "Page introuvable.": "Page not found.",
-  "Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de l’autorité de protection des données compétente, en France la CNIL.": "If you believe your rights are not being respected, you can lodge a complaint with the competent data protection authority, which in France is the CNIL."
+  "Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de l’autorité de protection des données compétente, en France la CNIL.": "If you believe your rights are not being respected, you can lodge a complaint with the competent data protection authority, which in France is the CNIL.",
+  "Notre site reflète enfin le sérieux de notre travail. Nos clients le remarquent dès le premier échange.": "Our website finally reflects how seriously we work. Clients notice it from the very first conversation.",
+  "Une présence qui donne envie avant même de passer la porte. Exactement l’image que je voulais.": "A presence that makes people hungry before they even walk in. Exactly the image I wanted.",
+  "Scalia a compris notre métier. Le site met nos réalisations en valeur avec la même exigence que nos jardins.": "Scalia understood our craft. The site showcases our work with the same care we put into our gardens.",
+  "Un accompagnement clair du début à la fin. Nous savions toujours où en était le projet.": "Clear guidance from start to finish. We always knew where the project stood.",
+  "Élégant, rapide et simple à comprendre. Notre offre n’a jamais été aussi lisible.": "Elegant, fast and easy to understand. Our offer has never been this clear.",
+  "Nos clients nous trouvent plus facilement et nous contactent en confiance.": "Clients find us more easily and reach out with confidence."
 };

@@ -306,5 +306,11 @@
   "Cette page n’existe pas ou a été déplacée.": "Esta página no existe o ha cambiado de dirección.",
   "Erreur 404": "Error 404",
   "Page introuvable.": "Página no encontrada.",
-  "Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de l’autorité de protection des données compétente, en France la CNIL.": "Si consideras que tus derechos no se respetan, puedes presentar una reclamación ante la autoridad de protección de datos competente; en Francia, la CNIL."
+  "Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de l’autorité de protection des données compétente, en France la CNIL.": "Si consideras que tus derechos no se respetan, puedes presentar una reclamación ante la autoridad de protección de datos competente; en Francia, la CNIL.",
+  "Notre site reflète enfin le sérieux de notre travail. Nos clients le remarquent dès le premier échange.": "Nuestro sitio por fin refleja la seriedad de nuestro trabajo. Los clientes lo notan desde el primer contacto.",
+  "Une présence qui donne envie avant même de passer la porte. Exactement l’image que je voulais.": "Una presencia que antoja antes de cruzar la puerta. Justo la imagen que quería.",
+  "Scalia a compris notre métier. Le site met nos réalisations en valeur avec la même exigence que nos jardins.": "Scalia entendió nuestro oficio. El sitio valoriza nuestros proyectos con la misma exigencia que nuestros jardines.",
+  "Un accompagnement clair du début à la fin. Nous savions toujours où en était le projet.": "Un acompañamiento claro de principio a fin. Siempre supimos en qué punto estaba el proyecto.",
+  "Élégant, rapide et simple à comprendre. Notre offre n’a jamais été aussi lisible.": "Elegante, rápido y fácil de entender. Nuestra oferta nunca había sido tan clara.",
+  "Nos clients nous trouvent plus facilement et nous contactent en confiance.": "Nuestros clientes nos encuentran más fácilmente y nos contactan con confianza."
 };
