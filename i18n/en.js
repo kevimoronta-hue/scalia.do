@@ -357,7 +357,7 @@
   "Création ou refonte de logo": "Logo creation or redesign",
   "Autre": "Other",
   "Choisissez au moins une option.": "Choose at least one option.",
-  "Votre rendez-vous est confirmé. Vous recevrez un rappel avec le lien de visioconférence avant notre échange.": "You’ll receive a reminder with the video-call link before our meeting.",
+  "Votre rendez-vous est confirmé. Vous allez recevoir un email avec l’accès à votre échange.": "You’ll receive an email with access to your meeting.",
   "Vous recevrez le lien de visioconférence avant le rendez-vous.": "You’ll receive the video-call link before our meeting.",
   "<strong>Lorsque vous réservez un échange</strong> via notre formulaire de réservation : votre nom, votre adresse email, le type de projet choisi, la date, l’heure et votre fuseau horaire et, si vous les indiquez, votre téléphone, votre entreprise et la description de votre projet.": "<strong>When you book a call</strong> through our booking form: your name, your email address, the type of project you choose, the date, the time and your time zone and, if you provide them, your phone number, your company and the description of your project.",
   "La prise de rendez-vous s’effectue avec notre propre formulaire, sans aucun service tiers chargé dans votre navigateur. Les créneaux proposés sont calculés à partir de notre agenda Google Workspace ; votre rendez-vous y est enregistré et la confirmation vous est envoyée par email depuis contact@scalia.do.": "Bookings are made with our own form, with no third-party service loaded in your browser. The times offered are calculated from our Google Workspace calendar; your meeting is recorded there and the confirmation is emailed to you from contact@scalia.do.",

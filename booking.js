@@ -54,7 +54,17 @@
 
   var S = {
     data: null, at: 0, pending: null, failed: false,
-    tz: (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { return 'UTC'; } })(),
+    // Visitor's zone: a zone chosen by hand on an earlier visit, else the
+    // browser's, else Scalia's. Never the IP (VPNs and travel mislead it).
+    tz: (function () {
+      function ok(z) { try { new Intl.DateTimeFormat('en-US', { timeZone: z }); return true; } catch (e) { return false; } }
+      var saved = null;
+      try { saved = localStorage.getItem('scalia.tz'); } catch (e) {}
+      if (saved && ok(saved)) return saved;
+      var device = null;
+      try { device = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
+      return device && ok(device) ? device : 'America/Santo_Domingo';
+    })(),
     byDay: {}, days: [], view: null, day: null, slot: null,
     step: 'date', formAt: 0, booking: null, trigger: null, zones: null
   };
@@ -173,6 +183,7 @@
   }
   function setZone(z) {
     S.tz = z;
+    try { localStorage.setItem('scalia.tz', z); } catch (e) {}   // a manual choice is kept
     var keep = S.day;
     index();
     S.day = null; S.view = null;

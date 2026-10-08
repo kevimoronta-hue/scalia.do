@@ -20,10 +20,12 @@ const T = {
     lead: m => 'Votre échange de ' + m + ' minutes avec Scalia est confirmé.',
     date: 'Date', time: 'Heure', zone: 'Fuseau horaire',
     join: 'Rejoindre l’échange',
-    later: 'Vous recevrez le lien de visioconférence avant le rendez-vous.',
+    dayNote: 'À utiliser le jour de votre rendez-vous.',
+    reminderNote: 'Vous recevrez également un rappel environ 3 heures avant notre échange.',
+    accessNote: 'Vous pouvez retrouver l’accès à votre échange via le bouton ci-dessus.',
     rSubject: t => 'Rappel — votre échange avec Scalia à ' + t,
     rTitle: 'À tout à l’heure.',
-    rLead: 'Votre échange avec Scalia commence dans environ une heure.',
+    rLead: 'Votre rendez-vous avec Scalia commence dans environ 3 heures.',
     rCompany: 'Entreprise',
     rNoMeet: 'Scalia vous contactera à l’heure prévue, par email ou WhatsApp.',
     rLink: 'Lien de la visioconférence',
@@ -38,11 +40,13 @@ const T = {
     hello: n => 'Hello ' + n + ',',
     lead: m => 'Your ' + m + '-minute call with Scalia is confirmed.',
     date: 'Date', time: 'Time', zone: 'Time zone',
-    join: 'Join the call',
-    later: 'You’ll receive the video-call link before our meeting.',
+    join: 'Join the meeting',
+    dayNote: 'Use this link on the day of your meeting.',
+    reminderNote: 'You’ll also receive a reminder about 3 hours before our meeting.',
+    accessNote: 'You can access your meeting using the button above.',
     rSubject: t => 'Reminder — your call with Scalia at ' + t,
     rTitle: 'See you soon.',
-    rLead: 'Your call with Scalia starts in about an hour.',
+    rLead: 'Your meeting with Scalia starts in about 3 hours.',
     rCompany: 'Company',
     rNoMeet: 'Scalia will reach out at the scheduled time, by email or WhatsApp.',
     rLink: 'Video-call link',
@@ -58,10 +62,12 @@ const T = {
     lead: m => 'Tu reunión de ' + m + ' minutos con Scalia está confirmada.',
     date: 'Fecha', time: 'Hora', zone: 'Zona horaria',
     join: 'Unirse a la reunión',
-    later: 'Recibirás el enlace de videollamada antes de nuestro encuentro.',
+    dayNote: 'Utiliza este enlace el día de tu reunión.',
+    reminderNote: 'También recibirás un recordatorio aproximadamente 3 horas antes de nuestro encuentro.',
+    accessNote: 'Puedes acceder a tu reunión mediante el botón de arriba.',
     rSubject: t => 'Recordatorio — tu reunión con Scalia a las ' + t,
     rTitle: 'Hasta ahora.',
-    rLead: 'Tu reunión con Scalia empieza en aproximadamente una hora.',
+    rLead: 'Tu reunión con Scalia empieza en aproximadamente 3 horas.',
     rCompany: 'Empresa',
     rNoMeet: 'Scalia se pondrá en contacto contigo a la hora prevista, por correo o WhatsApp.',
     rLink: 'Enlace de la videollamada',
@@ -99,11 +105,11 @@ function fold(line) {
   out.push(buf.toString('utf8'));
   return out.join('\r\n');
 }
-// The client's invitation carries no video link: the link comes with the
-// reminder one hour before.
+// The invitation carries the Scalia meeting link (it opens the Meet on the
+// day of the meeting), never the Meet address itself.
 function ics(b, loc) {
   const t = T[loc] || T.fr;
-  const desc = t.later + '\n\n' + SITE;
+  const desc = (b.meetingUrl ? t.join + ': ' + b.meetingUrl + '\n' + t.dayNote : t.rNoMeet) + '\n\n' + SITE;
   return [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Scalia//Booking//FR', 'METHOD:PUBLISH', 'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
@@ -113,7 +119,8 @@ function ics(b, loc) {
     'DTEND:' + icsDate(b.end),
     'SUMMARY:' + icsText(t.event),
     'DESCRIPTION:' + icsText(desc),
-    'URL:' + SITE,
+    b.meetingUrl ? 'LOCATION:' + icsText(b.meetingUrl) : null,
+    'URL:' + (b.meetingUrl || SITE),
     'ORGANIZER;CN=Scalia:mailto:' + BOOKING.fromEmail,
     'STATUS:CONFIRMED',
     'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(t.event), 'END:VALARM',
@@ -137,23 +144,37 @@ function row(label, value) {
     '</td><td style="padding:10px 0;border-bottom:1px solid #EFECE7;font-size:15px;font-weight:600;vertical-align:top;">' + esc(value).replace(/\n/g, '<br>') + '</td></tr>';
 }
 
+// Under the button: the reminder is promised only once the scheduler runs
+// (BOOKING.reminderEmailsActive); until then a neutral line.
+function followNote(t, b) {
+  if (BOOKING.reminderEmailsActive) return t.reminderNote;
+  return b.meetingUrl ? t.accessNote : '';
+}
+
+function joinButton(t, url) {
+  return '<tr><td style="padding:14px 32px 4px;"><a href="' + esc(url) + '" style="display:inline-block;padding:15px 26px;border-radius:13px;background:#E2AC56;color:#160F08;font-size:16px;font-weight:700;text-decoration:none;">' + esc(t.join) + '</a></td></tr>';
+}
+
 function clientMail(b) {
   const loc = T[b.locale] ? b.locale : 'fr';
   const t = T[loc];
   const w = when(b.start, b.timezone, loc);
   const first = b.name.split(/\s+/)[0];
   const html = shell(
-    '<tr><td style="padding:28px 32px 4px;"><div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8A6440;font-weight:600;">Scalia</div>' +
-    '<h1 style="margin:10px 0 0;font-size:28px;line-height:1.15;letter-spacing:-.03em;">' + esc(t.title) + '</h1>' +
+    '<tr><td style="padding:28px 32px 4px;">' +
+    '<h1 style="margin:0;font-size:28px;line-height:1.15;letter-spacing:-.03em;">' + esc(t.title) + '</h1>' +
     '<p style="margin:16px 0 0;font-size:16px;line-height:1.55;">' + esc(t.hello(first)) + '<br>' + esc(t.lead(BOOKING.durationMin)) + '</p></td></tr>' +
     '<tr><td style="padding:16px 32px 8px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">' +
     row(t.date, w.date) + row(t.time, w.time) + row(t.zone, w.zone) + '</table></td></tr>' +
-    '<tr><td style="padding:8px 32px 4px;font-size:14.5px;line-height:1.55;color:#0E0B0A;">' + esc(t.later) + '</td></tr>' +
+    (b.meetingUrl
+      ? joinButton(t, b.meetingUrl) + '<tr><td style="padding:8px 32px 0;font-size:13px;line-height:1.5;color:#8D857E;">' + esc(t.dayNote) + '</td></tr>'
+      : '<tr><td style="padding:8px 32px 0;font-size:14.5px;line-height:1.55;">' + esc(t.rNoMeet) + '</td></tr>') +
+    (followNote(t, b) ? '<tr><td style="padding:14px 32px 4px;font-size:14.5px;line-height:1.55;color:#0E0B0A;">' + esc(followNote(t, b)) + '</td></tr>' : '') +
     '<tr><td style="padding:18px 32px 8px;font-size:14px;line-height:1.55;color:#57504A;">' + esc(t.ics) + '<br><br>' + esc(t.change) + '<br><br>' + esc(t.sign).replace(/\n/g, '<br>') + '</td></tr>'
   );
   const text = [t.title, '', t.hello(first), t.lead(BOOKING.durationMin), '',
     t.date + ': ' + w.date, t.time + ': ' + w.time, t.zone + ': ' + w.zone, '',
-    t.later, '', t.change, '', t.sign, '', SITE].join('\n');
+    b.meetingUrl ? t.join + ': ' + b.meetingUrl + '\n' + t.dayNote : t.rNoMeet, '', followNote(t, b), '', t.change, '', t.sign, '', SITE].join('\n').replace(/\n{3,}/g, '\n\n');
   return {
     to: b.email, replyTo: BOOKING.notifyEmail, subject: t.subject, html, text,
     attachment: { name: 'scalia.ics', type: 'text/calendar; method=PUBLISH; charset=UTF-8', content: ics(b, loc) }
@@ -166,10 +187,11 @@ function ownerMail(b) {
   const rows = [
     ['Nom', b.name], ['Email', b.email], ['Téléphone / WhatsApp', b.phone || '—'], ['Entreprise / activité', b.company || '—'],
     ['Projet demandé', (b.projectTypes || []).map(k => BOOKING.projectTypes[k].fr).join('\n') || '—'],
-    ['Date (Scalia)', ws.date + ' · ' + ws.time + ' · ' + ws.zone],
-    ['Date (client)', w.date + ' · ' + w.time + ' · ' + w.zone],
+    ['Date', ws.date],
+    ['Heure Scalia', ws.time + ' — ' + BOOKING.timezone]
+  ].concat(b.timezone !== BOOKING.timezone ? [['Heure client', w.time + ' — ' + b.timezone + (w.date !== ws.date ? ' (' + w.date + ')' : '')]] : [], [
     ['Langue', b.locale.toUpperCase()], ['Visioconférence', b.meetUrl || 'non créée']
-  ];
+  ]);
   const html = shell(
     '<tr><td style="padding:28px 32px 4px;"><h1 style="margin:0;font-size:22px;letter-spacing:-.02em;">Nouveau rendez-vous</h1>' +
     '<p style="margin:8px 0 0;font-size:14px;color:#57504A;">Réservé sur scalia.do. Répondez à cet email pour écrire directement au client.</p></td></tr>' +
@@ -188,20 +210,20 @@ function reminderMail(b) {
   const w = when(b.start, b.timezone, loc);
   const first = b.name.split(/\s+/)[0];
   const rows = [[t.date, w.date], [t.time, w.time], [t.zone, w.zone]].concat(b.company ? [[t.rCompany, b.company]] : []);
-  const action = b.meetUrl
-    ? '<tr><td style="padding:12px 32px 4px;"><a href="' + esc(b.meetUrl) + '" style="display:inline-block;padding:15px 26px;border-radius:13px;background:#E2AC56;color:#160F08;font-size:16px;font-weight:700;text-decoration:none;">' + esc(t.join) + '</a>' +
-      '<div style="margin-top:10px;font-size:12px;color:#8D857E;">' + esc(t.rLink) + ' : <a href="' + esc(b.meetUrl) + '" style="color:#8A6440;word-break:break-all;">' + esc(b.meetUrl) + '</a></div></td></tr>'
+  const action = b.meetingUrl
+    ? joinButton(t, b.meetingUrl) +
+      '<tr><td style="padding:8px 32px 0;font-size:12px;color:#8D857E;">' + esc(t.rLink) + ' : <a href="' + esc(b.meetingUrl) + '" style="color:#8A6440;word-break:break-all;">' + esc(b.meetingUrl) + '</a></td></tr>'
     : '<tr><td style="padding:12px 32px 4px;font-size:15px;line-height:1.55;">' + esc(t.rNoMeet) + '</td></tr>';
   const html = shell(
-    '<tr><td style="padding:28px 32px 4px;"><div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8A6440;font-weight:600;">Scalia</div>' +
-    '<h1 style="margin:10px 0 0;font-size:28px;line-height:1.15;letter-spacing:-.03em;">' + esc(t.rTitle) + '</h1>' +
+    '<tr><td style="padding:28px 32px 4px;">' +
+    '<h1 style="margin:0;font-size:28px;line-height:1.15;letter-spacing:-.03em;">' + esc(t.rTitle) + '</h1>' +
     '<p style="margin:16px 0 0;font-size:16px;line-height:1.55;">' + esc(t.hello(first)) + '<br>' + esc(t.rLead) + '</p></td></tr>' +
     '<tr><td style="padding:16px 32px 8px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">' +
     rows.map(r => row(r[0], r[1])).join('') + '</table></td></tr>' + action +
     '<tr><td style="padding:18px 32px 8px;font-size:14px;line-height:1.55;color:#57504A;">' + esc(t.sign).replace(/\n/g, '<br>') + '</td></tr>'
   );
   const text = [t.rTitle, '', t.hello(first), t.rLead, ''].concat(rows.map(r => r[0] + ': ' + r[1]),
-    ['', b.meetUrl ? t.join + ': ' + b.meetUrl : t.rNoMeet, '', t.sign, '', SITE]).join('\n');
+    ['', b.meetingUrl ? t.join + ': ' + b.meetingUrl : t.rNoMeet, '', t.sign, '', SITE]).join('\n');
   return { to: b.email, replyTo: BOOKING.notifyEmail, subject: t.rSubject(w.time), html, text };
 }
 

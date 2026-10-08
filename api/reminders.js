@@ -1,5 +1,5 @@
 /* ==========================================================================
-   GET /api/reminders · reminder with the video link, ~1 hour before
+   GET /api/reminders · reminder with the meeting link, ~3 hours before
    Called by a scheduler every 10 minutes (Vercel Cron on a Pro plan, or
    any external cron) with the header  Authorization: Bearer <CRON_SECRET>.
    Without CRON_SECRET configured the route refuses to run.
@@ -15,9 +15,9 @@
      4. send the email (Gmail); on failure release the claim so the next
         run retries
      5. on success write scaliaReminderSent=1
-   With a 10-minute schedule and a 65-minute lead, a reminder leaves 65 to
-   55 minutes before the meeting; a missed run is caught up by the next
-   one, up to the start time.
+   With a 10-minute schedule and a 185-minute lead, a reminder leaves 185
+   to 175 minutes (about 3 hours) before the meeting; a missed run is
+   caught up by the next one, up to the start time.
    Trigger: Google Cloud Scheduler, GET, every 10 minutes.
    ========================================================================== */
 'use strict';
@@ -25,6 +25,7 @@ const crypto = require('crypto');
 const { BOOKING } = require('../server/config');
 const { calendar, send, EMAIL } = require('../server/http');
 const mail = require('../server/mail');
+const links = require('../server/links');
 
 const MIN = 60000;
 // A claim outlives the whole reminder window, so a reminder that was sent
@@ -41,6 +42,10 @@ function authorized(req) {
   return crypto.timingSafeEqual(Buffer.from(got), Buffer.from(want));
 }
 
+function safeLink(id, tz) {
+  try { return links.meetingUrl(id, tz); } catch (e) { console.error('[booking] ' + (e.code || 'meeting_link_error')); return null; }
+}
+
 function bookingOf(ev, cal) {
   const p = (ev.extendedProperties && ev.extendedProperties.private) || {};
   const guest = (ev.attendees || [])[0] || {};
@@ -52,7 +57,8 @@ function bookingOf(ev, cal) {
     company: p.company || '',
     locale: ['fr', 'en', 'es'].indexOf(p.locale) >= 0 ? p.locale : 'fr',
     timezone: p.clientTz || BOOKING.timezone,
-    meetUrl: cal.meetUrl(ev)
+    meetUrl: cal.meetUrl(ev),
+    meetingUrl: cal.meetUrl(ev) ? safeLink(ev.id, p.clientTz || BOOKING.timezone) : null
   };
 }
 

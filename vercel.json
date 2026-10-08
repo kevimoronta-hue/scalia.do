@@ -8,6 +8,16 @@
     "api/*.js": { "maxDuration": 30 }
   },
   "trailingSlash": true,
+  "rewrites": [
+    {
+      "source": "/meeting/:token/",
+      "destination": "/api/meeting?t=:token"
+    },
+    {
+      "source": "/meeting/:token",
+      "destination": "/api/meeting?t=:token"
+    }
+  ],
   "redirects": [
     {
       "source": "/server/:path*",

@@ -21,6 +21,7 @@ const { parts, ymd, isValidZone } = require('../server/time');
 const { calendar, send, readJson, ip, originOk, limited, EMAIL, clean } = require('../server/http');
 const mail = require('../server/mail');
 const tickets = require('../server/tickets');
+const links = require('../server/links');
 
 const LOCALES = ['fr', 'en', 'es'];
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -87,6 +88,12 @@ function eventFor(d, id, meet) {
   };
   if (meet) ev.conferenceData = { createRequest: { requestId: id + '-' + Date.now().toString(36), conferenceSolutionKey: { type: 'hangoutsMeet' } } };
   return ev;
+}
+
+// The client's signed meeting link. Without MEETING_LINK_SECRET none is
+// made (fail closed): the email then says Scalia will reach out.
+function safeLink(id, tz) {
+  try { return links.meetingUrl(id, tz); } catch (e) { console.error('[booking] ' + (e.code || 'meeting_link_error')); return null; }
 }
 
 // Remove our event (a few tries). If Google keeps refusing, Scalia is told
@@ -173,6 +180,8 @@ module.exports = async function book(req, res) {
     // cancellation and rescheduling).
     const booking = {
       id: created.id, start: d.start, end: d.start + BOOKING.durationMin * MIN, meetUrl,
+      // The client gets the Scalia link (opens the Meet on the day), Scalia the Meet itself.
+      meetingUrl: meetUrl ? safeLink(created.id, d.timezone) : null,
       name: d.name, email: d.email, phone: d.phone, company: d.company, message: d.message,
       projectTypes: d.projectTypes, locale: d.locale, timezone: d.timezone
     };

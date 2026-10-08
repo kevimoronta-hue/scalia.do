@@ -52,8 +52,11 @@ const BOOKING = {
 
   // Reminder with the video link, sent by /api/reminders (see that file):
   // a meeting is reminded once it starts within this many minutes. Called
-  // every 10 minutes, the email leaves 65 to 55 minutes before the start.
-  reminderLeadMin: 65,
+  // every 10 minutes, the email leaves about 3 hours (185 to 175 min) before.
+  reminderLeadMin: 185,
+  // Mention the reminder to clients only once a scheduler really calls
+  // /api/reminders (Google Cloud Scheduler). Until then: false.
+  reminderEmailsActive: false,
 
   // Emails
   fromName: 'Scalia',

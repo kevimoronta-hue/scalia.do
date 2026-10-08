@@ -35,6 +35,14 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://local');
   const p = decodeURIComponent(url.pathname);
 
+  // Meeting links, as the rewrite in vercel.json: /meeting/<token>/ → api/meeting
+  const meet = p.match(/^\/meeting\/([^/]+)\/?$/);
+  if (meet) {
+    req.query = { t: meet[1] };
+    try { await require(path.join(ROOT, 'api', 'meeting.js'))(req, res); } catch (e) { console.error(e); if (!res.headersSent) { res.statusCode = 500; res.end('Error'); } }
+    return;
+  }
+
   // API: /api/name or /api/name/ → api/name.js
   const api = p.match(/^\/api\/([a-z0-9-]+)\/?$/);
   if (api) {
