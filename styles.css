@@ -2179,7 +2179,13 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   opacity: 0; pointer-events: none; z-index: -1;
 }
 .cal__state--loading p { color: var(--fg-2); font-size: 15px; letter-spacing: -0.005em; }
-.cal__skel { width: min(320px, 100%); display: grid; gap: 10px; justify-items: start; margin-bottom: 10px; animation: cal-breathe 1.6s ease-in-out infinite alternate; }
+/* Usually the calendar is drawn before the click. When it is not, the
+   placeholder stays quiet: the outline appears after a beat and the words
+   only if the wait goes past a second. */
+.cal[open] .cal__skel { animation: cal-quiet 240ms ease 120ms backwards, cal-breathe 1.6s ease-in-out 360ms infinite alternate; }
+.cal[open] .cal__state--loading p { animation: cal-quiet 300ms ease 1100ms backwards; }
+@keyframes cal-quiet { from { opacity: 0; } }
+.cal__skel { width: min(320px, 100%); display: grid; gap: 10px; justify-items: start; margin-bottom: 10px; }
 .cal__sk, .cal__sk-grid i { display: block; border-radius: 8px; background: rgba(14, 11, 10, 0.07); }
 .cal__sk--title { width: 58%; height: 14px; }
 .cal__sk--sub { width: 36%; height: 10px; }
@@ -2187,7 +2193,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .cal__sk-grid i { aspect-ratio: 1; border-radius: 50%; }
 .cal__sk-grid i:nth-child(7n + 3), .cal__sk-grid i:nth-child(7n + 5) { background: rgba(205, 169, 130, 0.22); }
 @keyframes cal-breathe { from { opacity: 0.55; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .cal__skel { animation: none; } .cal__state--ready { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .cal[open] .cal__skel, .cal[open] .cal__state--loading p { animation: none; } .cal__state--ready { transition: none; } }
 .cal__big { font-size: clamp(20px, 1rem + 1vw, 28px); font-weight: 650; letter-spacing: -0.03em; max-width: 18em; }
 .cal__muted { color: var(--fg-2); }
 .cal__state--error .btn { margin-top: 12px; }

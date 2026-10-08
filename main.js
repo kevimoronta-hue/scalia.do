@@ -330,14 +330,17 @@
   layoutWires();
 
   /* ============================================================ CALENDLY ==
-     Calendly's booking app weighs about 3 MB (its own JS and CSS), so it is
-     prepared ahead of the click, never during the first load:
-       idle after load        preconnect to calendly.com and its assets
-       booking CTA ~1 screen  the frame loads in the closed panel
+     Calendly's booking app weighs about 3 MB (its own JS and CSS) and takes
+     a further 1.5 to 2.5 s to fetch availability and draw, even from cache.
+     So the panel is prepared in the background, never during the first load:
+       after load, idle       preconnect to calendly.com and its assets
+       hero film buffered     the frame loads and boots in the closed panel
+         (or 6 s), then idle
+       booking CTA ~1 screen  same, if it has not started yet
        hover, focus, touch    same, from any booking button (navbar too)
        click                  the panel opens at once; loads now if needed
      One frame for the whole visit: closing the panel keeps it. Save-Data and
-     2G connections skip the automatic steps (intent and click only). */
+     2G skip every automatic step (intent and click only). */
   var cal = document.getElementById('cal');
   var calBody = cal.querySelector('.cal__body');
   var calFrame = document.getElementById('cal-frame');
@@ -425,20 +428,27 @@
   if ('MutationObserver' in window) new MutationObserver(function () {
     if (nav.dataset.open === 'true') warmCal();
   }).observe(nav, { attributes: true, attributeFilter: ['data-open'] });
-  // After the page has loaded and gone idle: connections first, then the
-  // frame once a section's booking button comes within about one screen.
-  // The navbar button is always on screen, so it waits for intent.
   function calWhenIdle(fn) {
     if ('requestIdleCallback' in window) requestIdleCallback(fn, { timeout: 3000 });
     else setTimeout(fn, 1200);
+  }
+  // The hero film keeps the bandwidth first: wait until it can play through.
+  function heroSettled(fn) {
+    var done = false;
+    function go() { if (!done) { done = true; fn(); } }
+    if (!video || !video.firstChild || video.readyState >= 4) return go();
+    video.addEventListener('canplaythrough', go, { once: true });
+    setTimeout(go, 6000);
   }
   function calAfterLoad() {
     if (calLean) return;
     calWhenIdle(function () {
       preconnectCal();
+      heroSettled(function () { calWhenIdle(warmCal); });
+      // A visitor who heads straight for a booking button gets it sooner.
       if (!('IntersectionObserver' in window)) return;
       var near = new IntersectionObserver(function (entries) {
-        if (entries.some(function (e) { return e.isIntersecting; })) { near.disconnect(); calWhenIdle(warmCal); }
+        if (entries.some(function (e) { return e.isIntersecting; })) { near.disconnect(); warmCal(); }
       }, { rootMargin: '100% 0px' });
       Array.prototype.forEach.call(document.querySelectorAll('[data-open-calendly]'), function (el) { near.observe(el); });
     });
