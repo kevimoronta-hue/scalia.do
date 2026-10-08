@@ -54,7 +54,7 @@
     var el = e.target.closest('a, button');
     if (!el) return;
     var href = el.getAttribute('href') || '';
-    if (el.hasAttribute('data-open-calendly')) { track('calendly_open', { place: place(el), lang: locale() }); return; }
+    if (el.matches('[data-open-calendly], [data-action="open-calendly"]')) { track('calendly_open', { place: place(el), lang: locale() }); return; }
     if (/^https:\/\/wa\.me\//.test(href)) { track('whatsapp_click', { place: place(el) }); return; }
     if (/^mailto:/.test(href)) { track('email_click', { place: place(el) }); return; }
     if (el.matches('.btn--primary')) { track('cta_click', { place: place(el) }); return; }

@@ -309,7 +309,9 @@
     if (typeof cal.showModal === 'function') cal.showModal(); else cal.setAttribute('open', '');
     var url = calendlyUrl();
     calFallback.href = url;
-    if (calLoaded === url) return;   // same language already loaded: reuse it
+    var loadedFrame = calFrame.querySelector('iframe');
+    if (loadedFrame) loadedFrame.title = L('Calendrier de réservation Scalia');
+    if (calLoaded === url) return;   // same URL already loaded: reuse it
     calLoaded = false;
     calFrame.textContent = '';
     calBody.dataset.state = 'loading';
@@ -326,9 +328,17 @@
   function closeCal() { if (cal.open) cal.close(); }
   cal.addEventListener('close', function () { if (lastTrigger) lastTrigger.focus(); });
   cal.addEventListener('click', function (e) { if (e.target === cal) closeCal(); });   // backdrop
+  // One opener for every booking trigger (sections, navbar, burger menu).
+  // From the burger menu: close the menu first (restores page scroll), and
+  // hand focus back to the burger when Calendly closes, since the menu
+  // button itself is hidden by then.
   document.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-open-calendly]');
-    if (t) { e.preventDefault(); openCal(t); }
+    var t = e.target.closest('[data-open-calendly], [data-action="open-calendly"]');
+    if (t) {
+      e.preventDefault();
+      if (menu.contains(t)) { setMenu(false); openCal(burger); }
+      else openCal(t);
+    }
     if (e.target.closest('[data-close-calendly]')) closeCal();
   });
 
