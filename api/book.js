@@ -22,6 +22,7 @@ const { calendar, send, readJson, ip, originOk, limited, EMAIL, clean } = requir
 const mail = require('../server/mail');
 const tickets = require('../server/tickets');
 const links = require('../server/links');
+const phoneFmt = require('../server/phone');
 
 const LOCALES = ['fr', 'en', 'es'];
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -34,8 +35,12 @@ function validate(b) {
   out.email = clean(b.email, 254);
   if (!out.email) errors.email = 'REQUIRED';
   else if (!EMAIL.test(out.email)) errors.email = 'INVALID';
+  // Phone: international E.164 (+33612345678) from the country picker; the
+  // older free format is still accepted from a cached page.
   out.phone = clean(b.phone, 32);
-  if (out.phone === null || (out.phone && !/^[+()0-9.\-\s]{6,32}$/.test(out.phone))) errors.phone = 'INVALID';
+  if (out.phone === null || (out.phone && !(phoneFmt.E164.test(out.phone) || /^[+()0-9.\-\s]{6,32}$/.test(out.phone)))) errors.phone = 'INVALID';
+  out.phoneDial = typeof b.phoneDial === 'string' && /^\d{1,4}$/.test(b.phoneDial) ? b.phoneDial : '';
+  out.phoneDisplay = out.phone ? phoneFmt.display(out.phone, out.phoneDial) : '';
   out.company = clean(b.company, 120);
   if (out.company === null) errors.company = 'INVALID';
   out.message = typeof b.message === 'string' ? b.message.replace(/[\u0000-\u0009\u000B\u000C\u000E-\u001F\u007F]/g, '').trim() : '';
@@ -57,7 +62,7 @@ function eventFor(d, id, meet) {
   const lines = [
     'Nom : ' + d.name,
     'Email : ' + d.email,
-    'Téléphone / WhatsApp : ' + (d.phone || '—'),
+    'Téléphone / WhatsApp : ' + (d.phoneDisplay || '—'),
     'Entreprise / activité : ' + (d.company || '—'),
     'Fuseau du client : ' + d.timezone,
     'Langue : ' + d.locale.toUpperCase(),
@@ -182,7 +187,7 @@ module.exports = async function book(req, res) {
       id: created.id, start: d.start, end: d.start + BOOKING.durationMin * MIN, meetUrl,
       // The client gets the Scalia link (opens the Meet on the day), Scalia the Meet itself.
       meetingUrl: meetUrl ? safeLink(created.id, d.timezone) : null,
-      name: d.name, email: d.email, phone: d.phone, company: d.company, message: d.message,
+      name: d.name, email: d.email, phone: d.phoneDisplay, whatsapp: phoneFmt.whatsapp(d.phone), company: d.company, message: d.message,
       projectTypes: d.projectTypes, locale: d.locale, timezone: d.timezone
     };
     const sent = await Promise.allSettled([mail.send(cal, mail.clientMail(booking)), mail.send(cal, mail.ownerMail(booking))]);

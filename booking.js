@@ -296,9 +296,16 @@
   /* ---------------------------------------------------------- open/close --- */
   function open(trigger) {
     S.trigger = trigger || null;
-    if (S.step === 'done' || S.step === 'error') { S.slot = null; el.form.reset(); setTypes([]); clearErrors(); }
+    if (S.step === 'done' || S.step === 'error') {
+      S.slot = null; el.form.reset(); setTypes([]); clearErrors();
+      S.ccManual = false; S.cc = CC_DEFAULT[locale()] || 'FR'; renderCc();
+      restoreDraft();   // whatever is still unsent comes back; never the slot
+    }
     el.notice.hidden = true;
-    if (S.step !== 'form') setStep('date');
+    // Always from the date: a slot chosen earlier may be gone by now. The
+    // form keeps what was typed.
+    S.slot = null;
+    setStep('date');
     render();
     dlg.showModal();
     root.classList.add('is-locked');
@@ -369,7 +376,122 @@
   });
   dlg.addEventListener('cancel', function (e) {
     if (!el.tzPanel.hidden) { e.preventDefault(); tzPanel(false); el.tzEdit.focus({ preventScroll: true }); }
+    else if (!$('[data-bk-cc-panel]').hidden) { e.preventDefault(); ccOpen(false); $('[data-bk-cc]').focus(); }
   });
+
+  /* ------------------------------------------------------- phone country --
+     [flag +code] [national number]. The default follows the site language
+     (FR → France, ES → Dominican Republic, EN → United States) until the
+     visitor picks a country; the number leaves as E.164 (+33612345678). */
+  var DIALS = ('AD376 AE971 AF93 AG1 AI1 AL355 AM374 AO244 AR54 AS1 AT43 AU61 AW297 AX358 AZ994 BA387 BB1 BD880 BE32 BF226 BG359 BH973 BI257 BJ229 BL590 BM1 BN673 BO591 BQ599 BR55 BS1 BT975 BW267 BY375 BZ501 CA1 CD243 CF236 CG242 CH41 CI225 CK682 CL56 CM237 CN86 CO57 CR506 CU53 CV238 CW599 CY357 CZ420 DE49 DJ253 DK45 DM1 DO1 DZ213 EC593 EE372 EG20 ER291 ES34 ET251 FI358 FJ679 FK500 FM691 FO298 FR33 GA241 GB44 GD1 GE995 GF594 GG44 GH233 GI350 GL299 GM220 GN224 GP590 GQ240 GR30 GT502 GU1 GW245 GY592 HK852 HN504 HR385 HT509 HU36 ID62 IE353 IL972 IM44 IN91 IQ964 IR98 IS354 IT39 JE44 JM1 JO962 JP81 KE254 KG996 KH855 KI686 KM269 KN1 KR82 KW965 KY1 KZ7 LA856 LB961 LC1 LI423 LK94 LR231 LS266 LT370 LU352 LV371 LY218 MA212 MC377 MD373 ME382 MF590 MG261 MH692 MK389 ML223 MM95 MN976 MO853 MP1 MQ596 MR222 MS1 MT356 MU230 MV960 MW265 MX52 MY60 MZ258 NA264 NC687 NE227 NG234 NI505 NL31 NO47 NP977 NR674 NU683 NZ64 OM968 PA507 PE51 PF689 PG675 PH63 PK92 PL48 PM508 PR1 PS970 PT351 PW680 PY595 QA974 RE262 RO40 RS381 RU7 RW250 SA966 SB677 SC248 SD249 SE46 SG65 SI386 SK421 SL232 SM378 SN221 SO252 SR597 SS211 ST239 SV503 SX1 SY963 SZ268 TC1 TD235 TG228 TH66 TJ992 TL670 TM993 TN216 TO676 TR90 TT1 TV688 TW886 TZ255 UA380 UG256 US1 UY598 UZ998 VA39 VC1 VE58 VG1 VI1 VN84 VU678 WF681 WS685 YE967 YT262 ZA27 ZM260 ZW263')
+    .split(' ').reduce(function (m, x) { m[x.slice(0, 2)] = x.slice(2); return m; }, {});
+  var CC_DEFAULT = { fr: 'FR', es: 'DO', en: 'US' };
+  var CC_LIKELY = ['FR', 'DO', 'US', 'ES', 'CA', 'BE', 'CH', 'GB', 'MX', 'PR', 'CO'];
+  var KEEP_ZERO = { IT: 1, VA: 1, SM: 1 };   // numbers that keep their leading 0
+  var CC_HINT = { FR: '6 12 34 56 78', DO: '809 123 4567', US: '202 555 0123', CA: '514 555 0123', PR: '787 555 0123' };
+  S.cc = CC_DEFAULT[locale()] || 'FR';
+  S.ccManual = false;
+
+  function flagOf(iso) { return String.fromCodePoint.apply(null, iso.split('').map(function (c) { return 0x1F1E6 + c.charCodeAt(0) - 65; })); }
+  var regionNames = null;
+  function countryName(iso) {
+    try {
+      if (!regionNames || regionNames.locale !== intl()) { regionNames = new Intl.DisplayNames([intl()], { type: 'region' }); regionNames.locale = intl(); }
+      return regionNames.of(iso) || iso;
+    } catch (e) { return iso; }
+  }
+  function renderCc() {
+    $('[data-bk-cc-flag]').textContent = flagOf(S.cc);
+    $('[data-bk-cc-dial]').textContent = '+' + DIALS[S.cc];
+    el.form.elements.phone.placeholder = CC_HINT[S.cc] || '';
+    $('[data-bk-cc]').setAttribute('aria-label', L('Indicatif pays') + ' : ' + countryName(S.cc) + ' +' + DIALS[S.cc]);
+  }
+  function ccList() {
+    var q = norm(ccSearch.value.trim().replace(/^\+/, ''));
+    var all = Object.keys(DIALS);
+    var picks;
+    if (!q) picks = [S.cc].concat(CC_LIKELY.filter(function (c) { return c !== S.cc; }));
+    else {
+      picks = all.filter(function (c) { return norm(countryName(c) + ' ' + c).indexOf(q) >= 0 || DIALS[c].indexOf(q) === 0; })
+        .sort(function (a, b) { return (norm(countryName(a)).indexOf(q) === 0 ? 0 : 1) - (norm(countryName(b)).indexOf(q) === 0 ? 0 : 1) || countryName(a).localeCompare(countryName(b)); });
+    }
+    ccListEl.innerHTML = picks.slice(0, 8).map(function (c) {
+      return '<li><button type="button" class="bk__tz-opt" data-cc="' + c + '" aria-pressed="' + (c === S.cc) + '">' + flagOf(c) + ' ' + countryName(c) + ' <span>+' + DIALS[c] + '</span></button></li>';
+    }).join('') || '<li class="bk__tz-none">' + L('Aucun pays trouvé.') + '</li>';
+  }
+  var ccBtn = $('[data-bk-cc]'), ccPanel = $('[data-bk-cc-panel]'), ccSearch = $('[data-bk-cc-search]'), ccListEl = $('[data-bk-cc-list]');
+  function ccOpen(open) {
+    ccPanel.hidden = !open;
+    ccBtn.setAttribute('aria-expanded', String(open));
+    if (open) { ccSearch.value = ''; ccList(); ccSearch.focus(); }
+  }
+  function setCc(iso, manual) {
+    if (!DIALS[iso]) return;
+    S.cc = iso;
+    if (manual) S.ccManual = true;
+    renderCc();
+  }
+  ccBtn.addEventListener('click', function () { ccOpen(ccPanel.hidden); });
+  ccSearch.addEventListener('input', ccList);
+  ccSearch.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); var f = ccListEl.querySelector('[data-cc]'); if (f) { setCc(f.getAttribute('data-cc'), true); ccOpen(false); ccBtn.focus(); saveDraft(); } }
+  });
+  ccListEl.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-cc]');
+    if (b) { setCc(b.getAttribute('data-cc'), true); ccOpen(false); el.form.elements.phone.focus(); saveDraft(); }
+  });
+  ccPanel.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    e.preventDefault(); e.stopPropagation(); ccOpen(false); ccBtn.focus();
+  });
+
+  // National number → E.164. A number typed with + or 00 is taken as is.
+  function e164() {
+    var raw = el.form.elements.phone.value.trim();
+    if (!raw) return '';
+    var digits = raw.replace(/\D/g, '');
+    if (/^\+/.test(raw)) return '+' + digits;
+    if (/^00/.test(digits)) return '+' + digits.slice(2);
+    if (digits.charAt(0) === '0' && !KEEP_ZERO[S.cc]) digits = digits.slice(1);
+    return '+' + DIALS[S.cc] + digits;
+  }
+  function phoneValid() {
+    var raw = el.form.elements.phone.value.trim();
+    if (!raw) return true;
+    return /^[+()0-9.\-\s]+$/.test(raw) && /^\+[1-9]\d{6,14}$/.test(e164());
+  }
+
+  /* --------------------------------------------------------------- draft --
+     The form, not the slot: kept in this browser only (one key, 7 days),
+     never sent anywhere before "Confirmer", erased once the booking is
+     confirmed. Date and time are never kept: a slot can be taken meanwhile.
+     The time zone has its own key (scalia.tz). */
+  var DRAFT_KEY = 'scalia.bookingDraft';
+  var DRAFT_TTL = 7 * 86400000;
+  var draftT = 0;
+  function saveDraft() {
+    clearTimeout(draftT);
+    draftT = setTimeout(function () {
+      var f = el.form.elements;
+      var d = { v: 1, savedAt: Date.now(), name: f.name.value, email: f.email.value, phoneCountry: S.ccManual ? S.cc : '',
+        phone: f.phone.value, company: f.company.value, projectTypes: selectedTypes(), message: f.message.value };
+      var empty = !d.name && !d.email && !d.phone && !d.company && !d.message && !d.projectTypes.length && !d.phoneCountry;
+      try { if (empty) localStorage.removeItem(DRAFT_KEY); else localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch (e) {}
+    }, 400);
+  }
+  function dropDraft() { clearTimeout(draftT); try { localStorage.removeItem(DRAFT_KEY); } catch (e) {} }
+  function restoreDraft() {
+    var d = null;
+    try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) {}
+    if (!d || d.v !== 1) return;
+    if (!(Date.now() - d.savedAt < DRAFT_TTL)) { dropDraft(); return; }
+    var f = el.form.elements;
+    ['name', 'email', 'phone', 'company', 'message'].forEach(function (k) { if (typeof d[k] === 'string') f[k].value = d[k].slice(0, 1500); });
+    if (Array.isArray(d.projectTypes)) setTypes(d.projectTypes);
+    if (d.phoneCountry && DIALS[d.phoneCountry]) setCc(d.phoneCountry, true);
+  }
+  el.form.addEventListener('input', saveDraft);
+  el.form.addEventListener('change', saveDraft);
 
   /* --------------------------------------------------------------- form --- */
   var EMAIL = /^[^\s@<>()",;:]{1,64}@[A-Za-z0-9.-]{1,253}\.[A-Za-z]{2,24}$/;
@@ -377,7 +499,7 @@
     REQUIRED: 'Ce champ est requis.',
     INVALID: 'Ce champ semble incorrect.',
     EMAIL: 'Entrez une adresse email valide.',
-    PHONE: 'Entrez un numéro valide, par exemple +1 809 555 0123.',
+    PHONE: 'Entrez un numéro valide.',
     TYPES: 'Choisissez au moins une option.',
     TOO_LONG: 'Ce texte est un peu long.'
   };
@@ -397,7 +519,7 @@
     setError('name', name.length < 2 ? 'REQUIRED' : null); if (name.length < 2) bad.push('name');
     var ec = !email ? 'REQUIRED' : !EMAIL.test(email) ? 'EMAIL' : null;
     setError('email', ec); if (ec) bad.push('email');
-    var pc = phone && !/^[+()0-9.\-\s]{6,32}$/.test(phone) ? 'PHONE' : null;
+    var pc = phone && !phoneValid() ? 'PHONE' : null;
     setError('phone', pc); if (pc) bad.push('phone');
     var tc = selectedTypes().length ? null : 'TYPES';
     setError('types', tc); if (tc) bad.push('types');
@@ -425,6 +547,7 @@
     if (!b) return;
     b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
     if (selectedTypes().length) setError('types', null);
+    saveDraft();
   });
 
   function failWith(html) { el.fail.innerHTML = html; el.fail.hidden = false; }
@@ -440,7 +563,8 @@
     var f = el.form.elements;
     var payload = {
       start: S.slot, timezone: S.tz, locale: locale(),
-      name: f.name.value, email: f.email.value.trim(), phone: f.phone.value, company: f.company.value, message: f.message.value,
+      name: f.name.value, email: f.email.value.trim(), phone: e164(), company: f.company.value, message: f.message.value,
+      phoneDial: /^\s*(\+|00)/.test(f.phone.value) ? '' : DIALS[S.cc],
       projectTypes: selectedTypes(),
       website: f.website.value, elapsed: Date.now() - S.formAt
     };
@@ -459,6 +583,7 @@
         S.booking = res.body.booking;
         S.at = 0;                                    // the calendar changed: refresh at next open
         setStep('done'); renderDone();
+        dropDraft();   // booked: nothing left to resume
         track('booking_confirmed', { lang: locale() });
         return;
       }
@@ -556,6 +681,13 @@
     img.src = src;
   })();
 
-  if (window.ScaliaI18n) window.ScaliaI18n.on('locale', function () { fmtCache = {}; if (dlg.hasAttribute('open')) render(); });
+  if (window.ScaliaI18n) window.ScaliaI18n.on('locale', function () {
+    fmtCache = {};
+    if (!S.ccManual) S.cc = CC_DEFAULT[locale()] || 'FR';   // the default follows the language
+    renderCc();
+    if (dlg.hasAttribute('open')) render();
+  });
+  renderCc();
+  restoreDraft();
   setStep('date');
 })();

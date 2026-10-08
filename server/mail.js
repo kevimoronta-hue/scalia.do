@@ -139,9 +139,10 @@ function shell(inner) {
     '<tr><td style="padding:20px 32px 28px;border-top:1px solid #EFECE7;font-size:12px;line-height:1.5;color:#8D857E;">Scalia · <a href="' + SITE + '" style="color:#8A6440;text-decoration:none;">scalia.do</a></td></tr>' +
     '</table></td></tr></table></body></html>';
 }
-function row(label, value) {
+function row(label, value, link) {
   return '<tr><td style="padding:10px 0;border-bottom:1px solid #EFECE7;font-size:13px;color:#57504A;width:42%;vertical-align:top;">' + esc(label) +
-    '</td><td style="padding:10px 0;border-bottom:1px solid #EFECE7;font-size:15px;font-weight:600;vertical-align:top;">' + esc(value).replace(/\n/g, '<br>') + '</td></tr>';
+    '</td><td style="padding:10px 0;border-bottom:1px solid #EFECE7;font-size:15px;font-weight:600;vertical-align:top;">' +
+    (link ? '<a href="' + esc(link) + '" style="color:#0E0B0A;">' + esc(value) + '</a>' : esc(value).replace(/\n/g, '<br>')) + '</td></tr>';
 }
 
 // Under the button: the reminder is promised only once the scheduler runs
@@ -192,10 +193,11 @@ function ownerMail(b) {
   ].concat(b.timezone !== BOOKING.timezone ? [['Heure client', w.time + ' — ' + b.timezone + (w.date !== ws.date ? ' (' + w.date + ')' : '')]] : [], [
     ['Langue', b.locale.toUpperCase()], ['Visioconférence', b.meetUrl || 'non créée']
   ]);
+  const links = { 'Téléphone / WhatsApp': b.whatsapp || null };   // the number opens WhatsApp
   const html = shell(
     '<tr><td style="padding:28px 32px 4px;"><h1 style="margin:0;font-size:22px;letter-spacing:-.02em;">Nouveau rendez-vous</h1>' +
     '<p style="margin:8px 0 0;font-size:14px;color:#57504A;">Réservé sur scalia.do. Répondez à cet email pour écrire directement au client.</p></td></tr>' +
-    '<tr><td style="padding:12px 32px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">' + rows.map(r => row(r[0], r[1])).join('') + '</table></td></tr>' +
+    '<tr><td style="padding:12px 32px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">' + rows.map(r => row(r[0], r[1], r[1] !== '—' && links[r[0]])).join('') + '</table></td></tr>' +
     '<tr><td style="padding:4px 32px 12px;font-size:13px;color:#57504A;">Projet</td></tr>' +
     '<tr><td style="padding:0 32px 16px;font-size:15px;line-height:1.55;white-space:pre-wrap;">' + esc(b.message || '—') + '</td></tr>'
   );

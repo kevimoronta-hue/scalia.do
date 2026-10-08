@@ -337,7 +337,6 @@
   "Ce champ est requis.": "This field is required.",
   "Ce champ semble incorrect.": "This field looks incorrect.",
   "Entrez une adresse email valide.": "Enter a valid email address.",
-  "Entrez un numéro valide, par exemple +1 809 555 0123.": "Enter a valid number, for example +1 809 555 0123.",
   "Ce texte est un peu long.": "This text is a little long.",
   "Réservation…": "Booking…",
   "Ce créneau vient d’être réservé. Choisissez un autre horaire.": "This time was just booked. Please choose another one.",
@@ -363,5 +362,12 @@
   "La prise de rendez-vous s’effectue avec notre propre formulaire, sans aucun service tiers chargé dans votre navigateur. Les créneaux proposés sont calculés à partir de notre agenda Google Workspace ; votre rendez-vous y est enregistré et la confirmation vous est envoyée par email depuis contact@scalia.do.": "Bookings are made with our own form, with no third-party service loaded in your browser. The times offered are calculated from our Google Workspace calendar; your meeting is recorded there and the confirmation is emailed to you from contact@scalia.do.",
   "Un rappel contenant le lien de la visioconférence Google Meet peut vous être envoyé par email environ une heure avant l’échange.": "A reminder with the Google Meet video-call link may be emailed to you about an hour before the call.",
   "Google (Google Workspace) : agenda, visioconférence Google Meet et messagerie électronique de contact@scalia.do ;": "Google (Google Workspace): calendar, Google Meet video calls and email for contact@scalia.do;",
-  "Le formulaire de réservation ne dépose aucun cookie et ne charge aucun service tiers.": "The booking form sets no cookies and loads no third-party service."
+  "Le formulaire de réservation ne dépose aucun cookie et ne charge aucun service tiers.": "The booking form sets no cookies and loads no third-party service.",
+  "Indicatif pays": "Country code",
+  "Rechercher un pays ou un indicatif": "Search for a country or a code",
+  "Pays ou indicatif, ex. France, +1": "Country or code, e.g. France, +1",
+  "Pays": "Countries",
+  "Aucun pays trouvé.": "No country found.",
+  "Entrez un numéro valide.": "Enter a valid number.",
+  "Si vous commencez une réservation sans la terminer, les informations saisies dans le formulaire sont conservées dans votre navigateur uniquement, pendant 7 jours au plus, pour vous éviter de les ressaisir. Elles ne sont envoyées qu’au moment où vous confirmez le rendez-vous et sont effacées dès qu’il est confirmé.": "If you start a booking without finishing it, the details entered in the form are kept in your browser only, for 7 days at most, so you do not have to type them again. They are only sent when you confirm the meeting and are erased as soon as it is confirmed."
 };

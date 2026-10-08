@@ -217,6 +217,23 @@
 }
 .bk__type[aria-pressed="true"] .bk__tick { background: var(--champagne-hi); color: #160F08; box-shadow: none; transform: scale(1.06); }
 
+/* Phone: country code picker + national number. */
+.bk__phone { display: flex; gap: 8px; min-width: 0; }
+.bk__cc {
+  flex: none; min-height: 50px; padding: 0 10px 0 12px;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 0; border-radius: 12px; cursor: pointer;
+  background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px var(--bk-line-2);
+  color: var(--fg-inv); font: 600 15px/1 var(--font); font-variant-numeric: tabular-nums;
+  transition: box-shadow var(--t-ui) ease, background-color var(--t-ui) ease, transform var(--t-press) var(--ease-out);
+}
+.bk__cc:active { transform: scale(0.97); }
+.bk__cc[aria-expanded="true"], .bk__cc:focus-visible { outline: none; box-shadow: inset 0 0 0 1.5px var(--champagne); }
+.bk__cc svg { color: var(--champagne); }
+.bk__cc-flag { font-size: 18px; line-height: 1; }
+.bk__phone input { flex: 1; min-width: 0; }
+.bk__cc-panel { display: grid; gap: 8px; margin-top: 6px; }
+
 .bk__hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 .bk__fail { padding: 12px 14px; border-radius: 12px; background: rgba(229, 143, 122, 0.1); box-shadow: inset 0 0 0 1px rgba(229, 143, 122, 0.35); color: #F6D2C8; font-size: 14.5px; line-height: 1.45; }
 .bk__fail a { color: inherit; font-weight: 600; }
@@ -258,7 +275,7 @@
 .bk__foot-text { display: inline-flex; align-items: center; gap: 6px; }
 /* Supplied signature file: small, a quiet product mark. */
 .bk__foot { padding-top: 12px; }
-.bk__foot .bk__powered { height: 19px; width: auto; opacity: 0.85; }
+.bk__foot .bk__powered { height: 26px; width: auto; opacity: 0.9; }
 
 .bk .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
@@ -279,6 +296,8 @@
   .bk__day { margin-top: 10px; }
   .bk__slots { grid-template-columns: 1fr 1fr; max-height: 330px; overflow-y: auto; padding: 2px; margin-left: -2px; margin-right: -2px; }
   .bk__d { min-height: 40px; }
+  .bk__foot { padding-top: 14px; padding-bottom: 14px; }
+  .bk__foot .bk__powered { height: 30px; }
   .bk [data-pane="form"], .bk__done, .bk__down { max-width: 560px; margin-inline: auto; }
   .bk__actions { grid-auto-flow: column; grid-auto-columns: 1fr; }
 }

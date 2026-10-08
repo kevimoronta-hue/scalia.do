@@ -336,7 +336,6 @@
   "Ce champ est requis.": "Este campo es obligatorio.",
   "Ce champ semble incorrect.": "Este campo parece incorrecto.",
   "Entrez une adresse email valide.": "Introduce un correo electrónico válido.",
-  "Entrez un numéro valide, par exemple +1 809 555 0123.": "Introduce un número válido, por ejemplo +1 809 555 0123.",
   "Ce texte est un peu long.": "Este texto es un poco largo.",
   "Réservation…": "Reservando…",
   "Ce créneau vient d’être réservé. Choisissez un autre horaire.": "Este horario acaba de reservarse. Elige otro.",
@@ -362,5 +361,12 @@
   "La prise de rendez-vous s’effectue avec notre propre formulaire, sans aucun service tiers chargé dans votre navigateur. Les créneaux proposés sont calculés à partir de notre agenda Google Workspace ; votre rendez-vous y est enregistré et la confirmation vous est envoyée par email depuis contact@scalia.do.": "Las reservas se realizan con nuestro propio formulario, sin ningún servicio de terceros cargado en tu navegador. Los horarios propuestos se calculan a partir de nuestro calendario de Google Workspace; tu cita se registra en él y la confirmación se te envía por correo desde contact@scalia.do.",
   "Un rappel contenant le lien de la visioconférence Google Meet peut vous être envoyé par email environ une heure avant l’échange.": "Es posible que te enviemos por correo, aproximadamente una hora antes de la reunión, un recordatorio con el enlace de la videollamada de Google Meet.",
   "Google (Google Workspace) : agenda, visioconférence Google Meet et messagerie électronique de contact@scalia.do ;": "Google (Google Workspace): calendario, videollamadas de Google Meet y correo electrónico de contact@scalia.do;",
-  "Le formulaire de réservation ne dépose aucun cookie et ne charge aucun service tiers.": "El formulario de reserva no instala ninguna cookie ni carga ningún servicio de terceros."
+  "Le formulaire de réservation ne dépose aucun cookie et ne charge aucun service tiers.": "El formulario de reserva no instala ninguna cookie ni carga ningún servicio de terceros.",
+  "Indicatif pays": "Código de país",
+  "Rechercher un pays ou un indicatif": "Buscar un país o un código",
+  "Pays ou indicatif, ex. France, +1": "País o código, p. ej. Francia, +1",
+  "Pays": "Países",
+  "Aucun pays trouvé.": "No se encontró ningún país.",
+  "Entrez un numéro valide.": "Introduce un número válido.",
+  "Si vous commencez une réservation sans la terminer, les informations saisies dans le formulaire sont conservées dans votre navigateur uniquement, pendant 7 jours au plus, pour vous éviter de les ressaisir. Elles ne sont envoyées qu’au moment où vous confirmez le rendez-vous et sont effacées dès qu’il est confirmé.": "Si empiezas una reserva sin terminarla, los datos introducidos en el formulario se conservan solo en tu navegador, durante 7 días como máximo, para que no tengas que volver a escribirlos. Solo se envían cuando confirmas la cita y se borran en cuanto se confirma."
 };

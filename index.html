@@ -801,7 +801,18 @@
           </div>
           <div class="bk__field">
             <label for="bk-phone">Téléphone / WhatsApp <span class="bk__opt">facultatif</span></label>
-            <input id="bk-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="32" aria-describedby="bk-phone-err">
+            <div class="bk__phone">
+              <button class="bk__cc" type="button" data-bk-cc aria-expanded="false" aria-controls="bk-cc-panel" aria-label="Indicatif pays">
+                <span class="bk__cc-flag" data-bk-cc-flag aria-hidden="true"></span><span data-bk-cc-dial data-i18n-skip></span>
+                <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <input id="bk-phone" name="phone" type="tel" autocomplete="tel-national" inputmode="tel" maxlength="24" aria-describedby="bk-phone-err">
+            </div>
+            <div class="bk__cc-panel" id="bk-cc-panel" data-bk-cc-panel hidden>
+              <label class="sr-only" for="bk-cc-search">Rechercher un pays ou un indicatif</label>
+              <input class="bk__tz-search" id="bk-cc-search" type="search" placeholder="Pays ou indicatif, ex. France, +1" autocomplete="off" spellcheck="false" enterkeyhint="search" data-bk-cc-search>
+              <ul class="bk__tz-list" data-bk-cc-list aria-label="Pays" data-i18n-skip></ul>
+            </div>
             <p class="bk__err" id="bk-phone-err"></p>
           </div>
           <div class="bk__field">
