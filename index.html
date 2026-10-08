@@ -29,6 +29,8 @@
 <script src="i18n/boot.js" data-root=""></script>
 <link rel="dns-prefetch" href="https://fast.wistia.com">
 <link rel="dns-prefetch" href="https://embed-ssl.wistia.com">
+<link rel="dns-prefetch" href="https://calendly.com">
+<link rel="dns-prefetch" href="https://assets.calendly.com">
 <link rel="preload" href="assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" href="assets/video/poster-720.jpg" media="(max-width: 767px)" fetchpriority="high">
 <link rel="preload" as="image" href="assets/video/poster-1080.jpg" media="(min-width: 768px)" fetchpriority="high">
@@ -737,8 +739,12 @@
   </div>
   <div class="cal__body" data-state="loading" aria-live="polite">
     <div class="cal__state cal__state--loading">
-      <span class="cal__bar" aria-hidden="true"></span>
-      <p>Chargement du calendrier…</p>
+      <div class="cal__skel" aria-hidden="true">
+        <span class="cal__sk cal__sk--title"></span>
+        <span class="cal__sk cal__sk--sub"></span>
+        <span class="cal__sk-grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      </div>
+      <p>Préparation du calendrier…</p>
     </div>
     <div class="cal__state cal__state--error">
       <p class="cal__big">Le calendrier n’a pas pu être chargé.</p>

@@ -2163,14 +2163,34 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .cal__state { position: absolute; inset: 0; display: none; padding: 32px; place-content: center; justify-items: center; text-align: center; gap: 12px; }
 .cal__body[data-state="loading"] .cal__state--loading,
 .cal__body[data-state="error"] .cal__state--error { display: grid; }
-.cal__body[data-state="ready"] .cal__state--ready { display: block; padding: 0; }
+/* The calendar layer stays rendered while it loads (a hidden frame is
+   throttled and Calendly would only start booting once shown), and fades
+   in over the placeholder once Calendly reports its page is drawn. */
+.cal__state--ready { display: block; padding: 0; opacity: 0; pointer-events: none; transition: opacity 200ms var(--ease-out); }
+.cal__body[data-state="ready"] .cal__state--ready { opacity: 1; pointer-events: auto; }
+.cal__body[data-state="error"] .cal__state--ready { visibility: hidden; }
 .cal__state--ready iframe { width: 100%; height: 100%; border: 0; }
+/* Prepared in the background: the closed panel keeps its size so Calendly
+   lays out once, transparent, inert and behind the page. Opening it moves
+   it to the top layer without reloading the frame. */
+.cal[data-warm]:not([open]) {
+  display: flex; flex-direction: column;
+  position: fixed; inset: 0 auto auto 0; margin: 0;
+  opacity: 0; pointer-events: none; z-index: -1;
+}
+.cal__state--loading p { color: var(--fg-2); font-size: 15px; letter-spacing: -0.005em; }
+.cal__skel { width: min(320px, 100%); display: grid; gap: 10px; justify-items: start; margin-bottom: 10px; animation: cal-breathe 1.6s ease-in-out infinite alternate; }
+.cal__sk, .cal__sk-grid i { display: block; border-radius: 8px; background: rgba(14, 11, 10, 0.07); }
+.cal__sk--title { width: 58%; height: 14px; }
+.cal__sk--sub { width: 36%; height: 10px; }
+.cal__sk-grid { width: 100%; margin-top: 10px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.cal__sk-grid i { aspect-ratio: 1; border-radius: 50%; }
+.cal__sk-grid i:nth-child(7n + 3), .cal__sk-grid i:nth-child(7n + 5) { background: rgba(205, 169, 130, 0.22); }
+@keyframes cal-breathe { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .cal__skel { animation: none; } .cal__state--ready { transition: none; } }
 .cal__big { font-size: clamp(20px, 1rem + 1vw, 28px); font-weight: 650; letter-spacing: -0.03em; max-width: 18em; }
 .cal__muted { color: var(--fg-2); }
 .cal__state--error .btn { margin-top: 12px; }
-.cal__bar { width: 160px; height: 2px; border-radius: 2px; background: var(--hair); position: relative; overflow: hidden; margin-bottom: 8px; }
-.cal__bar::after { content: ""; position: absolute; inset: 0; background: var(--champagne); transform-origin: left; animation: cal-bar 1.1s var(--ease-out) infinite; }
-@keyframes cal-bar { 0% { transform: scaleX(0); } 70% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
 
 /* ============================================================ REVEALS ==
    One library, fired once by IntersectionObserver. Content is visible
@@ -2234,7 +2254,6 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .reasons.is-live .reason__body { opacity: 1; }
   .reasons::after { transform: none; }
   .cal[open] { animation: none; }
-  .cal__bar::after { animation: none; transform: scaleX(0.5); }
   .final__mark { transform: none !important; }
   .btn:active, .nav__burger:active { transform: none; }
   .why__card { transform: none; }
