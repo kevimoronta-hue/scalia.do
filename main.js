@@ -234,13 +234,49 @@
     if (video.firstChild && attachSources()) playHero();
   });
   // Pause while the hero is off screen; resume when it comes back.
+  var film = hero.querySelector('.hero__film');
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (entries) {
       heroVisible = entries[0].isIntersecting;
       if (!heroVisible) { if (!video.paused) video.pause(); }
       else playHero();
-    }, { threshold: 0.01 }).observe(hero.querySelector('.hero__film'));
+    }, { threshold: 0.01 }).observe(film);
   }
+
+  /* Back from the background (app switch, tab switch, BFCache).
+     The browser pauses the film itself when the page is hidden, and nothing
+     restarted it: the IntersectionObserver does not fire again (the hero
+     never left the screen), and a BFCache restore re-runs no script. The
+     film then stayed on its last decoded frame, painted from a video layer
+     sized for the viewport before the switch (toolbars may have changed),
+     which reads as a frozen, zoomed image. On return we re-measure
+     visibility, refresh the scroll-driven state and play again; if the
+     browser refuses, the poster (frame 0) comes back instead of a stale
+     frame. Reduced motion, Save-Data and a visitor's own pause are kept. */
+  function heroOnScreen() {
+    var r = film.getBoundingClientRect();
+    return r.bottom > 0 && r.top < window.innerHeight && r.width > 0;
+  }
+  function resumeHero() {
+    if (document.visibilityState === 'hidden') return;
+    requestFrame();   // seam / hero exit values follow the current scroll again
+    if (reduce || saveData || userPaused || !video.firstChild) return;
+    heroVisible = heroOnScreen();
+    if (!heroVisible) return;   // off screen: the observer restarts it later
+    if (video.error) { heroMode = ''; attachSources(); }   // a dropped stream: reload the source once
+    var pr = video.play();
+    if (pr && pr.catch) pr.catch(function () {
+      hero.classList.remove('is-playing');   // show the poster, never a frozen frame
+      setPaused(true);
+    });
+  }
+  function suspendHero() { if (!video.paused) video.pause(); }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') suspendHero(); else resumeHero();
+  });
+  window.addEventListener('pagehide', suspendHero);
+  window.addEventListener('pageshow', function (e) { if (e.persisted) resumeHero(); });
+  document.addEventListener('resume', resumeHero);   // Chrome page lifecycle (frozen tab)
 
   /* ================================================= OPTIMISATION WIRES ==
      Orthogonal connectors from the symbol to each axis. Geometry is measured

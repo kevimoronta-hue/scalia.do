@@ -1,8 +1,8 @@
 /* ==========================================================================
    Scalia · WhatsApp floating button (home and Les Scalians)
    Shown once the first screen is behind the visitor, hidden over the footer
-   and while the mobile menu is open. A rare, quiet nudge while it is shown:
-   first ~6s after it appears, then every 14-22s; skipped while hovered,
+   and while the mobile menu is open. A quiet nudge while it is shown:
+   5s after it appears, then every 5s; skipped while hovered,
    focused or pressed, when the tab is hidden, and under reduced motion.
    One scroll listener, throttled to a frame; no work while idle.
    ========================================================================== */
@@ -14,6 +14,9 @@
   var foot = document.querySelector('body > footer');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var on = false, timer = 0, ticking = false;
+  // One nudge every 5s (start to start). The nudge itself lasts 2.4s, so a
+  // calm 2.6s always separates two of them.
+  var EVERY = 5000;
 
   function nudge(show) {
     clearTimeout(timer);
@@ -26,8 +29,8 @@
         void fab.offsetWidth;   // restart the keyframes
         fab.classList.add('is-nudge');
       }
-      timer = setTimeout(tick, 14000 + Math.random() * 8000);
-    }, 6000);
+      timer = setTimeout(tick, EVERY);
+    }, EVERY);
   }
 
   function update() {
