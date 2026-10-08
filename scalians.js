@@ -20,6 +20,11 @@
     ticking = false;
     var scrolled = window.scrollY > 24 ? 'true' : 'false';
     if (nav.dataset.scrolled !== scrolled) nav.dataset.scrolled = scrolled;
+    // Phones / tablets: the glass materialises over the first 48px of
+    // scroll (eased 0 -> 1), see .nav__glass in styles.css.
+    var nk = Math.min(1, Math.max(0, window.scrollY / 48));
+    nk = (nk * nk * (3 - 2 * nk)).toFixed(3);
+    if (nav._k !== nk) { nav._k = nk; nav.style.setProperty('--nav-k', nk); }
 
     // Glass tone follows the section under the bar. Later sections stack over
     // earlier ones (sheets), so the last match in document order wins.

@@ -68,6 +68,11 @@
     // 1. Shell after ~24px. Pure state toggle, the CSS does the transition.
     var scrolled = y > 24 ? 'true' : 'false';
     if (nav.dataset.scrolled !== scrolled) nav.dataset.scrolled = scrolled;
+    // Phones / tablets: the glass materialises over the first 48px of
+    // scroll (eased 0 -> 1), see .nav__glass in styles.css.
+    var nk = Math.min(1, Math.max(0, y / 48));
+    nk = (nk * nk * (3 - 2 * nk)).toFixed(3);
+    if (nav._k !== nk) { nav._k = nk; nav.style.setProperty('--nav-k', nk); }
 
     // Glass tone follows the section under the bar. Later sections stack over
     // earlier ones (sheets), so the last match in document order wins.
@@ -420,10 +425,10 @@
     landing: { EUR: 700, USD: 700 }   // validated amounts
   };
   // Currency changes only the figure; the card, its copy and its art stay the
-  // same. Written form is fixed per currency in every language: 700 € / $700.
+  // same. Written form is fixed per currency in every language: 700 € / 700 $.
   var WRITE = {
     EUR: function (n) { return n + '\u00a0€'; },
-    USD: function (n) { return '$' + n; }
+    USD: function (n) { return n + '\u00a0$'; }
   };
 
   function renderPrices() {
