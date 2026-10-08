@@ -312,5 +312,7 @@
   "Scalia a compris notre métier. Le site met nos réalisations en valeur avec la même exigence que nos jardins.": "Scalia entendió nuestro oficio. El sitio valoriza nuestros proyectos con la misma exigencia que nuestros jardines.",
   "Un accompagnement clair du début à la fin. Nous savions toujours où en était le projet.": "Un acompañamiento claro de principio a fin. Siempre supimos en qué punto estaba el proyecto.",
   "Élégant, rapide et simple à comprendre. Notre offre n’a jamais été aussi lisible.": "Elegante, rápido y fácil de entender. Nuestra oferta nunca había sido tan clara.",
-  "Nos clients nous trouvent plus facilement et nous contactent en confiance.": "Nuestros clientes nos encuentran más fácilmente y nos contactan con confianza."
+  "Nos clients nous trouvent plus facilement et nous contactent en confiance.": "Nuestros clientes nos encuentran más fácilmente y nos contactan con confianza.",
+  "Maquette sans coût, prête en 72 heures.": "Maqueta sin coste, lista en 72 horas.",
+  "Site en ligne en une semaine.": "Sitio web online en una semana."
 };

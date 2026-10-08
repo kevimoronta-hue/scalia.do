@@ -313,5 +313,7 @@
   "Scalia a compris notre métier. Le site met nos réalisations en valeur avec la même exigence que nos jardins.": "Scalia understood our craft. The site showcases our work with the same care we put into our gardens.",
   "Un accompagnement clair du début à la fin. Nous savions toujours où en était le projet.": "Clear guidance from start to finish. We always knew where the project stood.",
   "Élégant, rapide et simple à comprendre. Notre offre n’a jamais été aussi lisible.": "Elegant, fast and easy to understand. Our offer has never been this clear.",
-  "Nos clients nous trouvent plus facilement et nous contactent en confiance.": "Clients find us more easily and reach out with confidence."
+  "Nos clients nous trouvent plus facilement et nous contactent en confiance.": "Clients find us more easily and reach out with confidence.",
+  "Maquette sans coût, prête en 72 heures.": "Free mockup, ready within 72 hours.",
+  "Site en ligne en une semaine.": "Website live within one week."
 };
