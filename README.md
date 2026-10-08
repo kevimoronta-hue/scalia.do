@@ -12,7 +12,11 @@ puis http://localhost:4510.
 |---|---|
 | `index.html`, `scalians/`, `mentions-legales/`, `confidentialite/`, `404.html` | Pages |
 | `styles.css`, `scalians.css` | Styles (police Inter auto-hébergée dans `assets/fonts/`) |
-| `main.js` | Accueil : hero, navigation, Calendly (`CALENDLY_URLS`), prix (`PRICING`) |
+| `main.js` | Accueil : hero, navigation, prix (`PRICING`) |
+| `booking.js`, `booking.css` | Réservation Scalia (panneau, créneaux, formulaire) |
+| `api/` | Fonctions Vercel : `availability`, `book`, `reminders` |
+| `server/` | Modules serveur (règles dans `server/config.js`, Google, emails, tickets) |
+| `scripts/` | Outils locaux (serveur de dev, smoke test Google), non déployés |
 | `voices.js` | Témoignages : données `VOICES`, rails, lecteur vidéo Scalia (sources MP4 Wistia), sous-titres |
 | `fab.js` | Bouton WhatsApp flottant (accueil + Les Scalians) |
 | `contact.js` | Coordonnées (email, WhatsApp, LinkedIn, Instagram) |
@@ -29,12 +33,22 @@ personnalisés (forfait Vercel Pro ou Enterprise requis) :
 | Événement | Données |
 |---|---|
 | `cta_click` | `place` (nav, menu, hero, footer, id de section) |
-| `calendly_open` | `place`, `lang` |
+| `booking_open` | `place`, `lang` |
+| `booking_confirmed` | `lang` |
 | `whatsapp_click` | `place` (dont `fab`) |
 | `email_click` | `place` |
 | `testimonial_play` | `video` (id Wistia, jamais le nom) |
 | `language_change` | `to` |
 | `currency_change` | `to` |
+
+## Réservation Scalia
+
+- Disponibilités : Google Calendar de contact@scalia.do (compte de service + délégation Workspace).
+- Règles (durée, horaires, tampons, préavis, horizon, plafond) : `server/config.js`.
+- Variables Vercel : voir `.env.example` (jamais de secret dans le dépôt).
+- Rappel ~1 h avant : `GET /api/reminders/` avec `Authorization: Bearer <CRON_SECRET>`, à déclencher
+  toutes les 10 minutes par Google Cloud Scheduler (pas encore activé).
+- Local : `node scripts/dev-server.mjs` (lit `.env.local`), `BOOKING_MOCK=1` pour un agenda de test.
 
 ## Témoignages
 
@@ -49,6 +63,5 @@ personnalisés (forfait Vercel Pro ou Enterprise requis) :
 
 | Élément | Où |
 |---|---|
-| URLs des événements Calendly EN et ES | `main.js` → `CALENDLY_URLS.en` / `.es` |
 | Téléphone de l'hébergeur (non publié par Vercel) | mentions légales, si exigé |
 | Vidéos hero définitives 9:16 et 16:9 | `main.js` → `HERO_MEDIA` |

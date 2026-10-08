@@ -1,8 +1,8 @@
 /* ==========================================================================
    Scalia · page layer on top of the ScrollCraft engine.
    The engine owns pinning and --sc-p. This file owns the bespoke parts:
-   navbar state, hero media, the credibility spine, the optimisation wiring,
-   the mobile menu and the Calendly panel.
+   navbar state, hero media, the credibility spine, the optimisation wiring
+   and the mobile menu. The booking sheet lives in booking.js.
    ========================================================================== */
 (function () {
   'use strict';
@@ -16,16 +16,6 @@
     mobile:  { webm: 'assets/video/hero-720.webm',  mp4: 'assets/video/hero-720.mp4' },
     desktop: { webm: 'assets/video/hero-1080.webm', mp4: 'assets/video/hero-1080.mp4' }
   };
-  /* Booking: one Calendly event per site language (same calendar and
-     availability). Calendly does not translate custom event titles,
-     descriptions or questions, hence three events. Until the EN and ES
-     events exist they fall back to the current (FR) event. */
-  var CALENDLY_URLS = {
-    fr: 'https://calendly.com/contact-scalia/30min',
-    en: 'https://calendly.com/contact-scalia/30min',   // TODO(scalia): EN event URL
-    es: 'https://calendly.com/contact-scalia/30min'    // TODO(scalia): ES event URL
-  };
-
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var desktopMQ = matchMedia('(min-width: 1024px)');
   var mobileVideoMQ = matchMedia('(max-width: 767px)');   // phones get the 720p file
@@ -328,147 +318,6 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutWires);
   window.addEventListener('load', layoutWires);
   layoutWires();
-
-  /* ============================================================ CALENDLY ==
-     Calendly's booking app weighs about 3 MB (its own JS and CSS) and takes
-     a further 1.5 to 2.5 s to fetch availability and draw, even from cache.
-     So the panel is prepared in the background, never during the first load:
-       after load, idle       preconnect to calendly.com and its assets
-       hero film buffered     the frame loads and boots in the closed panel
-         (or 6 s), then idle
-       booking CTA ~1 screen  same, if it has not started yet
-       hover, focus, touch    same, from any booking button (navbar too)
-       click                  the panel opens at once; loads now if needed
-     One frame for the whole visit: closing the panel keeps it. Save-Data and
-     2G skip every automatic step (intent and click only). */
-  var cal = document.getElementById('cal');
-  var calBody = cal.querySelector('.cal__body');
-  var calFrame = document.getElementById('cal-frame');
-  var calFallback = document.getElementById('cal-fallback');
-  var CAL_SEL = '[data-open-calendly], [data-action="open-calendly"]';
-  var calIframe = null, calUrl = '', calFailT = 0, calLoadT = 0;
-  var lastTrigger = null;
-  var conn = navigator.connection;
-  var calLean = !!(conn && (conn.saveData || /2g/.test(conn.effectiveType || '')));
-
-  function calendlyUrl() {
-    var loc = window.ScaliaI18n ? window.ScaliaI18n.locale() : 'fr';
-    return CALENDLY_URLS[loc] || CALENDLY_URLS.fr;
-  }
-  function preconnectCal() {
-    if (preconnectCal.done) return;
-    preconnectCal.done = true;
-    ['https://calendly.com', 'https://assets.calendly.com'].forEach(function (href) {
-      var l = document.createElement('link');
-      l.rel = 'preconnect'; l.href = href;
-      document.head.appendChild(l);
-    });
-  }
-  function calReady() {
-    clearTimeout(calFailT); clearTimeout(calLoadT);
-    calBody.dataset.state = 'ready';
-  }
-  // Calendly's privacy / cookie notice is left visible (no hide_gdpr_banner).
-  function warmCal() {
-    var url = calendlyUrl();
-    if (calIframe && calUrl === url) return;   // one frame per URL, never twice
-    preconnectCal();
-    if (calIframe) calIframe.remove();
-    calUrl = url;
-    calBody.dataset.state = 'loading';
-    if (!cal.open) { cal.inert = true; cal.setAttribute('data-warm', ''); }
-    calIframe = document.createElement('iframe');
-    var sep = url.indexOf('?') === -1 ? '?' : '&';
-    calIframe.src = url + sep + 'embed_type=Inline&embed_domain=' + encodeURIComponent(location.hostname);
-    calIframe.title = L('Calendrier de réservation Scalia');
-    calIframe.loading = 'eager';
-    // Ready = Calendly reports its page is drawn (message below); the frame's
-    // load event only means its files arrived, so it is a late fallback.
-    calIframe.addEventListener('load', function () {
-      clearTimeout(calLoadT);
-      calLoadT = setTimeout(calReady, 4000);
-    });
-    calIframe.addEventListener('error', function () { if (cal.open) calBody.dataset.state = 'error'; });
-    calFrame.appendChild(calIframe);
-  }
-  window.addEventListener('message', function (e) {
-    if (!calIframe || e.source !== calIframe.contentWindow || e.origin !== 'https://calendly.com') return;
-    var d = e.data || {};
-    if (d.event === 'calendly.event_type_viewed' || d.event === 'calendly.profile_page_viewed' ||
-        (d.event === 'calendly.page_height' && parseInt(d.payload && d.payload.height, 10) > 200)) calReady();
-  });
-
-  function openCal(trigger) {
-    lastTrigger = trigger;
-    if (calBody.dataset.state === 'error' && calIframe) { calIframe.remove(); calIframe = null; }   // retry
-    warmCal();   // starts the request first when nothing is prepared yet
-    cal.inert = false;
-    if (typeof cal.showModal === 'function') cal.showModal(); else cal.setAttribute('open', '');
-    calFallback.href = calUrl;
-    calIframe.title = L('Calendrier de réservation Scalia');
-    if (calBody.dataset.state !== 'ready') {
-      clearTimeout(calFailT);
-      calFailT = setTimeout(function () { if (calBody.dataset.state === 'loading') calBody.dataset.state = 'error'; }, 15000);
-    }
-  }
-  function closeCal() { if (cal.open) cal.close(); }
-  cal.addEventListener('close', function () {
-    clearTimeout(calFailT);
-    if (cal.hasAttribute('data-warm')) cal.inert = true;
-    if (lastTrigger) lastTrigger.focus();
-  });
-  cal.addEventListener('click', function (e) { if (e.target === cal) closeCal(); });   // backdrop
-
-  // Intent: a pointer over, a finger on or the focus on a booking button.
-  function calIntent(e) { if (e.target.closest && e.target.closest(CAL_SEL)) warmCal(); }
-  ['pointerover', 'touchstart', 'focusin'].forEach(function (t) {
-    document.addEventListener(t, calIntent, { passive: true, capture: true });
-  });
-  // Opening the burger menu brings its booking button on screen: prepare.
-  if ('MutationObserver' in window) new MutationObserver(function () {
-    if (nav.dataset.open === 'true') warmCal();
-  }).observe(nav, { attributes: true, attributeFilter: ['data-open'] });
-  function calWhenIdle(fn) {
-    if ('requestIdleCallback' in window) requestIdleCallback(fn, { timeout: 3000 });
-    else setTimeout(fn, 1200);
-  }
-  // The hero film keeps the bandwidth first: wait until it can play through.
-  function heroSettled(fn) {
-    var done = false;
-    function go() { if (!done) { done = true; fn(); } }
-    if (!video || !video.firstChild || video.readyState >= 4) return go();
-    video.addEventListener('canplaythrough', go, { once: true });
-    setTimeout(go, 6000);
-  }
-  function calAfterLoad() {
-    if (calLean) return;
-    calWhenIdle(function () {
-      preconnectCal();
-      heroSettled(function () { calWhenIdle(warmCal); });
-      // A visitor who heads straight for a booking button gets it sooner.
-      if (!('IntersectionObserver' in window)) return;
-      var near = new IntersectionObserver(function (entries) {
-        if (entries.some(function (e) { return e.isIntersecting; })) { near.disconnect(); warmCal(); }
-      }, { rootMargin: '100% 0px' });
-      Array.prototype.forEach.call(document.querySelectorAll('[data-open-calendly]'), function (el) { near.observe(el); });
-    });
-  }
-  if (document.readyState === 'complete') calAfterLoad();
-  else window.addEventListener('load', calAfterLoad);
-
-  // One opener for every booking trigger (sections, navbar, burger menu).
-  // From the burger menu: close the menu first (restores page scroll), and
-  // hand focus back to the burger when Calendly closes, since the menu
-  // button itself is hidden by then.
-  document.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-open-calendly], [data-action="open-calendly"]');
-    if (t) {
-      e.preventDefault();
-      if (menu.contains(t)) { setMenu(false); openCal(burger); }
-      else openCal(t);
-    }
-    if (e.target.closest('[data-close-calendly]')) closeCal();
-  });
 
   /* ============================================================ REVEALS ==
      One observer for the whole page. Each element reveals once. Children of

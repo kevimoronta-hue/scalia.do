@@ -29,8 +29,6 @@
 <script src="i18n/boot.js" data-root=""></script>
 <link rel="dns-prefetch" href="https://fast.wistia.com">
 <link rel="dns-prefetch" href="https://embed-ssl.wistia.com">
-<link rel="dns-prefetch" href="https://calendly.com">
-<link rel="dns-prefetch" href="https://assets.calendly.com">
 <link rel="preload" href="assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" href="assets/video/poster-720.jpg" media="(max-width: 767px)" fetchpriority="high">
 <link rel="preload" as="image" href="assets/video/poster-1080.jpg" media="(min-width: 768px)" fetchpriority="high">
@@ -190,7 +188,7 @@
           <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-lang-option data-lang="es" lang="es"><span class="lang__flag" aria-hidden="true">🇩🇴</span><span class="lang__name">Español</span><span class="lang__iso">ES</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
         </ul>
       </div>
-      <button class="btn btn--primary btn--sm nav__cta" type="button" data-action="open-calendly">Parler de mon projet</button>
+      <button class="btn btn--primary btn--sm nav__cta" type="button" data-open-booking>Parler de mon projet</button>
       <button class="nav__burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Ouvrir le menu">
         <span></span><span></span>
       </button>
@@ -210,7 +208,7 @@
       <li><a href="#rendez-vous">Rendez-vous</a></li>
     </ul>
   </nav>
-  <button class="btn btn--primary btn--lg btn--block menu__cta" type="button" data-action="open-calendly">Parler de mon projet</button>
+  <button class="btn btn--primary btn--lg btn--block menu__cta" type="button" data-open-booking>Parler de mon projet</button>
   <p class="menu__sig">L’agence qui vous connecte.</p>
 </div>
 
@@ -652,7 +650,7 @@
         <div class="art-card__copy">
           <h2 class="art-card__title" id="rdv-title" data-reveal="mask">Un échange pour poser les bases</h2>
           <p class="art-card__slogan" data-reveal="rise" style="--rv-d:160ms">Présentez votre activité, vos objectifs et la présence que vous souhaitez construire. Cet échange permet de clarifier la direction avant d’avancer.</p>
-          <div class="art-card__cta" data-reveal="rise" style="--rv-d:300ms"><button class="btn btn--primary btn--lg" type="button" data-open-calendly>Réserver un échange</button></div>
+          <div class="art-card__cta" data-reveal="rise" style="--rv-d:300ms"><button class="btn btn--primary btn--lg" type="button" data-open-booking>Réserver un échange</button></div>
         </div>
       </article>
 
@@ -667,7 +665,7 @@
       <h2 class="final__title" id="final-title" data-reveal="mask">Votre entreprise est&#8209;elle aussi crédible en ligne <span class="tone-2">qu’elle l’est réellement&nbsp;?</span></h2>
       <p class="final__text" data-reveal="rise" style="--rv-d:120ms">Scalia construit la présence qui permet à votre valeur d’être vue, comprise et choisie.</p>
       <div class="final__ctas" data-reveal="rise" style="--rv-d:200ms">
-        <button class="btn btn--primary btn--lg" type="button" data-open-calendly>Construire ma présence</button>
+        <button class="btn btn--primary btn--lg" type="button" data-open-booking>Construire ma présence</button>
         <a class="link-arrow link-arrow--light" href="#tarifs">Voir la tarification<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5"/></svg></a>
       </div>
     </div>
@@ -729,29 +727,142 @@
   <span class="wa-fab__tip" aria-hidden="true">WhatsApp</span>
 </a>
 
-<!-- ============================================================ CALENDLY -->
-<dialog class="cal" id="cal" aria-labelledby="cal-title">
-  <div class="cal__head">
-    <p class="cal__title" id="cal-title">Choisir un créneau</p>
-    <button class="cal__close" type="button" data-close-calendly aria-label="Fermer">
-      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.4"/></svg>
-    </button>
-  </div>
-  <div class="cal__body" data-state="loading" aria-live="polite">
-    <div class="cal__state cal__state--loading">
-      <div class="cal__skel" aria-hidden="true">
-        <span class="cal__sk cal__sk--title"></span>
-        <span class="cal__sk cal__sk--sub"></span>
-        <span class="cal__sk-grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-      </div>
-      <p>Préparation du calendrier…</p>
+<!-- ====================================================== SCALIA BOOKING -->
+<!-- Scalia's own booking (Google Calendar behind it), opened by every
+     [data-open-booking] button. -->
+<dialog class="bk" id="bk" aria-labelledby="bk-title-date" data-step="date">
+  <div class="bk__sheet">
+    <header class="bk__head">
+      <button class="bk__icon bk__back" type="button" data-bk-back aria-label="Retour" hidden>
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <img class="bk__logo" src="assets/scalia-horizontal.webp" width="509" height="200" alt="Scalia" loading="lazy">
+      <button class="bk__icon bk__close" type="button" data-bk-close aria-label="Fermer">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+
+    <div class="bk__body">
+      <!-- 1 · date and time -->
+      <section class="bk__pane" data-pane="date">
+        <h2 class="bk__title" id="bk-title-date" tabindex="-1">Choisissez un créneau</h2>
+        <p class="bk__sub">Sélectionnez le moment qui vous convient.</p>
+        <p class="bk__meta" data-bk-meta></p>
+        <p class="bk__notice" data-bk-notice role="status" hidden></p>
+        <div class="bk__pick">
+          <div class="bk__cal">
+            <div class="bk__month">
+              <p class="bk__month-name" data-bk-month aria-live="polite"></p>
+              <div class="bk__month-nav">
+                <button class="bk__icon" type="button" data-bk-prev aria-label="Mois précédent">
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="bk__icon" type="button" data-bk-next aria-label="Mois suivant">
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="bk__dow" data-bk-dow aria-hidden="true"></div>
+            <div class="bk__days" data-bk-days></div>
+          </div>
+          <div class="bk__times">
+            <p class="bk__day" data-bk-day></p>
+            <ul class="bk__slots" data-bk-slots aria-labelledby="bk-slots-label"></ul>
+            <span class="sr-only" id="bk-slots-label">Horaires disponibles</span>
+          </div>
+        </div>
+        <div class="bk__tz">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M1.75 8h12.5M8 1.75c1.9 2 1.9 10.5 0 12.5M8 1.75c-1.9 2-1.9 10.5 0 12.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+          <span class="bk__tz-label">Heure locale</span>
+          <span class="bk__tz-now" data-bk-tz-now data-i18n-skip></span>
+          <button class="bk__link bk__tz-edit" type="button" data-bk-tz-edit aria-expanded="false" aria-controls="bk-tz-panel">Modifier</button>
+          <div class="bk__tz-panel" id="bk-tz-panel" data-bk-tz-panel hidden>
+            <label class="sr-only" for="bk-tz-search">Rechercher un fuseau horaire</label>
+            <input class="bk__tz-search" id="bk-tz-search" type="search" placeholder="Ville, ex. Madrid, New York" autocomplete="off" spellcheck="false" enterkeyhint="search" data-bk-tz-search>
+            <ul class="bk__tz-list" data-bk-tz-list aria-label="Fuseaux horaires" data-i18n-skip></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 · details -->
+      <section class="bk__pane" data-pane="form" hidden>
+        <h2 class="bk__title" id="bk-title-form" tabindex="-1">Vos coordonnées</h2>
+        <div class="bk__recap" data-bk-recap></div>
+        <form class="bk__form" data-bk-form novalidate>
+          <div class="bk__field">
+            <label for="bk-name">Prénom et nom</label>
+            <input id="bk-name" name="name" type="text" autocomplete="name" maxlength="80" required aria-describedby="bk-name-err">
+            <p class="bk__err" id="bk-name-err"></p>
+          </div>
+          <div class="bk__field">
+            <label for="bk-email">Email</label>
+            <input id="bk-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required aria-describedby="bk-email-err">
+            <p class="bk__err" id="bk-email-err"></p>
+          </div>
+          <div class="bk__field">
+            <label for="bk-phone">Téléphone / WhatsApp <span class="bk__opt">facultatif</span></label>
+            <input id="bk-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="32" aria-describedby="bk-phone-err">
+            <p class="bk__err" id="bk-phone-err"></p>
+          </div>
+          <div class="bk__field">
+            <label for="bk-company">Entreprise / activité <span class="bk__opt">facultatif</span></label>
+            <input id="bk-company" name="company" type="text" autocomplete="organization" maxlength="120">
+          </div>
+          <fieldset class="bk__field bk__types" aria-describedby="bk-types-err">
+            <legend>Que souhaitez-vous créer ?</legend>
+            <p class="bk__hint">Plusieurs choix possibles.</p>
+            <div class="bk__type-list" data-bk-types>
+              <button class="bk__type" type="button" data-type="landing_page" aria-pressed="false"><svg class="bk__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Landing page</span></button>
+              <button class="bk__type" type="button" data-type="multi_page" aria-pressed="false"><svg class="bk__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Site multi-pages</span></button>
+              <button class="bk__type" type="button" data-type="visual_identity" aria-pressed="false"><svg class="bk__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Identité visuelle / design graphique</span></button>
+              <button class="bk__type" type="button" data-type="logo" aria-pressed="false"><svg class="bk__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Création ou refonte de logo</span></button>
+              <button class="bk__type" type="button" data-type="other" aria-pressed="false"><svg class="bk__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Autre</span></button>
+            </div>
+            <p class="bk__err" id="bk-types-err"></p>
+          </fieldset>
+          <div class="bk__field">
+            <label for="bk-message">Parlez-nous brièvement de votre projet <span class="bk__opt">facultatif</span></label>
+            <textarea id="bk-message" name="message" rows="3" maxlength="1500"></textarea>
+          </div>
+          <div class="bk__hp" aria-hidden="true">
+            <label for="bk-website">Site web</label>
+            <input id="bk-website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+          <p class="bk__fail" data-bk-fail role="alert" hidden></p>
+          <button class="btn btn--primary btn--lg btn--block bk__submit" type="submit" data-bk-submit>Confirmer le rendez-vous</button>
+          <p class="bk__legal" data-i18n="html">Vos informations servent uniquement à organiser cet échange. <a href="confidentialite/">Politique de confidentialité</a></p>
+        </form>
+      </section>
+
+      <!-- 3 · confirmed -->
+      <section class="bk__pane bk__done" data-pane="done" hidden>
+        <span class="bk__seal" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h2 class="bk__title" id="bk-title-done" tabindex="-1">C’est réservé.</h2>
+        <p class="bk__sub">Votre rendez-vous est confirmé. Vous recevrez un rappel avec le lien de visioconférence avant notre échange.</p>
+        <div class="bk__recap" data-bk-done-recap></div>
+        <div class="bk__actions">
+          <button class="btn btn--on-dark btn--lg" type="button" data-bk-ics>Ajouter au calendrier</button>
+        </div>
+        <button class="bk__link" type="button" data-bk-close>Fermer</button>
+      </section>
+
+      <!-- fallback: only on a real error -->
+      <section class="bk__pane bk__down" data-pane="error" hidden>
+        <h2 class="bk__title" id="bk-title-error" tabindex="-1">Les créneaux ne sont pas disponibles pour le moment.</h2>
+        <p class="bk__sub">Écrivez-nous : nous vous proposons un moment rapidement.</p>
+        <div class="bk__actions">
+          <a class="btn btn--primary btn--lg" data-contact="whatsapp" href="https://wa.me/33769965798" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a class="btn btn--on-dark btn--lg" data-contact="email" href="mailto:contact@scalia.do">contact@scalia.do</a>
+        </div>
+        <button class="bk__link" type="button" data-bk-retry>Réessayer</button>
+      </section>
     </div>
-    <div class="cal__state cal__state--error">
-      <p class="cal__big">Le calendrier n’a pas pu être chargé.</p>
-      <p class="cal__muted">Vous pouvez réserver directement sur la page Calendly.</p>
-      <a class="btn btn--secondary" id="cal-fallback" href="https://calendly.com/contact-scalia/30min" target="_blank" rel="noopener">Ouvrir Calendly</a>
-    </div>
-    <div class="cal__state cal__state--ready" id="cal-frame"></div>
+
+    <!-- Signature: assets/powered-by-scalia.webp (Scalia's own artwork,
+         transparent) replaces the text version once it has loaded. -->
+    <footer class="bk__foot" data-bk-foot data-powered-src="assets/powered-by-scalia.webp">
+      <span class="bk__foot-text"><span>Powered by</span> <img src="assets/scalia-wordmark.webp" width="785" height="120" alt="Scalia" loading="lazy"></span>
+    </footer>
   </div>
 </dialog>
 
@@ -761,6 +872,7 @@
 <script src="voices.js"></script>
 <script src="scrollcraft.js"></script>
 <script src="main.js"></script>
+<script src="booking.js"></script>
 <script src="fab.js"></script>
 </body>
 </html>

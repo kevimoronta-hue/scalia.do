@@ -3,3 +3,8 @@ README.md
 BRIEF.md
 .gitignore
 .vercelignore
+
+# Local tooling and documentation, not part of the deployment.
+# (server/ is required by the /api functions and must stay deployed.)
+scripts/
+.env.example

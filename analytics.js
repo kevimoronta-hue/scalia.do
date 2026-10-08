@@ -10,7 +10,8 @@
 
    Events
      cta_click         primary call-to-action clicked     { place }
-     calendly_open     booking calendar opened            { place, lang }
+     booking_open      booking sheet opened               { place, lang }
+     booking_confirmed booking confirmed                  { lang }
      whatsapp_click    WhatsApp link or button clicked    { place }
      email_click       email link clicked                 { place }
      testimonial_play  testimonial video started          { video }  (Wistia id)
@@ -54,7 +55,7 @@
     var el = e.target.closest('a, button');
     if (!el) return;
     var href = el.getAttribute('href') || '';
-    if (el.matches('[data-open-calendly], [data-action="open-calendly"]')) { track('calendly_open', { place: place(el), lang: locale() }); return; }
+    if (el.matches('[data-open-booking]')) { track('booking_open', { place: place(el), lang: locale() }); return; }
     if (/^https:\/\/wa\.me\//.test(href)) { track('whatsapp_click', { place: place(el) }); return; }
     if (/^mailto:/.test(href)) { track('email_click', { place: place(el) }); return; }
     if (el.matches('.btn--primary')) { track('cta_click', { place: place(el) }); return; }

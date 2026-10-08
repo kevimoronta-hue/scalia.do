@@ -2139,65 +2139,6 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .wa-fab.is-visible { transition-delay: 0s; }
 }
 
-/* ===================================================== CALENDLY MODAL == */
-.cal {
-  width: min(920px, calc(100vw - 24px)); max-width: none;
-  height: min(760px, calc(100svh - 24px)); max-height: none;
-  padding: 0; border: 0; border-radius: 24px;
-  background: linear-gradient(180deg, #FFFFFF, #F7F5F1); color: var(--fg);
-  box-shadow: 0 0 0 1px rgba(14, 11, 10, 0.08), 0 40px 90px -30px rgba(0, 0, 0, 0.6);
-  overflow: hidden;
-}
-.cal[open] { display: flex; flex-direction: column; animation: cal-in 300ms var(--ease-out); }
-.cal::backdrop { background: rgba(10, 8, 7, 0.6); }
-@keyframes cal-in { from { opacity: 0; transform: translateY(10px) scale(0.985); } }
-.cal__head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 12px 10px 24px; border-bottom: 1px solid var(--hair);
-}
-.cal__title { font-weight: 650; font-size: 16px; letter-spacing: -0.015em; }
-.cal__close { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 12px; background: transparent; cursor: pointer; color: var(--fg); transition: background-color var(--t-ui) ease, transform var(--t-press) var(--ease-out); }
-.cal__close:hover { background: var(--ivory-2); }
-.cal__close:active { transform: scale(0.94); }
-.cal__body { position: relative; flex: 1; min-height: 0; }
-.cal__state { position: absolute; inset: 0; display: none; padding: 32px; place-content: center; justify-items: center; text-align: center; gap: 12px; }
-.cal__body[data-state="loading"] .cal__state--loading,
-.cal__body[data-state="error"] .cal__state--error { display: grid; }
-/* The calendar layer stays rendered while it loads (a hidden frame is
-   throttled and Calendly would only start booting once shown), and fades
-   in over the placeholder once Calendly reports its page is drawn. */
-.cal__state--ready { display: block; padding: 0; opacity: 0; pointer-events: none; transition: opacity 200ms var(--ease-out); }
-.cal__body[data-state="ready"] .cal__state--ready { opacity: 1; pointer-events: auto; }
-.cal__body[data-state="error"] .cal__state--ready { visibility: hidden; }
-.cal__state--ready iframe { width: 100%; height: 100%; border: 0; }
-/* Prepared in the background: the closed panel keeps its size so Calendly
-   lays out once, transparent, inert and behind the page. Opening it moves
-   it to the top layer without reloading the frame. */
-.cal[data-warm]:not([open]) {
-  display: flex; flex-direction: column;
-  position: fixed; inset: 0 auto auto 0; margin: 0;
-  opacity: 0; pointer-events: none; z-index: -1;
-}
-.cal__state--loading p { color: var(--fg-2); font-size: 15px; letter-spacing: -0.005em; }
-/* Usually the calendar is drawn before the click. When it is not, the
-   placeholder stays quiet: the outline appears after a beat and the words
-   only if the wait goes past a second. */
-.cal[open] .cal__skel { animation: cal-quiet 240ms ease 120ms backwards, cal-breathe 1.6s ease-in-out 360ms infinite alternate; }
-.cal[open] .cal__state--loading p { animation: cal-quiet 300ms ease 1100ms backwards; }
-@keyframes cal-quiet { from { opacity: 0; } }
-.cal__skel { width: min(320px, 100%); display: grid; gap: 10px; justify-items: start; margin-bottom: 10px; }
-.cal__sk, .cal__sk-grid i { display: block; border-radius: 8px; background: rgba(14, 11, 10, 0.07); }
-.cal__sk--title { width: 58%; height: 14px; }
-.cal__sk--sub { width: 36%; height: 10px; }
-.cal__sk-grid { width: 100%; margin-top: 10px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
-.cal__sk-grid i { aspect-ratio: 1; border-radius: 50%; }
-.cal__sk-grid i:nth-child(7n + 3), .cal__sk-grid i:nth-child(7n + 5) { background: rgba(205, 169, 130, 0.22); }
-@keyframes cal-breathe { from { opacity: 0.55; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .cal[open] .cal__skel, .cal[open] .cal__state--loading p { animation: none; } .cal__state--ready { transition: none; } }
-.cal__big { font-size: clamp(20px, 1rem + 1vw, 28px); font-weight: 650; letter-spacing: -0.03em; max-width: 18em; }
-.cal__muted { color: var(--fg-2); }
-.cal__state--error .btn { margin-top: 12px; }
-
 /* ============================================================ REVEALS ==
    One library, fired once by IntersectionObserver. Content is visible
    without JS (the .js class gates the hidden state).
@@ -2259,7 +2200,6 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .opt__glow { opacity: 1; transform: none; }
   .reasons.is-live .reason__body { opacity: 1; }
   .reasons::after { transform: none; }
-  .cal[open] { animation: none; }
   .final__mark { transform: none !important; }
   .btn:active, .nav__burger:active { transform: none; }
   .why__card { transform: none; }
