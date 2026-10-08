@@ -1144,6 +1144,13 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .why { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(48px, 6vw, 112px); align-items: start; }
   .why__head { position: sticky; top: 160px; }
   .why__inner { padding: 140px 40px 36px; min-height: 380px; }
+  /* Desktop dwell: the spacer sits inside the content box (padding does not
+     extend a sticky range), so the last card settles before the stack leaves.
+     Each margin pairs with its sticky offset: all four release on the same
+     frame instead of collapsing onto one another. */
+  .why__stack { padding-bottom: 0; }
+  .why__stack::after { content: ""; height: clamp(160px, 28vh, 320px); }
+  .why__card { margin-bottom: calc((3 - var(--i)) * 12px); }
 }
 
 /* ========================================================== SIX AXES ==
@@ -2195,6 +2202,12 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .js [data-reveal="line"].is-in::before { transform: scaleX(1); }
 /* Desktop map cards are driven by scroll progress, not by the observer. */
 @media (min-width: 1024px) {
+  /* Desktop depth: wide cards travel less and barely scale, so a row arrives
+     as one calm step instead of a zoom. Mobile keeps the fuller values. */
+  .js [data-reveal="depth"] { transition-duration: 700ms, 900ms, 900ms; }
+  .js [data-reveal="depth"]:not(.is-in) { transform: translate3d(0, 24px, 0) scale(0.985); }
+  /* The why cards already slide in through their sticky stack: fade only. */
+  .js .why__inner[data-reveal="depth"]:not(.is-in) { transform: translate3d(0, 12px, 0); }
   .js .axis[data-reveal], .js .axis[data-reveal]:not(.is-in) {
     transform: none;
     opacity: calc(0.42 + 0.58 * var(--k));

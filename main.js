@@ -386,11 +386,33 @@
   /* ============================================================ REVEALS ==
      One observer for the whole page. Each element reveals once. Children of
      a [data-reveal-group] get a short stagger unless they set their own. */
+  // Desktop grids stagger within a row only: a second row enters late
+  // already, so it does not also wait for the cards above it. Computed on
+  // load and on breakpoint or resize, never per frame.
+  var rvItems = [];
   Array.prototype.forEach.call(document.querySelectorAll('[data-reveal-group]'), function (g) {
-    Array.prototype.forEach.call(g.querySelectorAll('[data-reveal]'), function (el, i) {
-      if (!el.style.getPropertyValue('--rv-d')) el.style.setProperty('--rv-d', (i * 55) + 'ms');
+    var list = [];
+    Array.prototype.forEach.call(g.querySelectorAll('[data-reveal]'), function (el) {
+      if (!el.style.getPropertyValue('--rv-d')) list.push(el);
     });
+    if (list.length) rvItems.push(list);
   });
+  function staggerReveals() {
+    rvItems.forEach(function (list) {
+      var row = -1, top = null;
+      list.forEach(function (el, i) {
+        var n = i;
+        if (desktopMQ.matches) {
+          var t = el.offsetTop;
+          row = t === top ? row + 1 : 0; top = t; n = row;
+        }
+        el.style.setProperty('--rv-d', (n * 55) + 'ms');
+      });
+    });
+  }
+  staggerReveals();
+  var rvTimer = 0;
+  window.addEventListener('resize', function () { clearTimeout(rvTimer); rvTimer = setTimeout(staggerReveals, 150); });
   var revealEls = document.querySelectorAll('[data-reveal]');
   if ('IntersectionObserver' in window) {
     var rio = new IntersectionObserver(function (entries) {

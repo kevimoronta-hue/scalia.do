@@ -76,14 +76,33 @@
      Same contract as the home page: each [data-reveal] reveals once. Masked
      headlines are watched through their parent (a fully clipped element
      never intersects). Group children get a 90ms stagger. */
+  // Desktop grids stagger within a row only (the second row of directors
+  // no longer waits 180/270ms on top of entering later). Computed on load and
+  // on resize, never per frame.
+  var rvItems = [];
   Array.prototype.forEach.call(document.querySelectorAll('[data-reveal-group]'), function (g) {
-    var i = 0;
+    var list = [];
     Array.prototype.forEach.call(g.children, function (el) {
-      if (el.hasAttribute('data-reveal') && !el.style.getPropertyValue('--rv-d')) {
-        el.style.setProperty('--rv-d', (i++ * 90) + 'ms');
-      }
+      if (el.hasAttribute('data-reveal') && !el.style.getPropertyValue('--rv-d')) list.push(el);
     });
+    if (list.length) rvItems.push(list);
   });
+  function staggerReveals() {
+    rvItems.forEach(function (list) {
+      var row = -1, top = null;
+      list.forEach(function (el, i) {
+        var n = i;
+        if (desktopMQ.matches) {
+          var t = el.offsetTop;
+          row = t === top ? row + 1 : 0; top = t; n = row;
+        }
+        el.style.setProperty('--rv-d', (n * 90) + 'ms');
+      });
+    });
+  }
+  staggerReveals();
+  var rvTimer = 0;
+  window.addEventListener('resize', function () { clearTimeout(rvTimer); rvTimer = setTimeout(staggerReveals, 150); });
   var els = document.querySelectorAll('[data-reveal]');
   if (!('IntersectionObserver' in window)) {
     Array.prototype.forEach.call(els, function (el) { el.classList.add('is-in'); });
