@@ -1,33 +1,756 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scalia — Site en rénovation / Sitio en renovación</title>
-  <meta name="description" content="Notre nouveau site prend forme. Merci pour votre patience. / Nuestro nuevo sitio está tomando forma. Gracias por tu paciencia.">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scalia · L’agence qui vous connecte.</title>
+<meta name="description" content="Scalia, agence de création de sites web. Nous transformons votre présence digitale en un espace crédible, visible et conçu pour créer des opportunités.">
+<meta name="theme-color" content="#0E0B0A">
+<link rel="canonical" href="https://scalia.do/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Scalia">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:url" content="https://scalia.do/">
+<meta property="og:title" content="Scalia · L’agence qui vous connecte.">
+<meta property="og:description" content="Scalia, agence de création de sites web. Nous transformons votre présence digitale en un espace crédible, visible et conçu pour créer des opportunités.">
+<meta property="og:image" content="https://scalia.do/assets/og/scalia-og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Scalia, l’agence qui vous connecte. Création de sites web.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Scalia · L’agence qui vous connecte.">
+<meta name="twitter:description" content="Scalia, agence de création de sites web. Nous transformons votre présence digitale en un espace crédible, visible et conçu pour créer des opportunités.">
+<meta name="twitter:image" content="https://scalia.do/assets/og/scalia-og.jpg">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script>document.documentElement.classList.add('js');</script>
+<script src="i18n/boot.js" data-root=""></script>
+<link rel="dns-prefetch" href="https://fast.wistia.com">
+<link rel="dns-prefetch" href="https://embed-ssl.wistia.com">
+<link rel="preload" href="assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" as="image" href="assets/video/poster-720.jpg" media="(max-width: 767px)" fetchpriority="high">
+<link rel="preload" as="image" href="assets/video/poster-1080.jpg" media="(min-width: 768px)" fetchpriority="high">
+<link rel="stylesheet" href="scrollcraft.css">
+<link rel="stylesheet" href="styles.css">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "Organization",
+   "@id": "https://scalia.do/#organization",
+   "name": "SCALIA",
+   "alternateName": "Scalia",
+   "url": "https://scalia.do/",
+   "logo": {
+    "@type": "ImageObject",
+    "url": "https://scalia.do/assets/scalia-horizontal.png",
+    "width": 509,
+    "height": 200
+   },
+   "image": "https://scalia.do/assets/og/scalia-og.jpg",
+   "slogan": "L’agence qui vous connecte.",
+   "description": "Scalia, agence de création de sites web. Nous transformons votre présence digitale en un espace crédible, visible et conçu pour créer des opportunités.",
+   "email": "contact@scalia.do",
+   "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "61 route de Borny",
+    "postalCode": "57070",
+    "addressLocality": "Metz",
+    "addressCountry": "FR"
+   },
+   "identifier": {
+    "@type": "PropertyValue",
+    "propertyID": "SIRET",
+    "value": "10305655200013"
+   },
+   "founder": {
+    "@id": "https://scalia.do/#founder"
+   },
+   "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "email": "contact@scalia.do",
+    "availableLanguage": [
+     "fr",
+     "en",
+     "es"
+    ]
+   }
+  },
+  {
+   "@type": "Person",
+   "@id": "https://scalia.do/#founder",
+   "name": "Kevi Moronta",
+   "jobTitle": "Fondateur de Scalia",
+   "worksFor": {
+    "@id": "https://scalia.do/#organization"
+   },
+   "sameAs": [
+    "https://www.linkedin.com/in/kevi-moronta",
+    "https://www.instagram.com/kevimoronta/"
+   ]
+  },
+  {
+   "@type": "WebSite",
+   "@id": "https://scalia.do/#website",
+   "url": "https://scalia.do/",
+   "name": "Scalia",
+   "inLanguage": "fr",
+   "publisher": {
+    "@id": "https://scalia.do/#organization"
+   }
+  },
+  {
+   "@type": "WebPage",
+   "@id": "https://scalia.do/#webpage",
+   "url": "https://scalia.do/",
+   "name": "Scalia · L’agence qui vous connecte.",
+   "isPartOf": {
+    "@id": "https://scalia.do/#website"
+   },
+   "about": {
+    "@id": "https://scalia.do/#organization"
+   },
+   "inLanguage": "fr",
+   "primaryImageOfPage": "https://scalia.do/assets/og/scalia-og.jpg"
+  },
+  {
+   "@type": "Service",
+   "@id": "https://scalia.do/#landing-page",
+   "name": "Landing page",
+   "serviceType": "Création de site web",
+   "description": "Une page conçue pour présenter votre activité, renforcer votre crédibilité et générer des prises de contact.",
+   "provider": {
+    "@id": "https://scalia.do/#organization"
+   },
+   "offers": {
+    "@type": "Offer",
+    "price": "700",
+    "priceCurrency": "EUR",
+    "url": "https://scalia.do/#tarifs",
+    "description": "700 € — taxes applicables incluses"
+   }
+  },
+  {
+   "@type": "Service",
+   "@id": "https://scalia.do/#identite",
+   "name": "Identité visuelle",
+   "serviceType": "Création d’identité visuelle",
+   "description": "Logo, couleurs et typographie forment un langage reconnaissable avant même qu’un mot soit lu.",
+   "provider": {
+    "@id": "https://scalia.do/#organization"
+   }
+  }
+ ]
+}
+</script>
 </head>
 <body>
-  <main class="page-container">
-    <div class="scalia-stage">
-      <picture class="scalia-picture">
-        <source media="(max-width: 768px), (orientation: portrait)" srcset="assets/reconstruction-mobile.jpg">
-        <img src="assets/reconstruction-desktop.jpg" alt="Scalia - Site en rénovation" class="scalia-img">
-      </picture>
 
-      <nav class="hotspots-layer" aria-label="Liens réseaux et contact">
-        <a href="https://www.instagram.com/kevimoronta/" target="_blank" rel="noopener noreferrer" class="hotspot hotspot-instagram" aria-label="Instagram Kevi Moronta"></a>
-        <a href="https://www.linkedin.com/in/kevi-moronta" target="_blank" rel="noopener noreferrer" class="hotspot hotspot-linkedin" aria-label="LinkedIn Kevi Moronta"></a>
-        <a href="mailto:kevi.moronta@gmail.com" class="hotspot hotspot-email" aria-label="Envoyer un email"></a>
+<a class="skip" href="#contenu">Aller au contenu</a>
+
+<!-- ============================================================ NAVBAR -->
+<header class="nav" id="nav" data-scrolled="false" data-open="false" data-tone="dark">
+  <div class="nav__glass" aria-hidden="true"></div>
+  <div class="nav__row">
+    <div class="nav__side nav__side--l">
+      <div class="cur-switch" role="radiogroup" aria-label="Devise" data-currency-switch>
+        <button type="button" role="radio" aria-checked="true" data-currency="EUR" aria-label="Euro"><span aria-hidden="true">€</span></button>
+        <button type="button" role="radio" aria-checked="false" data-currency="USD" aria-label="Dollar US" tabindex="-1"><span aria-hidden="true">$</span></button>
+      </div>
+      <nav aria-label="Navigation principale">
+      <ul class="nav__links">
+        <li><a href="#pourquoi">Pourquoi Scalia</a></li>
+        <li><a href="#approche">Notre approche</a></li>
+        <li><a href="#tarifs">Tarification</a></li>
+      </ul>
       </nav>
     </div>
-
-    <!-- Ultra-Premium Round WhatsApp Floating Button (Bottom-Right) -->
-    <a href="https://wa.me/33769965798" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Contacter sur WhatsApp">
-      <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.762.459 3.48 1.333 5.001L2 22l5.127-1.341c1.464.798 3.111 1.218 4.88 1.218h.004c5.504 0 9.987-4.478 9.988-9.985 0-2.667-1.04-5.174-2.929-7.062C17.18 2.942 14.676 2 12.012 2zm5.825 14.286c-.244.688-1.42 1.314-1.954 1.396-.532.083-1.226.118-3.568-.847-2.997-1.236-4.936-4.275-5.086-4.475-.149-.2-1.224-1.629-1.224-3.104 0-1.474.773-2.199 1.047-2.497.273-.298.595-.373.794-.373.199 0 .398.002.571.011.185.009.434-.07.677.514.248.596.843 2.057.917 2.206.074.149.124.323.025.522-.099.199-.149.323-.298.497-.149.174-.313.39-.447.523-.149.149-.304.312-.131.609.174.297.771 1.272 1.657 2.06 1.139 1.015 2.1 1.329 2.398 1.478.298.149.472.124.646-.075.174-.199.746-.869.945-1.168.199-.298.398-.248.67-.149.273.099 1.74.821 2.039.97.298.149.497.223.571.348.074.124.074.721-.17 1.409z"/>
-      </svg>
+    <a class="nav__brand" href="#top" aria-label="Scalia, retour à l’accueil">
+      <img src="assets/scalia-horizontal.webp" width="509" height="200" alt="Scalia">
     </a>
-  </main>
+    <div class="nav__side nav__side--r">
+      <ul class="nav__links" aria-label="Navigation secondaire">
+        <li><a href="scalians/">Les Scalians</a></li>
+        <li><a href="#rendez-vous">Rendez-vous</a></li>
+      </ul>
+      <div class="lang" data-lang data-open="false">
+        <button class="lang__btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="Changer de langue" data-lang-toggle>
+          <span class="lang__flag" data-lang-flag data-i18n-skip aria-hidden="true">🇫🇷</span><span class="lang__code" data-lang-code data-i18n-skip>FR</span>
+          <svg class="lang__chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5L6 7.5 9 4.5"/></svg>
+        </button>
+        <ul class="lang__menu" id="lang-menu" role="menu" aria-label="Langue" data-lang-menu data-i18n-skip>
+          <li role="none"><button type="button" role="menuitemradio" aria-checked="true" data-lang-option data-lang="fr" lang="fr"><span class="lang__flag" aria-hidden="true">🇫🇷</span><span class="lang__name">Français</span><span class="lang__iso">FR</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
+          <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-lang-option data-lang="en" lang="en"><span class="lang__flag" aria-hidden="true">🇺🇸</span><span class="lang__name">English</span><span class="lang__iso">EN</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
+          <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-lang-option data-lang="es" lang="es"><span class="lang__flag" aria-hidden="true">🇩🇴</span><span class="lang__name">Español</span><span class="lang__iso">ES</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
+        </ul>
+      </div>
+      <a class="btn btn--primary btn--sm nav__cta" href="#rendez-vous">Parler de mon projet</a>
+      <button class="nav__burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Ouvrir le menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="menu-scrim" id="menu-scrim" aria-hidden="true"></div>
+<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menu" inert>
+  <nav aria-label="Navigation mobile">
+    <ul>
+      <li><a href="#top">Accueil</a></li>
+      <li><a href="#pourquoi">Pourquoi Scalia</a></li>
+      <li><a href="#approche">Notre approche</a></li>
+      <li><a href="#tarifs">Tarification</a></li>
+      <li><a href="scalians/">Les Scalians</a></li>
+      <li><a href="#rendez-vous">Rendez-vous</a></li>
+    </ul>
+  </nav>
+  <a class="btn btn--primary btn--lg btn--block menu__cta" href="#rendez-vous">Parler de mon projet</a>
+  <p class="menu__sig">L’agence qui vous connecte.</p>
+</div>
+
+<main id="top">
+
+  <!-- ============================================================ 1 · HERO
+       One vertical film (9:16). Phones: full bleed. Landscape screens: the film
+       becomes a full-height column on the right. ScrollCraft zone 1: the exit. -->
+  <section class="hero" id="hero" data-sc-act="pin" data-sc-span="1.6" aria-labelledby="hero-title">
+    <div data-sc-stage class="hero__stage">
+      <div class="hero__film" aria-hidden="true">
+        <picture>
+          <source media="(min-width: 768px)" srcset="assets/video/poster-1080.jpg" width="1080" height="1920">
+          <img class="hero__poster" src="assets/video/poster-720.jpg" width="720" height="1280" alt="" fetchpriority="high" decoding="async">
+        </picture>
+        <video class="hero__video" id="hero-video" muted loop playsinline autoplay preload="none" disablepictureinpicture disableremoteplayback tabindex="-1"></video>
+      </div>
+      <div class="hero__scrim" aria-hidden="true"></div>
+      <div class="hero__exit" aria-hidden="true"></div>
+
+      <div class="hero__content" id="contenu">
+        <p class="label label--light hero__label">Création de sites web</p>
+        <h1 class="hero__title" id="hero-title">L’agence qui vous connecte.</h1>
+        <p class="hero__sub">Nous transformons votre présence digitale en un espace crédible, visible et conçu pour créer des opportunités.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary btn--lg" href="#rendez-vous">Parler de mon projet</a>
+          <a class="btn btn--secondary btn--on-dark btn--lg hero__secondary" href="#approche">Découvrir notre approche</a>
+          <a class="link-arrow link-arrow--light hero__tertiary" href="#approche">Découvrir notre approche<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5"/></svg></a>
+        </div>
+      </div>
+
+      <!-- Keyboard-only pause control (WCAG 2.2.2). -->
+      <button class="hero__toggle" id="hero-toggle" type="button" aria-label="Mettre la vidéo en pause" hidden>
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path class="i-pause" d="M4.5 3h2v10h-2zM9.5 3h2v10h-2z"/><path class="i-play" d="M5 3l8 5-8 5z"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================ 2 · CRÉDIBILITÉ
+       Ivory sheet sliding over the film. ScrollCraft zone 2: focus spine. -->
+  <section class="cred surface-ivory sheet sheet--hero" id="pourquoi" aria-labelledby="cred-title">
+    <span class="sheet__seam" aria-hidden="true"></span>
+    <div class="wrap">
+      <p class="statement" data-reveal="mask">Être présent ne suffit plus. <span class="tone-2">Il faut inspirer confiance.</span></p>
+
+      <article class="art-card art-card--cred" data-reveal="scale" data-art="cred" aria-labelledby="cred-title">
+        <picture class="art-card__art">
+          <source media="(min-width: 768px)" type="image/avif" srcset="assets/cards/cred-d-1280.avif 1280w, assets/cards/cred-d-1920.avif 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source media="(min-width: 768px)" type="image/webp" srcset="assets/cards/cred-d-1280.webp 1280w, assets/cards/cred-d-1920.webp 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source type="image/avif" srcset="assets/cards/cred-m-600.avif 600w, assets/cards/cred-m-1080.avif 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <source type="image/webp" srcset="assets/cards/cred-m-600.webp 600w, assets/cards/cred-m-1080.webp 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <img src="assets/cards/cred-m-600.webp" width="600" height="1061" alt="" loading="lazy" decoding="async">
+        </picture>
+        <div class="art-card__copy">
+          <h2 class="art-card__title" id="cred-title" data-reveal="mask">Votre crédibilité se construit avant le premier contact.</h2>
+          <p class="art-card__slogan" data-reveal="rise" style="--rv-d:160ms">La confiance se forme avant le premier mot.</p>
+        </div>
+      </article>
+
+      <div class="why">
+        <div class="why__head">
+          <p class="label" data-reveal="rise">Pourquoi Scalia</p>
+          <p class="why__lede" data-reveal="mask">Avant de vous écrire, vos futurs clients vous observent, vous comparent et se font déjà une opinion.</p>
+        </div>
+        <ol class="why__stack" id="why">
+          <li class="why__card" style="--i:0">
+            <div class="why__inner" data-reveal="depth">
+              <span class="why__idx" aria-hidden="true">01</span>
+              <h3 class="why__title" data-reveal="mask">Vous n’avez que quelques secondes pour inspirer confiance.</h3>
+              <p class="why__text" data-reveal="rise" style="--rv-d:140ms">Votre site façonne la première perception de votre entreprise avant même le premier échange.</p>
+            </div>
+          </li>
+          <li class="why__card" style="--i:1">
+            <div class="why__inner" data-reveal="depth">
+              <span class="why__idx" aria-hidden="true">02</span>
+              <h3 class="why__title" data-reveal="mask">Une offre comprise rapidement devient plus facile à choisir.</h3>
+              <p class="why__text" data-reveal="rise" style="--rv-d:140ms">Le visiteur doit comprendre immédiatement qui vous êtes, ce que vous proposez et pourquoi cela le concerne.</p>
+            </div>
+          </li>
+          <li class="why__card" style="--i:2">
+            <div class="why__inner" data-reveal="depth">
+              <span class="why__idx" aria-hidden="true">03</span>
+              <h3 class="why__title" data-reveal="mask">Votre présence doit refléter la qualité réelle de votre travail.</h3>
+              <p class="why__text" data-reveal="rise" style="--rv-d:140ms">Une entreprise compétente ne devrait jamais paraître moins sérieuse à cause d’une présence digitale insuffisante.</p>
+            </div>
+          </li>
+          <li class="why__card" style="--i:3">
+            <div class="why__inner" data-reveal="depth">
+              <span class="why__idx" aria-hidden="true">04</span>
+              <h3 class="why__title" data-reveal="mask">La confiance doit conduire quelque part.</h3>
+              <p class="why__text" data-reveal="rise" style="--rv-d:140ms">Chaque section doit rapprocher le visiteur d’un contact, d’un rendez-vous ou d’une demande.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 3 · TROUVÉ / CONVAINCRE
+       Dark chapter opens with two signature cards. -->
+  <section class="duo surface-espresso" id="approche" aria-label="Notre approche">
+    <div class="wrap duo__wrap">
+      <article class="art-card art-card--found" data-reveal="scale" data-art="found" aria-labelledby="found-title">
+        <picture class="art-card__art">
+          <source media="(min-width: 768px)" type="image/avif" srcset="assets/cards/found-d-1280.avif 1280w, assets/cards/found-d-1920.avif 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source media="(min-width: 768px)" type="image/webp" srcset="assets/cards/found-d-1280.webp 1280w, assets/cards/found-d-1920.webp 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source type="image/avif" srcset="assets/cards/found-m-600.avif 600w, assets/cards/found-m-1080.avif 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <source type="image/webp" srcset="assets/cards/found-m-600.webp 600w, assets/cards/found-m-1080.webp 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <img src="assets/cards/found-m-600.webp" width="600" height="1061" alt="" loading="lazy" decoding="async">
+        </picture>
+        <div class="art-card__copy">
+          <p class="label label--light" data-reveal="rise">Notre approche</p>
+          <h2 class="art-card__title" id="found-title" data-reveal="mask">Pensé pour être trouvé.</h2>
+          <p class="art-card__slogan" data-reveal="rise" style="--rv-d:160ms">Visible là où l’on vous cherche.</p>
+        </div>
+      </article>
+      <article class="art-card art-card--convince" data-reveal="scale" data-art="convince" aria-labelledby="convince-title">
+        <picture class="art-card__art">
+          <source media="(min-width: 768px)" type="image/avif" srcset="assets/cards/convince-d-1280.avif 1280w, assets/cards/convince-d-1920.avif 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source media="(min-width: 768px)" type="image/webp" srcset="assets/cards/convince-d-1280.webp 1280w, assets/cards/convince-d-1920.webp 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source type="image/avif" srcset="assets/cards/convince-m-600.avif 600w, assets/cards/convince-m-1080.avif 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <source type="image/webp" srcset="assets/cards/convince-m-600.webp 600w, assets/cards/convince-m-1080.webp 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <img src="assets/cards/convince-m-600.webp" width="600" height="1061" alt="" loading="lazy" decoding="async">
+        </picture>
+        <div class="art-card__copy">
+          <h2 class="art-card__title" id="convince-title" data-reveal="mask">Conçu pour convaincre.</h2>
+          <p class="art-card__slogan" data-reveal="rise" style="--rv-d:160ms">Ce que l’on voit décide de ce que l’on croit.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================================================ 3b · SIX AXES
+       One emblem per axis, same light, same plinth: a set, not a grid of icons.
+       Phones: a swipeable rail. Tablet: two columns. Desktop: three. -->
+  <section class="axes-sec surface-espresso" id="axes" aria-labelledby="opt-title">
+    <div class="wrap axes-sec__head">
+      <div>
+        <p class="label label--light" data-reveal="rise">Six axes</p>
+        <h2 class="h2" id="opt-title" data-reveal="mask">Trouvé, compris, choisi. <span class="tone-2">Une seule construction.</span></h2>
+      </div>
+      <p class="lede" data-reveal="rise" style="--rv-d:120ms">Chaque site Scalia réunit visibilité, performance et expérience utilisateur dans une construction cohérente.</p>
+    </div>
+    <div class="axes-rail" tabindex="0" role="region" aria-label="Les six axes, faites défiler">
+      <ol class="axes-rail__list" data-reveal-group>
+        <li class="axis-card" data-reveal="depth">
+          <div class="axis-card__art" aria-hidden="true">
+            <picture>
+            <source type="image/avif" srcset="assets/cards/axis-seo-a-480.avif 480w, assets/cards/axis-seo-a-840.avif 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <source type="image/webp" srcset="assets/cards/axis-seo-a-480.webp 480w, assets/cards/axis-seo-a-840.webp 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <img src="assets/cards/axis-seo-a-480.webp" width="840" height="672" alt="" loading="lazy" decoding="async">
+          </picture>
+          </div>
+          <div class="axis-card__body">
+            <h3 class="axis-card__title">SEO</h3>
+            <p class="axis-card__desc">Une structure claire pour aider les moteurs de recherche à comprendre votre activité.</p>
+            <p class="axis-card__tech">Balisage sémantique · données structurées</p>
+          </div>
+        </li>
+        <li class="axis-card" data-reveal="depth">
+          <div class="axis-card__art" aria-hidden="true">
+            <picture>
+            <source type="image/avif" srcset="assets/cards/axis-geo-a-480.avif 480w, assets/cards/axis-geo-a-840.avif 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <source type="image/webp" srcset="assets/cards/axis-geo-a-480.webp 480w, assets/cards/axis-geo-a-840.webp 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <img src="assets/cards/axis-geo-a-480.webp" width="840" height="672" alt="" loading="lazy" decoding="async">
+          </picture>
+          </div>
+          <div class="axis-card__body">
+            <h3 class="axis-card__title">GEO</h3>
+            <p class="axis-card__desc">Des informations organisées pour être comprises par les nouveaux moteurs de réponse et assistants basés sur l’intelligence artificielle.</p>
+            <p class="axis-card__tech">Contenus structurés · réponses explicites</p>
+          </div>
+        </li>
+        <li class="axis-card" data-reveal="depth">
+          <div class="axis-card__art" aria-hidden="true">
+            <picture>
+            <source type="image/avif" srcset="assets/cards/axis-perf-a-480.avif 480w, assets/cards/axis-perf-a-840.avif 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <source type="image/webp" srcset="assets/cards/axis-perf-a-480.webp 480w, assets/cards/axis-perf-a-840.webp 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <img src="assets/cards/axis-perf-a-480.webp" width="840" height="672" alt="" loading="lazy" decoding="async">
+          </picture>
+          </div>
+          <div class="axis-card__body">
+            <h3 class="axis-card__title">Performance</h3>
+            <p class="axis-card__desc">Une construction légère et rapide, pensée pour ne pas perdre vos visiteurs.</p>
+            <p class="axis-card__tech">Images optimisées · chargement différé</p>
+          </div>
+        </li>
+        <li class="axis-card" data-reveal="depth">
+          <div class="axis-card__art" aria-hidden="true">
+            <picture>
+            <source type="image/avif" srcset="assets/cards/axis-resp-a-480.avif 480w, assets/cards/axis-resp-a-840.avif 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <source type="image/webp" srcset="assets/cards/axis-resp-a-480.webp 480w, assets/cards/axis-resp-a-840.webp 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <img src="assets/cards/axis-resp-a-480.webp" width="840" height="672" alt="" loading="lazy" decoding="async">
+          </picture>
+          </div>
+          <div class="axis-card__body">
+            <h3 class="axis-card__title">Responsive</h3>
+            <p class="axis-card__desc">Une expérience adaptée au téléphone, à la tablette et à l’ordinateur.</p>
+            <p class="axis-card__tech">Mises en page fluides · zones tactiles confortables</p>
+          </div>
+        </li>
+        <li class="axis-card" data-reveal="depth">
+          <div class="axis-card__art" aria-hidden="true">
+            <picture>
+            <source type="image/avif" srcset="assets/cards/axis-conv-a-480.avif 480w, assets/cards/axis-conv-a-840.avif 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <source type="image/webp" srcset="assets/cards/axis-conv-a-480.webp 480w, assets/cards/axis-conv-a-840.webp 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <img src="assets/cards/axis-conv-a-480.webp" width="840" height="672" alt="" loading="lazy" decoding="async">
+          </picture>
+          </div>
+          <div class="axis-card__body">
+            <h3 class="axis-card__title">Conversion</h3>
+            <p class="axis-card__desc">Un parcours conçu pour transformer l’intérêt en prise de contact.</p>
+            <p class="axis-card__tech">Appels à l’action clairs · formulaire court</p>
+          </div>
+        </li>
+        <li class="axis-card" data-reveal="depth">
+          <div class="axis-card__art" aria-hidden="true">
+            <picture>
+            <source type="image/avif" srcset="assets/cards/axis-a11y-a-480.avif 480w, assets/cards/axis-a11y-a-840.avif 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <source type="image/webp" srcset="assets/cards/axis-a11y-a-480.webp 480w, assets/cards/axis-a11y-a-840.webp 840w" sizes="(min-width: 1100px) 400px, (min-width: 768px) 46vw, 82vw">
+            <img src="assets/cards/axis-a11y-a-480.webp" width="840" height="672" alt="" loading="lazy" decoding="async">
+          </picture>
+          </div>
+          <div class="axis-card__body">
+            <h3 class="axis-card__title">Accessibilité</h3>
+            <p class="axis-card__desc">Une interface lisible, compréhensible et utilisable par le plus grand nombre.</p>
+            <p class="axis-card__tech">Contrastes · navigation au clavier · textes alternatifs</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================================================ 4 · INFRASTRUCTURE
+       Same dark chapter, one step deeper. The line draws with the scroll. -->
+  <section class="infra surface-night" data-sc-act="flow" aria-labelledby="infra-title">
+    <div class="wrap">
+      <article class="art-card art-card--tech" data-reveal="scale" data-art="tech" aria-labelledby="infra-title">
+        <picture class="art-card__art">
+          <source media="(min-width: 768px)" type="image/avif" srcset="assets/cards/tech-d-1280.avif 1280w, assets/cards/tech-d-1920.avif 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source media="(min-width: 768px)" type="image/webp" srcset="assets/cards/tech-d-1280.webp 1280w, assets/cards/tech-d-1920.webp 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source type="image/avif" srcset="assets/cards/tech-m-600.avif 600w, assets/cards/tech-m-1080.avif 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <source type="image/webp" srcset="assets/cards/tech-m-600.webp 600w, assets/cards/tech-m-1080.webp 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <img src="assets/cards/tech-m-600.webp" width="600" height="1061" alt="" loading="lazy" decoding="async">
+        </picture>
+        <div class="art-card__copy">
+          <h2 class="art-card__title" id="infra-title" data-reveal="mask">La technologie travaille. <span class="tone-2">Vous n’avez pas à y penser.</span></h2>
+          <p class="art-card__slogan" data-reveal="rise" style="--rv-d:160ms">Tout fonctionne en coulisses.</p>
+        </div>
+      </article>
+      <div class="infra__head">
+        <p class="lede" data-reveal="rise">Votre site repose sur une infrastructure professionnelle configurée et gérée par Scalia pour offrir rapidité, stabilité et sécurité.</p>
+      </div>
+
+      <ol class="infra-cards" data-reveal-group>
+        <li class="infra-card" data-reveal="depth">
+          <div class="infra-card__art" aria-hidden="true">
+            <picture>
+            <source type="image/avif" srcset="assets/cards/infra-dist-a-480.avif 480w, assets/cards/infra-dist-a-840.avif 840w" sizes="(min-width: 900px) 400px, 92vw">
+            <source type="image/webp" srcset="assets/cards/infra-dist-a-480.webp 480w, assets/cards/infra-dist-a-840.webp 840w" sizes="(min-width: 900px) 400px, 92vw">
+            <img src="assets/cards/infra-dist-a-480.webp" width="840" height="560" alt="" loading="lazy" decoding="async">
+          </picture>
+          </div>
+          <div class="infra-card__body">
+            <h3 class="infra-card__title">Distribution rapide</h3>
+            <p class="infra-card__text">Les contenus sont distribués depuis une infrastructure optimisée afin de réduire les temps de chargement.</p>
+          </div>
+        </li>
+        <li class="infra-card" data-reveal="depth">
+          <div class="infra-card__art" aria-hidden="true">
+            <picture>
+            <source type="image/avif" srcset="assets/cards/infra-secure-a-480.avif 480w, assets/cards/infra-secure-a-840.avif 840w" sizes="(min-width: 900px) 400px, 92vw">
+            <source type="image/webp" srcset="assets/cards/infra-secure-a-480.webp 480w, assets/cards/infra-secure-a-840.webp 840w" sizes="(min-width: 900px) 400px, 92vw">
+            <img src="assets/cards/infra-secure-a-480.webp" width="840" height="560" alt="" loading="lazy" decoding="async">
+          </picture>
+          </div>
+          <div class="infra-card__body">
+            <h3 class="infra-card__title">Connexion sécurisée</h3>
+            <p class="infra-card__text">Votre site bénéficie automatiquement d’une connexion chiffrée, d’une infrastructure protégée et d’une diffusion optimisée pour offrir une navigation rapide et fiable à chaque visite.</p>
+          </div>
+        </li>
+        <li class="infra-card" data-reveal="depth">
+          <div class="infra-card__art" aria-hidden="true">
+            <picture>
+            <source type="image/avif" srcset="assets/cards/infra-manage-a-480.avif 480w, assets/cards/infra-manage-a-840.avif 840w" sizes="(min-width: 900px) 400px, 92vw">
+            <source type="image/webp" srcset="assets/cards/infra-manage-a-480.webp 480w, assets/cards/infra-manage-a-840.webp 840w" sizes="(min-width: 900px) 400px, 92vw">
+            <img src="assets/cards/infra-manage-a-480.webp" width="840" height="560" alt="" loading="lazy" decoding="async">
+          </picture>
+          </div>
+          <div class="infra-card__body">
+            <h3 class="infra-card__title">Gestion technique</h3>
+            <p class="infra-card__text">Nous mobilisons nos talents et les technologies les plus adaptées pour assurer une mise en ligne propre, fiable et parfaitement maîtrisée.</p>
+          </div>
+        </li>
+      </ol>
+
+      <p class="infra__foot" data-reveal="line">Infrastructure professionnelle gérée par Scalia</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 5 · TARIFICATION
+       Light chapter opens: an ivory sheet rises over the dark one. -->
+  <section class="pricing surface-ivory sheet" id="tarifs" aria-labelledby="pricing-title">
+    <span class="sheet__seam" aria-hidden="true"></span>
+    <div class="wrap pricing__wrap">
+      <div class="pricing__head">
+        <p class="label" data-reveal="rise">Tarification</p>
+        <h2 class="h2" id="pricing-title" data-reveal="mask">Une tarification claire.</h2>
+        <p class="lede" data-reveal="rise" style="--rv-d:120ms">Vous savez ce qui est inclus avant le début du projet.</p>
+      </div>
+
+      <article class="art-card art-card--cta art-card--price" data-reveal="scale" data-art="price" aria-labelledby="offer-name">
+        <picture class="art-card__art">
+          <source media="(min-width: 768px)" type="image/avif" srcset="assets/cards/price-d-1280.avif 1280w, assets/cards/price-d-1920.avif 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source media="(min-width: 768px)" type="image/webp" srcset="assets/cards/price-d-1280.webp 1280w, assets/cards/price-d-1920.webp 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source type="image/avif" srcset="assets/cards/price-m-600.avif 600w, assets/cards/price-m-1080.avif 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <source type="image/webp" srcset="assets/cards/price-m-600.webp 600w, assets/cards/price-m-1080.webp 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <img src="assets/cards/price-m-600.webp" width="600" height="1061" alt="" loading="lazy" decoding="async">
+        </picture>
+        <div class="art-card__copy">
+          <p class="art-card__eyebrow" id="offer-name" data-reveal="rise">Landing page</p>
+          <p class="price" data-price data-offer="landing" data-i18n-skip data-reveal="rise" style="--rv-d:80ms"><span class="price__value" data-price-value>700&nbsp;€</span></p>
+          <p class="price__tax" data-reveal="rise" style="--rv-d:120ms">Taxes applicables incluses</p>
+          <p class="art-card__slogan" data-reveal="rise" style="--rv-d:160ms">Un prix clair, sans zone d’ombre.</p>
+          <a class="btn btn--primary btn--lg art-card__cta" href="#rendez-vous"><span class="btn__shine" aria-hidden="true"></span>Parler de mon projet</a>
+        </div>
+      </article>
+
+      <article class="included" data-reveal="depth" aria-labelledby="included-title">
+        <div class="included__art" aria-hidden="true">
+          <picture>
+            <source media="(min-width: 768px)" type="image/avif" srcset="assets/cards/included-d-600.avif 600w, assets/cards/included-d-1080.avif 1080w" sizes="(min-width: 1344px) 480px, 38vw">
+            <source media="(min-width: 768px)" type="image/webp" srcset="assets/cards/included-d-600.webp 600w, assets/cards/included-d-1080.webp 1080w" sizes="(min-width: 1344px) 480px, 38vw">
+            <source type="image/avif" srcset="assets/cards/included-m-600.avif 600w, assets/cards/included-m-1080.avif 1080w" sizes="92vw">
+            <source type="image/webp" srcset="assets/cards/included-m-600.webp 600w, assets/cards/included-m-1080.webp 1080w" sizes="92vw">
+            <img src="assets/cards/included-m-600.webp" width="600" height="450" alt="" loading="lazy" decoding="async">
+          </picture>
+        </div>
+        <div class="included__body">
+          <p class="label" data-reveal="rise">Ce que vous obtenez</p>
+          <h3 class="included__title" id="included-title" data-reveal="mask">Compris dans votre projet.</h3>
+          <p class="included__desc" data-reveal="rise" style="--rv-d:120ms">Une page conçue pour présenter votre activité, renforcer votre crédibilité et générer des prises de contact.</p>
+          <ul class="included__list" data-reveal-group>
+            <li data-reveal="rise"><span class="included__tick"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></span>Conception sur mesure</li>
+            <li data-reveal="rise"><span class="included__tick"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></span>Optimisation SEO</li>
+            <li data-reveal="rise"><span class="included__tick"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></span>Optimisation GEO</li>
+            <li data-reveal="rise"><span class="included__tick"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></span>Optimisation des performances</li>
+            <li data-reveal="rise"><span class="included__tick"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></span>Adaptation à tous les écrans</li>
+            <li data-reveal="rise"><span class="included__tick"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></span>Formulaire de prise de contact</li>
+            <li data-reveal="rise"><span class="included__tick"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></span>Mise en ligne</li>
+          </ul>
+        </div>
+      </article>
+
+      <div class="beyond card" data-reveal="rise">
+        <div>
+          <p class="beyond__q">Votre projet nécessite plusieurs pages ou des fonctionnalités spécifiques&nbsp;?</p>
+          <p class="beyond__a">Le périmètre et la tarification sont définis avec vous selon les besoins réels du projet.</p>
+        </div>
+        <a class="btn btn--secondary btn--lg" href="#rendez-vous">Demander une estimation</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 6 · IDENTITÉ VISUELLE
+       A signature card (the Scalia symbol going from raw forms to the
+       finished piece), then four quiet cards for what the work covers. -->
+  <section class="ident surface-pearl" id="identite" aria-labelledby="ident-title">
+    <div class="wrap ident__wrap">
+      <article class="art-card art-card--ident" data-reveal="unveil" data-art="ident" aria-labelledby="ident-title">
+        <picture class="art-card__art">
+          <source media="(min-width: 768px)" type="image/avif" srcset="assets/cards/ident-d-1280.avif 1280w, assets/cards/ident-d-1920.avif 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source media="(min-width: 768px)" type="image/webp" srcset="assets/cards/ident-d-1280.webp 1280w, assets/cards/ident-d-1920.webp 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source type="image/avif" srcset="assets/cards/ident-m-600.avif 600w, assets/cards/ident-m-1080.avif 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <source type="image/webp" srcset="assets/cards/ident-m-600.webp 600w, assets/cards/ident-m-1080.webp 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <img src="assets/cards/ident-m-600.webp" width="600" height="1061" alt="" loading="lazy" decoding="async">
+        </picture>
+        <div class="art-card__copy">
+          <p class="art-card__eyebrow" data-reveal="rise">Identité visuelle</p>
+          <h2 class="art-card__title" id="ident-title" data-reveal="mask">Construire une identité qui vous appartient.</h2>
+          <p class="art-card__slogan" data-reveal="rise" style="--rv-d:180ms">Logo, couleurs et typographie forment un langage reconnaissable avant même qu’un mot soit lu.</p>
+        </div>
+      </article>
+
+      <ul class="ident-cards" data-reveal-group>
+        <li class="ident-card" data-reveal="rise">
+          <h3 class="ident-card__title">Logotype</h3>
+          <p class="ident-card__text">Créer ou faire évoluer le signe central de votre marque, en version principale et réduite.</p>
+        </li>
+        <li class="ident-card" data-reveal="rise">
+          <h3 class="ident-card__title">Couleurs et typographie</h3>
+          <p class="ident-card__text">Une palette et des caractères qui donnent à votre marque une voix visuelle reconnaissable.</p>
+        </li>
+        <li class="ident-card" data-reveal="rise">
+          <h3 class="ident-card__title">Règles visuelles</h3>
+          <p class="ident-card__text">Espacements, proportions et usages qui gardent l’identité juste, partout.</p>
+        </li>
+        <li class="ident-card" data-reveal="rise">
+          <h3 class="ident-card__title">Déclinaisons essentielles</h3>
+          <p class="ident-card__text">Les supports nécessaires pour que votre présence reste cohérente.</p>
+        </li>
+      </ul>
+
+      <p class="ident__notice" data-reveal="rise">* Prestations distinctes de la création de la landing page. <span>Elles construisent ou renforcent l’identité visuelle qui accompagne votre présence digitale.</span></p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 6b · VOIX CLIENTS
+       Two rails of 9:16 cards drifting in opposite directions. Cards are
+       rendered by voices.js from its VOICES list (real names, photos and
+       Wistia videos only). -->
+  <section class="voices surface-night sheet sheet--dark" id="voix" aria-labelledby="voices-title">
+    <div class="wrap voices__head">
+      <p class="label label--light" data-reveal="rise">Clients</p>
+      <h2 class="h2" id="voices-title" data-reveal="mask">Ceux que nous avons connectés.</h2>
+      <p class="lede" data-reveal="rise" style="--rv-d:120ms">Des entreprises réelles, et les personnes qui les font avancer.</p>
+    </div>
+    <div class="voices__rails" data-reveal="rise" style="--rv-d:200ms">
+      <div class="voices__rail" data-voices-rail="1" data-i18n-skip><div class="voices__track"></div></div>
+      <div class="voices__rail" data-voices-rail="2" data-i18n-skip><div class="voices__track"></div></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 7 · RENDEZ-VOUS -->
+  <section class="rdv surface-ivory sheet" id="rendez-vous" aria-labelledby="rdv-title">
+    <div class="wrap rdv__wrap">
+      <article class="art-card art-card--cta art-card--talk" data-reveal="scale" data-art="talk" aria-labelledby="rdv-title">
+        <picture class="art-card__art">
+          <source media="(min-width: 768px)" type="image/avif" srcset="assets/cards/talk-d-1280.avif 1280w, assets/cards/talk-d-1920.avif 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source media="(min-width: 768px)" type="image/webp" srcset="assets/cards/talk-d-1280.webp 1280w, assets/cards/talk-d-1920.webp 1920w" sizes="(min-width: 1344px) 1216px, 92vw" width="1920" height="1086">
+          <source type="image/avif" srcset="assets/cards/talk-m-600.avif 600w, assets/cards/talk-m-1080.avif 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <source type="image/webp" srcset="assets/cards/talk-m-600.webp 600w, assets/cards/talk-m-1080.webp 1080w" sizes="(min-width: 600px) 480px, 92vw">
+          <img src="assets/cards/talk-m-600.webp" width="600" height="1061" alt="" loading="lazy" decoding="async">
+        </picture>
+        <div class="art-card__copy">
+          <h2 class="art-card__title" id="rdv-title" data-reveal="mask">Un échange pour poser les bases</h2>
+          <p class="art-card__slogan" data-reveal="rise" style="--rv-d:160ms">Présentez votre activité, vos objectifs et la présence que vous souhaitez construire. Cet échange permet de clarifier la direction avant d’avancer.</p>
+          <div class="art-card__cta" data-reveal="rise" style="--rv-d:300ms"><button class="btn btn--primary btn--lg" type="button" data-open-calendly>Réserver un échange</button></div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ 8 · CTA FINAL
+       Dark sheet rising over the light chapter. -->
+  <section class="final surface-espresso sheet sheet--dark" data-sc-act="flow" aria-labelledby="final-title">
+    <img class="final__mark" src="assets/scalia-symbol-outline.png" width="516" height="1200" alt="" aria-hidden="true" loading="lazy" decoding="async" data-sc-parallax="-0.06">
+    <div class="wrap final__wrap">
+      <h2 class="final__title" id="final-title" data-reveal="mask">Votre entreprise est&#8209;elle aussi crédible en ligne <span class="tone-2">qu’elle l’est réellement&nbsp;?</span></h2>
+      <p class="final__text" data-reveal="rise" style="--rv-d:120ms">Scalia construit la présence qui permet à votre valeur d’être vue, comprise et choisie.</p>
+      <div class="final__ctas" data-reveal="rise" style="--rv-d:200ms">
+        <button class="btn btn--primary btn--lg" type="button" data-open-calendly>Construire ma présence</button>
+        <a class="link-arrow link-arrow--light" href="#tarifs">Voir la tarification<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5"/></svg></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================================================ FOOTER -->
+<footer class="foot">
+  <div class="wrap foot__grid">
+    <div class="foot__col foot__col--contact">
+      <p class="foot__h">Contact</p>
+      <ul class="foot__contact">
+        <li><a class="foot__line" data-contact="email" href="mailto:contact@scalia.do" aria-label="Écrire à Scalia : contact@scalia.do"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.8 7l8.2 6 8.2-6"/></svg><span data-contact-text>contact@scalia.do</span></a></li>
+        <li><a class="foot__line" data-contact="whatsapp" href="https://wa.me/33769965798" target="_blank" rel="noopener noreferrer" aria-label="Contacter Scalia sur WhatsApp : +33 7 69 96 57 98 (nouvel onglet)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 19.5l1.2-3.6A8 8 0 1 1 8.9 19z"/><path d="M9.2 8.6c.2-.5.5-.6.8-.6h.5c.2 0 .4.1.5.4l.7 1.6c.1.2 0 .5-.1.6l-.5.6c.6 1.2 1.6 2.1 2.8 2.7l.6-.6c.2-.2.4-.2.6-.1l1.6.7c.3.1.4.3.4.5v.5c0 .4-.2.7-.6.9-.6.3-1.4.4-2.3.1-2.3-.8-4.2-2.7-5-5-.3-.9-.2-1.7.1-2.3z" class="fill"/></svg><span data-contact-text>+33 7 69 96 57 98</span></a></li>
+      </ul>
+    </div>
+
+    <div class="foot__brand">
+      <a href="#top" aria-label="Scalia, retour à l’accueil"><img src="assets/scalia-horizontal.webp" width="509" height="200" alt="Scalia" loading="lazy"></a>
+      <p>L’agence qui vous connecte.</p>
+    </div>
+
+    <div class="foot__col foot__col--social">
+      <p class="foot__h">Réseaux</p>
+      <ul class="foot__icons">
+        <li><a class="foot__icon" data-contact="linkedin" href="https://www.linkedin.com/in/kevi-moronta" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn · Kevi Moronta — Fondateur de Scalia (nouvel onglet)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="M8 10.5v6M8 7.6v.1M11.5 16.5v-6M11.5 13c0-1.6 1-2.6 2.4-2.6s2.1 1 2.1 2.6v3.5"/></svg></a></li>
+        <li><a class="foot__icon" data-contact="instagram" href="https://www.instagram.com/kevimoronta/" target="_blank" rel="noopener noreferrer" aria-label="Instagram · Kevi Moronta — Fondateur de Scalia (nouvel onglet)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.9"/><circle cx="17.1" cy="6.9" r="0.9" class="fill"/></svg></a></li>
+        <li><a class="foot__icon" data-contact="whatsapp" href="https://wa.me/33769965798" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp de Scalia (nouvel onglet)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 19.5l1.2-3.6A8 8 0 1 1 8.9 19z"/><path d="M9.2 8.6c.2-.5.5-.6.8-.6h.5c.2 0 .4.1.5.4l.7 1.6c.1.2 0 .5-.1.6l-.5.6c.6 1.2 1.6 2.1 2.8 2.7l.6-.6c.2-.2.4-.2.6-.1l1.6.7c.3.1.4.3.4.5v.5c0 .4-.2.7-.6.9-.6.3-1.4.4-2.3.1-2.3-.8-4.2-2.7-5-5-.3-.9-.2-1.7.1-2.3z" class="fill"/></svg></a></li>
+      </ul>
+    </div>
+  </div>
+
+  <nav class="wrap foot__nav" aria-label="Navigation du pied de page">
+    <ul>
+      <li><a href="#top">Accueil</a></li>
+      <li><a href="#pourquoi">Pourquoi Scalia</a></li>
+      <li><a href="#approche">Notre approche</a></li>
+      <li><a href="#tarifs">Tarification</a></li>
+      <li><a href="scalians/">Les Scalians</a></li>
+      <li><a href="#rendez-vous">Rendez-vous</a></li>
+    </ul>
+  </nav>
+
+  <div class="wrap foot__bottom">
+    <p>© <span id="year">2026</span> Scalia. Tous droits réservés.</p>
+    <ul>
+      <li><a class="foot__legal" href="mentions-legales/">Mentions légales</a></li>
+      <li><a class="foot__legal" href="confidentialite/">Politique de confidentialité</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- ============================================================ WHATSAPP
+     Floating contact, hidden through the hero, inert while hidden. -->
+<a class="wa-fab" id="wa-fab" data-contact="whatsapp" href="https://wa.me/33769965798" target="_blank" rel="noopener noreferrer" aria-label="Contacter Scalia sur WhatsApp">
+  <span class="wa-fab__shadow" aria-hidden="true"></span>
+  <span class="wa-fab__ring" aria-hidden="true"><i></i></span>
+  <img src="assets/scalia-flame-96.webp" width="42" height="96" alt="" aria-hidden="true">
+  <span class="wa-fab__tip" aria-hidden="true">WhatsApp</span>
+</a>
+
+<!-- ============================================================ CALENDLY -->
+<dialog class="cal" id="cal" aria-labelledby="cal-title">
+  <div class="cal__head">
+    <p class="cal__title" id="cal-title">Choisir un créneau</p>
+    <button class="cal__close" type="button" data-close-calendly aria-label="Fermer">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.4"/></svg>
+    </button>
+  </div>
+  <div class="cal__body" data-state="loading" aria-live="polite">
+    <div class="cal__state cal__state--loading">
+      <span class="cal__bar" aria-hidden="true"></span>
+      <p>Chargement du calendrier…</p>
+    </div>
+    <div class="cal__state cal__state--error">
+      <p class="cal__big">Le calendrier n’a pas pu être chargé.</p>
+      <p class="cal__muted">Vous pouvez réserver directement sur la page Calendly.</p>
+      <a class="btn btn--secondary" id="cal-fallback" href="https://calendly.com/contact-scalia/30min" target="_blank" rel="noopener">Ouvrir Calendly</a>
+    </div>
+    <div class="cal__state cal__state--ready" id="cal-frame"></div>
+  </div>
+</dialog>
+
+<script src="i18n/i18n.js"></script>
+<script src="contact.js"></script>
+<script src="analytics.js"></script>
+<script src="voices.js"></script>
+<script src="scrollcraft.js"></script>
+<script src="main.js"></script>
+<script src="fab.js"></script>
 </body>
 </html>

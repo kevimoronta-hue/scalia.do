@@ -1,0 +1,17 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local-only previews: placeholder portraits and unvalidated quotes
+# (never published; merged in by voices.js on localhost only)
+voices.drafts.json
+assets/voices/drafts/
+
+# Environment, logs, tooling
+.env
+.env.*
+*.log
+node_modules/
+.vercel/

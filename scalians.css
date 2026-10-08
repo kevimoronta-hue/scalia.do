@@ -1,0 +1,208 @@
+/* ==========================================================================
+   Les Scalians · team page
+   Same language as the home page: espresso surfaces, champagne accent,
+   Inter, transform + opacity motion. Each direction gets one micro-accent
+   (--pole) used only as a faint light in its surface and edge.
+   ========================================================================== */
+
+.page-scalians { background: var(--ink-900); }
+
+/* Directions: four tints inside the same champagne family. */
+.director--strategy { --pole: #D8B98F; }
+.director--tech     { --pole: #CDB79C; }   /* cooler champagne */
+.director--growth   { --pole: #CF9466; }   /* copper */
+.director--creative { --pole: #D9AE8C; }   /* warmer champagne */
+
+/* ================================================================ HERO == */
+.sx-hero {
+  padding-top: calc(var(--nav-top) + var(--nav-h) + clamp(56px, 10vw, 128px));
+  padding-bottom: clamp(48px, 7vw, 96px);
+  text-align: center;
+}
+.sx-hero__wrap { display: grid; justify-items: center; }
+.sx-hero__emblem { width: min(64vw, 360px); height: auto; filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.45)); }
+.sx-hero__title {
+  margin-top: clamp(28px, 4vw, 44px);
+  font-size: clamp(52px, 1.6rem + 8vw, 132px); font-weight: 650;
+  line-height: 0.96; letter-spacing: -0.05em;
+  padding-bottom: 0.08em; margin-bottom: -0.08em;
+}
+.sx-hero__sub {
+  margin-top: 20px; max-width: 26em;
+  font-size: clamp(19px, 1rem + 0.8vw, 26px); font-weight: 500;
+  line-height: 1.35; letter-spacing: -0.02em;
+  color: var(--fg-inv);
+  text-wrap: balance;
+}
+
+/* ===================================================== ORGANISATION == */
+.org { padding-bottom: var(--section); }
+
+.ceo__dir { margin-top: 2px; font-size: clamp(16px, 0.95rem + 0.3vw, 19px); font-weight: 500; color: var(--fg-inv-2); }
+
+/* ---------------------------------------------------------- portraits -- */
+.portrait { position: relative; overflow: hidden; background: var(--ink-950); }
+.portrait img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+/* Unveil: the photo rises into its frame once the card is in. */
+.js .portrait img {
+  clip-path: inset(100% 0 0 0);
+  transform: scale(1.08);
+  transition: clip-path 1100ms var(--ease-out) calc(var(--rv-d, 0ms) + 120ms), transform 1600ms var(--ease-out) calc(var(--rv-d, 0ms) + 120ms);
+}
+.js .is-in .portrait img, .js .is-in.portrait img { clip-path: inset(0 0 0 0); transform: none; }
+/* Soft floor so text never sits on a bright shirt. */
+.portrait::after {
+  content: ""; position: absolute; inset: auto 0 0 0; height: 38%; pointer-events: none;
+  background: linear-gradient(0deg, rgba(10, 8, 7, 0.75), rgba(10, 8, 7, 0));
+}
+
+/* ------------------------------------------------------------- duties --
+   Plain typography: two quiet columns, no capsules. */
+.duties {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px;
+  margin-top: 20px;
+}
+.duties li { font-size: 14.5px; font-weight: 500; line-height: 1.35; letter-spacing: -0.008em; color: rgba(246, 243, 238, 0.78); }
+.duties--ceo li { color: rgba(246, 243, 238, 0.88); }
+@media (max-width: 359px) { .duties { grid-template-columns: 1fr; } }
+
+/* ========================================================= CARD EDGE ==
+   No flat 1px border. The edge is a gradient ring (light catching the top
+   left, fading along the sides, a faint warm return at the bottom right),
+   an inner bevel drawn above the photo, and a short contact shadow plus a
+   long soft one underneath. The text side sits on a Higgsfield material
+   (brushed espresso metal / veined stone), darkened so copy stays crisp. */
+.edge {
+  position: relative; isolation: isolate;
+  border: 1px solid transparent;
+}
+.edge::before {
+  content: ""; position: absolute; inset: 0; z-index: 4; border-radius: inherit; pointer-events: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.38),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* ================================================================ CEO == */
+.ceo {
+  overflow: hidden;
+  display: grid;
+  max-width: 520px; margin-inline: auto;
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, #1B1411, #0E0B0A) padding-box,
+    linear-gradient(150deg, rgba(237, 220, 196, 0.78) 0%, rgba(237, 220, 196, 0.16) 22%, rgba(255, 255, 255, 0.05) 52%, rgba(205, 169, 130, 0.12) 78%, rgba(205, 169, 130, 0.42) 100%) border-box;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    0 60px 110px -50px rgba(0, 0, 0, 0.95);
+}
+/* A second, finer inner edge: the CEO card reads as a thicker object. */
+.ceo.edge::before {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 2px rgba(237, 220, 196, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.55);
+}
+.ceo__portrait { aspect-ratio: 4 / 5; }
+.ceo__body {
+  position: relative; padding: clamp(24px, 6vw, 56px);
+  background:
+    linear-gradient(180deg, rgba(14, 11, 10, 0.35), rgba(14, 11, 10, 0.6)),
+    url("assets/team/material-ceo-1600.webp") 70% 0 / cover;
+  background:
+    linear-gradient(180deg, rgba(14, 11, 10, 0.35), rgba(14, 11, 10, 0.6)),
+    image-set(url("assets/team/material-ceo-1600.avif") type("image/avif"), url("assets/team/material-ceo-1600.webp") type("image/webp")) 70% 0 / cover;
+}
+.ceo__mark { display: block; height: 40px; width: auto; filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5)); }
+.ceo__name {
+  margin-top: 20px;
+  font-size: clamp(40px, 1.4rem + 5vw, 84px); font-weight: 650;
+  line-height: 0.98; letter-spacing: -0.05em;
+  padding-bottom: 0.08em; margin-bottom: -0.08em;
+}
+.ceo__role {
+  margin-top: 14px;
+  font-size: clamp(17px, 1rem + 0.4vw, 21px); font-weight: 600; letter-spacing: -0.018em;
+  color: var(--champagne-hi);
+}
+.ceo__desc { margin-top: 18px; max-width: 34em; font-size: var(--lede); line-height: 1.45; letter-spacing: -0.012em; color: var(--fg-inv-2); }
+
+@media (min-width: 768px) { .ceo { max-width: none; } }
+@media (min-width: 900px) {
+  .ceo { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: stretch; }
+  .ceo__portrait { aspect-ratio: auto; min-height: 560px; }
+  .ceo__portrait::after { inset: 0 0 0 auto; width: 30%; height: auto; background: linear-gradient(270deg, rgba(17, 13, 11, 0.9), rgba(17, 13, 11, 0)); }
+  .ceo__body { align-self: center; padding: clamp(40px, 5vw, 72px); }
+}
+
+/* Title of the directors group: type and space only. */
+.org__label {
+  margin-top: clamp(56px, 8vw, 96px); text-align: center;
+  font-size: var(--small); font-weight: 600; letter-spacing: -0.005em;
+  color: var(--champagne);
+}
+
+/* ========================================================== DIRECTORS == */
+.directors { margin-top: clamp(28px, 4vw, 48px); display: grid; gap: 16px; }
+.director {
+  overflow: hidden;
+  display: grid;
+  max-width: 480px; width: 100%; margin-inline: auto;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, #17120F, #0E0B0A) padding-box,
+    linear-gradient(155deg, rgba(237, 220, 196, 0.5) 0%, rgba(255, 255, 255, 0.08) 26%, rgba(255, 255, 255, 0.03) 60%, color-mix(in oklab, var(--pole) 45%, transparent) 100%) border-box;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.55),
+    0 34px 64px -38px rgba(0, 0, 0, 0.92);
+}
+/* Edge light in the pole's tint: brightens on hover. */
+.director::after {
+  content: ""; position: absolute; inset: 0; z-index: 5; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--pole) 55%, transparent);
+  opacity: 0; transition: opacity 260ms ease;
+}
+@media (hover: hover) and (pointer: fine) { .director:hover::after { opacity: 1; } }
+.director__portrait { aspect-ratio: 4 / 5; }
+.director__body {
+  position: relative; padding: 24px 22px 26px;
+  /* Brushed material, its sheen tinted by the pole and kept low for contrast. */
+  background:
+    radial-gradient(70% 55% at 100% 0%, color-mix(in oklab, var(--pole) 16%, transparent), rgba(0, 0, 0, 0) 70%),
+    linear-gradient(180deg, rgba(14, 11, 10, 0.5), rgba(14, 11, 10, 0.72)),
+    url("assets/team/material-director-900.webp") 0 0 / cover;
+  background:
+    radial-gradient(70% 55% at 100% 0%, color-mix(in oklab, var(--pole) 16%, transparent), rgba(0, 0, 0, 0) 70%),
+    linear-gradient(180deg, rgba(14, 11, 10, 0.5), rgba(14, 11, 10, 0.72)),
+    image-set(url("assets/team/material-director-900.avif") type("image/avif"), url("assets/team/material-director-900.webp") type("image/webp")) 0 0 / cover;
+}
+.director__name { font-size: clamp(26px, 1rem + 1.6vw, 34px); font-weight: 650; letter-spacing: -0.04em; line-height: 1.05; }
+.director__role { margin-top: 10px; font-size: 16px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.35; color: var(--champagne); }
+.director__dir { margin-top: 2px; font-size: 15px; font-weight: 500; line-height: 1.4; color: var(--fg-inv-2); }
+.director__desc { margin-top: 14px; font-size: 16px; line-height: 1.5; color: var(--fg-inv-2); }
+
+@media (min-width: 600px) {
+  .directors { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .director { max-width: none; }
+  .director__portrait { aspect-ratio: 1 / 1; }
+}
+@media (min-width: 1200px) {
+  .director { grid-template-columns: 240px minmax(0, 1fr); }
+  .director__portrait { aspect-ratio: auto; min-height: 100%; }
+  .director__portrait::after { inset: 0 0 0 auto; width: 35%; height: auto; background: linear-gradient(270deg, rgba(18, 14, 12, 0.85), rgba(18, 14, 12, 0)); }
+  .director__body { padding: 30px 28px 30px 26px; }
+}
+
+/* ============================================================== CLOSE == */
+.sx-close { padding-block: var(--section); }
+.sx-close__wrap { display: grid; gap: 28px; justify-items: start; }
+.sx-close .h2 { max-width: 14em; }
+.sx-close__ctas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; }
+@media (max-width: 599px) { .sx-close__ctas .btn { width: 100%; } }
+
+/* ===================================================== REDUCED MOTION == */
+@media (prefers-reduced-motion: reduce) {
+  .js .portrait img { clip-path: none; transform: none; transition: none; }
+}
