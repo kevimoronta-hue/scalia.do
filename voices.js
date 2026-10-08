@@ -30,12 +30,14 @@
   'use strict';
 
   // DRAFTS: `photoDraft` / `quoteDraft` mark a card whose real photo or
-  // client-approved quote is not in yet. Such a card is never rendered outside
-  // a local / LAN preview. The placeholder portraits and quotes themselves are
-  // not in the repository: they live in voices.drafts.json and
-  // assets/voices/drafts/ (both git-ignored) and are merged in locally only.
-  // To publish a card: add the real photo (assets/voices/<id>-480/-960) and
-  // quote here, then set both flags to false. ?drafts=0 previews production.
+  // client-approved quote is not in yet. Every card is shown everywhere; until
+  // its real content arrives a draft card shows only the client's real name
+  // and company on the Scalia matter (initials), never a placeholder face or
+  // quote. The placeholder portraits and quotes live in voices.drafts.json and
+  // assets/voices/drafts/ (both git-ignored) and are merged in on a local /
+  // LAN preview only. To publish a card: add the real photo
+  // (assets/voices/<id>-480/-960) and the approved quote here, then set both
+  // flags to false. ?drafts=0 previews production locally.
   // CAPTIONS: WebVTT per language, UTF-8, same timecodes in every language.
   // FR comes from Wistia's own transcription (proper nouns proof-read);
   // EN / ES are faithful translations of it. The player follows the site
@@ -48,7 +50,7 @@
     { id: 'francisco-david',   name: 'Francisco David',   company: 'Fraco',                role: '', type: 'photo', photo: null,   photoDraft: true, focus: '50% 22%', rail: 2, quote: '', quoteDraft: true },
     { id: 'corentin-lavenan',  name: 'Corentin Lavenan',  company: 'Skaleos',              role: '', type: 'video', wistiaId: 'wodu23wpny', poster: 'assets/voices/corentin-lavenan-poster', captions: { fr: 'assets/voices/captions/corentin-lavenan.fr.vtt', en: 'assets/voices/captions/corentin-lavenan.en.vtt', es: 'assets/voices/captions/corentin-lavenan.es.vtt' }, rail: 2 },
     { id: 'melissa-hernandez', name: 'Melissa Hernandez', company: 'Miscore',              role: '', type: 'photo', photo: null, photoDraft: true, focus: '50% 22%', rail: 2, quote: '', quoteDraft: true },
-    { id: 'rachel-pruden',     name: 'Rachel Pruden',     company: '',                     role: '', type: 'video', wistiaId: 'f0qwxyvc58', poster: 'assets/voices/rachel-pruden-poster', captions: { fr: 'assets/voices/captions/rachel-pruden.fr.vtt', en: 'assets/voices/captions/rachel-pruden.en.vtt', es: 'assets/voices/captions/rachel-pruden.es.vtt' }, rail: 2 },
+    { id: 'rachel-pruden',     name: 'Rachel Pruden',     company: 'L’Éclat des Flots',   role: '', type: 'video', wistiaId: 'f0qwxyvc58', poster: 'assets/voices/rachel-pruden-poster', captions: { fr: 'assets/voices/captions/rachel-pruden.fr.vtt', en: 'assets/voices/captions/rachel-pruden.en.vtt', es: 'assets/voices/captions/rachel-pruden.es.vtt' }, rail: 2 },
     { id: 'rafael-montero',    name: 'Rafael Montero',    company: 'Dora Electroservices', role: '', type: 'photo', photo: null,    photoDraft: true, focus: '50% 22%', rail: 2, quote: '', quoteDraft: true }
   ];
 
@@ -74,7 +76,7 @@
   }
 
   function boot() {
-  var PUBLISHED = VOICES.filter(function (v) { return SHOW_DRAFTS || !(v.photoDraft || v.quoteDraft); });
+  var PUBLISHED = VOICES;   // all cards, in order; drafts carry no placeholder content outside local
   // Below this many cards two drifting rails would loop the same faces: the
   // section then shows one calm, centred row (swipeable on phones) instead.
   var MIN_FOR_RAILS = 6;
