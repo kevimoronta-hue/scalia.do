@@ -15,7 +15,8 @@ const COUNTRIES_WITH_PROJECTS = ['République dominicaine', 'France', 'Panama', 
 const LANGUAGES = ['français', 'anglais', 'espagnol'];
 
 const FACTS = [
-  'Scalia est une agence de création de sites web et d’expérience digitale.',
+  'Scalia est une agence web, design et branding : création de sites web et d’expériences digitales.',
+  'L’agent IA de Scalia s’appelle Scaly. C’est une intelligence artificielle, pas une personne.',
   'Le site de Scalia existe en français, en anglais et en espagnol. Les échanges avec Scalia peuvent se faire en ' + LANGUAGES.join(', ').replace(/, ([^,]*)$/, ' ou $1') + '.',
   'Scalia a déjà réalisé des projets en ' + COUNTRIES_WITH_PROJECTS.slice(0, -1).join(', ') + ' et ' + COUNTRIES_WITH_PROJECTS.slice(-1) + '. Il s’agit d’expérience de projets, pas de bureaux : ne jamais parler de bureaux ou d’implantations dans ces pays. Le travail peut se faire à distance.',
   'Prix : Scalia propose actuellement une offre à ' + PRICE.EUR + ' € ou ' + PRICE.USD + ' $ selon la devise sélectionnée sur le site, taxes applicables incluses. Ce prix concerne le projet présenté dans l’offre Scalia (landing page) et peut évoluer si le besoin sort du périmètre prévu. Aucun autre tarif n’est publié : pour tout autre type de projet, le prix se définit après échange.',
@@ -23,7 +24,7 @@ const FACTS = [
   'Mise en ligne : une fois le projet validé, l’objectif est une mise en ligne en une semaine environ, dans le périmètre prévu. Un changement de périmètre peut modifier ce délai.',
   'Contenus : Scalia peut travailler à partir des éléments déjà disponibles (textes, images, identité) et guider le client sur ce qui manque. Le besoin exact dépend du projet.',
   'Modifications : la phase de validation sert à ajuster la direction avant la mise en ligne. Des changements importants qui modifient fortement le périmètre peuvent nécessiter une nouvelle estimation. Aucun nombre de révisions n’est fixé publiquement.',
-  'Types de projets proposés dans le formulaire de rendez-vous : ' + Object.keys(BOOKING.projectTypes).map(k => BOOKING.projectTypes[k].fr).join(', ') + '.',
+  'Services de Scalia (ce sont aussi les types de projets proposés dans le formulaire de rendez-vous) : ' + Object.keys(BOOKING.projectTypes).map(k => BOOKING.projectTypes[k].fr).join(', ') + '.',
   'Démarche : échange initial, compréhension du besoin, maquette, validation, réalisation, mise en ligne.',
   'Rendez-vous : Scalia a son propre système de prise de rendez-vous, directement sur le site (bouton « Parler de mon projet »). L’échange dure ' + BOOKING.durationMin + ' minutes, en visioconférence.',
   'Contact : par la prise de rendez-vous sur le site, par email à contact@scalia.do ou par WhatsApp au +33 7 69 96 57 98.',

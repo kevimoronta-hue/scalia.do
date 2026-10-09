@@ -2261,84 +2261,207 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .faq__a-in { overflow: hidden; }
 .faq__a p { padding: 0 44px 22px 2px; max-width: 40em; font-size: 16px; line-height: 1.6; color: var(--fg-2); }
 
-/* ------------------------------------------------ AI agent conversation */
-.faq__ask { margin-top: clamp(40px, 5vw, 56px); }
-.faq__ask-title { font-size: clamp(18px, 1rem + 0.4vw, 21px); font-weight: 650; letter-spacing: -0.02em; }
-.faq__ask-sub { margin-top: 6px; font-size: 15.5px; color: var(--fg-2); }
+/* ------------------------------------------- Scaly, the Scalia AI agent
+   Art direction taken from the character himself: pearl-white glossy
+   ceramic, piano-black glass visor, warm gold light rings at the joints,
+   soft rounded forms. The section keeps Scalia's type, spacing and palette;
+   only this zone speaks Scaly. */
+.faq__ask { margin-top: clamp(48px, 6vw, 72px); }
 .faq__sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.faq__chat {
-  margin-top: 18px; padding: 8px 8px 10px;
-  background: #FBF8F3; border: 1px solid #EDE4D6; border-radius: 20px;
+.scaly {
+  --scaly-w: 124px;
+  --scaly-seat: 83.77%;       /* top of the artwork → seat line, as a share of its height */
+  --scaly-right: 26px;
+  --scaly-gold: #E2AC56;
+  --scaly-glow: rgba(244, 196, 110, 0.55);
+  --scaly-ink: #120E0C;
+  --scaly-pearl: #FFFDF9;
+  --scaly-line: rgba(205, 169, 130, 0.38);
 }
+
+/* The world: Scaly's backdrop, a rounded panel he lives in. */
+.scaly__world {
+  position: relative; isolation: isolate;
+  padding: clamp(28px, 4vw, 44px) clamp(14px, 3.4vw, 40px) clamp(14px, 3.4vw, 40px);
+  border-radius: 36px;
+  background-color: #F7F1E7;
+  background-image:
+    linear-gradient(100deg, rgba(251, 248, 243, 0.92) 0%, rgba(251, 248, 243, 0.55) 38%, rgba(251, 248, 243, 0) 62%),
+    url("assets/scaly-world.webp");
+  background-size: cover, cover;
+  background-position: center, 70% 50%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(205, 169, 130, 0.18);
+}
+.scaly__intro { position: relative; padding-right: calc(var(--scaly-w) + var(--scaly-right) + 8px); }
+.faq__ask-title { font-size: clamp(20px, 1rem + 0.6vw, 26px); font-weight: 650; letter-spacing: -0.025em; color: var(--fg); }
+.faq__ask-sub { margin-top: 6px; font-size: 15.5px; color: var(--fg-2); }
+
+/* The card: a pearl ceramic shell with a fine gold ring, like his joints. */
+.scaly__card {
+  position: relative;
+  margin-top: calc(var(--scaly-w) * 1.335 * 0.8377 - 64px);   /* room for Scaly's body above the rim */
+  padding: 8px 8px 10px;
+  background: linear-gradient(180deg, #FFFFFF 0%, var(--scaly-pearl) 40%, #FBF6EE 100%);
+  border-radius: 28px;
+  box-shadow:
+    inset 0 1px 0 #FFFFFF,
+    inset 0 0 0 1px rgba(226, 172, 86, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.6),
+    0 30px 70px -34px rgba(64, 42, 22, 0.42),
+    0 3px 10px -4px rgba(64, 42, 22, 0.12);
+}
+
+/* The perch: nothing on the card clips, so the feet hang over the rim in
+   front of the visor and the body rises above it. */
+.scaly__perch {
+  position: absolute; z-index: 3; top: 0; right: var(--scaly-right);
+  width: var(--scaly-w);
+  transform: translateY(calc(-1 * var(--scaly-seat)));
+  pointer-events: none; isolation: isolate;
+}
+.scaly__img { position: relative; z-index: 1; display: block; width: 100%; height: auto; filter: drop-shadow(0 10px 14px rgba(64, 42, 22, 0.18)); }
+.scaly__perch::before {    /* contact shadow on the rim */
+  content: ""; position: absolute; z-index: 0; left: 16%; right: 12%; top: calc(var(--scaly-seat) - 3px); height: 22px;
+  background: radial-gradient(50% 50% at 50% 30%, rgba(64, 42, 22, 0.28), rgba(64, 42, 22, 0) 70%);
+}
+
+/* The visor: black glass, a warm reflection, his glowing eyes. */
+.scaly__visor {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 10px;
+  min-height: 50px; padding: 8px 16px;
+  padding-right: calc(var(--scaly-w) * 0.78 + var(--scaly-right));   /* the feet hang here */
+  border-radius: 21px;
+  background:
+    radial-gradient(120% 140% at 85% -40%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(180deg, #221A16 0%, var(--scaly-ink) 60%, #0B0908 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(226, 172, 86, 0.25);
+}
+.scaly__eyes { flex: none; color: #FFE3A8; filter: drop-shadow(0 0 3px var(--scaly-glow)) drop-shadow(0 0 8px rgba(244, 196, 110, 0.35)); }
+.scaly__name { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; color: #FBF6EE; }
+.scaly__role { font-weight: 500; color: rgba(237, 220, 196, 0.72); }
+
 /* The conversation scrolls inside itself; the page never jumps. */
 .faq__log {
-  display: flex; flex-direction: column; gap: 18px;
-  max-height: min(440px, 58vh); overflow-y: auto; overscroll-behavior: contain;
-  padding: 16px 14px 18px;
+  display: flex; flex-direction: column; gap: 14px;
+  max-height: min(440px, 58vh); max-height: min(440px, 58svh);
+  overflow-y: auto; overscroll-behavior: contain;
+  padding: 16px 8px 16px;
   scrollbar-width: thin; scrollbar-color: #E2D6C4 transparent;
 }
 .faq__log:focus-visible { outline: 2px solid var(--champagne); outline-offset: -2px; border-radius: 14px; }
 
-.faq-msg { max-width: 100%; animation: faq-in 220ms var(--ease-out); }
-@keyframes faq-in { from { opacity: 0; transform: translate3d(0, 6px, 0); } }
-.faq-msg__label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 650; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); }
-.faq-msg__label svg { flex: none; color: var(--champagne-lo); }
-.faq-msg__text { font-size: 15.5px; line-height: 1.6; color: var(--fg); white-space: pre-line; overflow-wrap: anywhere; }
-.faq-msg--agent .faq-msg__text { margin-top: 5px; max-width: 36em; }
-.faq-msg--user { align-self: flex-end; max-width: min(86%, 30em); }
-.faq-msg--user .faq-msg__text { padding: 10px 14px; background: #F1E9DC; border-radius: 14px 14px 4px 14px; color: var(--fg); }
+.faq-msg { max-width: 100%; animation: faq-in 260ms var(--ease-out); }
+@keyframes faq-in { from { opacity: 0; transform: translate3d(0, 8px, 0) scale(0.985); } }
+/* Scaly speaks from a pearl panel with a fine gold ring. */
+.faq-msg--agent {
+  align-self: flex-start; max-width: min(92%, 34em);
+  padding: 11px 15px 13px;
+  background: #FFFFFF;
+  border-radius: 8px 20px 20px 20px;
+  box-shadow: inset 0 0 0 1px rgba(226, 172, 86, 0.2), 0 8px 20px -14px rgba(64, 42, 22, 0.3);
+}
+.faq-msg__label { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: #8A6A44; }
+.faq-msg__label svg { flex: none; color: var(--scaly-gold); filter: drop-shadow(0 0 2px rgba(244, 196, 110, 0.6)); }
+.faq-msg__text { font-size: 15.5px; line-height: 1.55; color: var(--fg); white-space: pre-line; overflow-wrap: anywhere; }
+.faq-msg--agent .faq-msg__text { margin-top: 5px; }
+/* The visitor writes in black glass, like Scaly's visor and hands. */
+.faq-msg--user { align-self: flex-end; max-width: min(84%, 30em); }
+.faq-msg--user .faq-msg__text {
+  padding: 10px 15px; color: #FBF6EE;
+  background: linear-gradient(180deg, #2A211C 0%, var(--scaly-ink) 100%);
+  border-radius: 20px 20px 8px 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 18px -12px rgba(18, 14, 12, 0.5);
+}
 .faq-msg--note .faq-msg__text { color: var(--fg-2); }
 .faq-msg__cta { margin-top: 12px; }
 .faq-msg__wait { display: flex; align-items: center; gap: 10px; color: var(--fg-2); }
-.faq__dots { display: inline-flex; gap: 4px; }
-.faq__dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--champagne-lo); animation: faq-dot 1s ease-in-out infinite; }
-.faq__dots i:nth-child(2) { animation-delay: 150ms; }
-.faq__dots i:nth-child(3) { animation-delay: 300ms; }
-@keyframes faq-dot { 0%, 100% { opacity: 0.25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
+/* Thinking: three small lights, warm like his eyes. */
+.faq__dots { display: inline-flex; gap: 5px; }
+.faq__dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--scaly-gold); box-shadow: 0 0 6px var(--scaly-glow); animation: faq-dot 1.1s ease-in-out infinite; }
+.faq__dots i:nth-child(2) { animation-delay: 160ms; }
+.faq__dots i:nth-child(3) { animation-delay: 320ms; }
+@keyframes faq-dot { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
+
+/* Quick prompts: small ceramic pills, the gold ring lights on hover. */
+.scaly__prompts { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 8px 12px; }
+.scaly__prompts[hidden] { display: none; }
+.scaly__prompt {
+  min-height: 44px; padding: 0 17px; border: 0; border-radius: 999px; cursor: pointer;
+  background: linear-gradient(180deg, #FFFFFF, #FBF6EE);
+  box-shadow: inset 0 0 0 1px rgba(205, 169, 130, 0.45), 0 4px 10px -8px rgba(64, 42, 22, 0.4);
+  color: var(--fg); font: 500 14px/1.2 var(--font); text-align: left;
+  transition: box-shadow 180ms ease, transform var(--t-press) var(--ease-out);
+}
+.scaly__prompt:hover { box-shadow: inset 0 0 0 1px var(--scaly-gold), 0 0 0 3px rgba(244, 196, 110, 0.18), 0 6px 14px -8px rgba(64, 42, 22, 0.4); }
+.scaly__prompt:active { transform: scale(0.98); }
+.scaly__prompt:focus-visible { outline: 2px solid var(--scaly-gold); outline-offset: 2px; }
 
 .faq__form { margin: 0; }
 .faq__field {
   display: flex; align-items: flex-end; gap: 8px;
-  padding: 6px 6px 6px 16px;
-  background: #FFFFFF; border: 1px solid rgba(14, 11, 10, 0.12); border-radius: 15px;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  padding: 6px 6px 6px 18px;
+  background: #FFFFFF; border-radius: 22px;
+  box-shadow: inset 0 0 0 1px rgba(14, 11, 10, 0.1), 0 2px 8px -6px rgba(64, 42, 22, 0.3);
+  transition: box-shadow 180ms ease;
 }
-.faq__field:focus-within { border-color: var(--champagne); box-shadow: 0 0 0 3px rgba(205, 169, 130, 0.22); }
+.faq__field:focus-within { box-shadow: inset 0 0 0 1px var(--scaly-gold), 0 0 0 4px rgba(244, 196, 110, 0.2); }
 .faq__field textarea {
   flex: 1; min-width: 0; min-height: 44px; max-height: 140px; padding: 11px 0; resize: none;
   border: 0; background: none; outline: none; font: 400 16px/1.4 var(--font); color: var(--fg);
 }
-.faq__field textarea::placeholder { color: var(--fg-3); }
+.faq__field textarea::placeholder { color: #8D857E; }
 .faq__send {
   flex: none; display: grid; place-items: center; width: 44px; height: 44px;
-  border: 0; border-radius: 12px; cursor: pointer;
-  background: var(--fg); color: var(--fg-inv);
-  transition: transform var(--t-press) var(--ease-out), opacity 160ms ease;
+  border: 0; border-radius: 50%; cursor: pointer;
+  background: linear-gradient(180deg, #2A211C 0%, var(--scaly-ink) 100%); color: #FFE3A8;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(226, 172, 86, 0.3);
+  transition: transform var(--t-press) var(--ease-out), opacity 160ms ease, box-shadow 180ms ease;
 }
-.faq__send:active { transform: scale(0.95); }
-.faq__send:focus-visible { outline: 2px solid var(--scalia-gold); outline-offset: 2px; }
+.faq__send:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px var(--scaly-gold), 0 0 12px -2px var(--scaly-glow); }
+.faq__send:active { transform: scale(0.94); }
+.faq__send:focus-visible { outline: 2px solid var(--scaly-gold); outline-offset: 2px; }
 .faq__send[disabled] { opacity: 0.45; cursor: progress; }
 .faq__err { margin: 8px 6px 0; font-size: 13.5px; color: #B3412A; }
 .faq__err:empty { display: none; }
-.faq__foot { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin: 10px 8px 0; }
-.faq__privacy { font-size: 12.5px; line-height: 1.5; color: var(--fg-3); }
+.faq__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 16px; margin: 6px 8px 0; }
+.faq__privacy { padding: 6px 0; font-size: 12.5px; line-height: 1.5; color: #6F675F; }
 .faq__reset {
-  margin-left: auto; padding: 4px 0; border: 0; background: none; cursor: pointer;
+  margin-left: auto; min-height: 44px; padding: 0 2px; border: 0; background: none; cursor: pointer;
   font: 500 12.5px/1.5 var(--font); color: var(--fg-2);
   text-decoration: underline; text-decoration-color: rgba(14, 11, 10, 0.25); text-underline-offset: 3px;
 }
 .faq__reset:hover { color: var(--fg); text-decoration-color: currentColor; }
+.faq__reset:focus-visible { outline: 2px solid var(--scaly-gold); outline-offset: 2px; border-radius: 4px; }
 .faq__reset[hidden] { display: none; }
 
+/* Phone keyboard open (faq.js, visualViewport): the card shrinks to what is
+   visible above the keyboard, the conversation keeps its last message. */
+.scaly__card.is-kb .faq__log { max-height: var(--scaly-kb-log, 40vh); }
+.scaly__card.is-kb .scaly__prompts,
+.scaly__card.is-kb .faq__foot { display: none; }
+/* No room above the card then: Scaly steps aside until the keyboard closes. */
+.scaly__card.is-kb .scaly__perch { visibility: hidden; }
+
+@media (min-width: 1024px) {
+  .scaly { --scaly-w: 140px; --scaly-right: 30px; }
+}
 @media (max-width: 599px) {
-  .faq__chat { padding: 4px 4px 8px; border-radius: 18px; }
-  .faq__log { padding: 14px 10px 16px; max-height: min(420px, 62vh); }
-  .faq__field { padding-left: 14px; }
+  .faq__ask { margin-top: 44px; }
+  .scaly { --scaly-w: 98px; --scaly-right: 16px; }
+  .scaly__world { border-radius: 28px; background-image: linear-gradient(180deg, rgba(251, 248, 243, 0.9) 0%, rgba(251, 248, 243, 0.4) 30%, rgba(251, 248, 243, 0) 55%), url("assets/scaly-world-sm.webp"); background-position: center, 78% 30%; }
+  .scaly__card { padding: 5px 5px 8px; border-radius: 24px; margin-top: calc(var(--scaly-w) * 1.335 * 0.8377 - 56px); }
+  .scaly__visor { min-height: 46px; padding-left: 13px; border-radius: 19px; }
+  .faq__log { padding: 14px 4px 14px; max-height: min(420px, 62vh); max-height: min(420px, 62svh); }
+  .faq-msg--agent { max-width: 96%; }
+  .scaly__prompts { padding: 0 4px 10px; }
+  .scaly__prompt { font-size: 13.5px; padding: 0 15px; }
+  .faq__field { padding-left: 15px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .js .faq__a, .js .faq__item.is-open .faq__a, .faq__icon::before, .faq__icon::after { transition: none; }
   .faq-msg { animation: none; }
-  .faq__dots i { animation: none; opacity: 0.6; }
+  .faq__dots i { animation: none; opacity: 0.7; }
 }

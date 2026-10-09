@@ -697,24 +697,48 @@
           </div>
         </div>
 
-        <div class="faq__ask" data-faq-chat>
-          <h3 class="faq__ask-title">Une question ?</h3>
-          <p class="faq__ask-sub">Discutez avec l’agent IA de Scalia.</p>
-          <div class="faq__chat">
-            <div class="faq__log" data-faq-log data-i18n-skip role="log" aria-live="polite" tabindex="0"></div>
-            <form class="faq__form" data-faq-form novalidate>
-              <label class="faq__sr" for="faq-input">Votre message</label>
-              <div class="faq__field">
-                <textarea id="faq-input" name="message" rows="1" maxlength="500" placeholder="Écrivez votre message…" autocomplete="off" enterkeyhint="send" aria-describedby="faq-err faq-privacy"></textarea>
-                <button class="faq__send" type="submit" aria-label="Envoyer le message" data-faq-send>
-                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8h9.5M8.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
+        <div class="faq__ask scaly" data-faq-chat>
+          <!-- Scaly's world: pearl ceramic, gold light rings, black glass, all
+               taken from the character. The backdrop is assets/scaly-world*.webp
+               (generated for this section, no text or UI in it). -->
+          <div class="scaly__world">
+            <div class="scaly__intro">
+              <h3 class="faq__ask-title">Une question ?</h3>
+              <p class="faq__ask-sub">Discute avec Scaly, l’agent IA de Scalia.</p>
+            </div>
+            <div class="scaly__card">
+              <!-- Scaly sits on the card's top edge, feet over the rim. To swap
+                   the artwork, change src (SVG or image): the seat line is
+                   --scaly-seat in styles.css. -->
+              <div class="scaly__perch" aria-hidden="true">
+                <img class="scaly__img" src="assets/scaly.webp" width="480" height="641" alt="" loading="lazy" decoding="async">
               </div>
-              <p class="faq__err" id="faq-err" role="alert"></p>
-            </form>
-            <div class="faq__foot">
-              <p class="faq__privacy" id="faq-privacy">Évitez de partager des informations personnelles ou sensibles avec l’agent IA.</p>
-              <button class="faq__reset" type="button" data-faq-reset hidden>Nouvelle conversation</button>
+              <!-- The visor: Scaly's black glass face, his smiling eyes. -->
+              <div class="scaly__visor">
+                <svg class="scaly__eyes" viewBox="0 0 22 8" width="22" height="8" aria-hidden="true"><path d="M2 6.5Q5.5 1 9 6.5M13 6.5Q16.5 1 20 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <p class="scaly__name">Scaly <span class="scaly__role">· Agent IA Scalia</span></p>
+              </div>
+              <div class="faq__log" data-faq-log data-i18n-skip role="log" aria-live="polite" tabindex="0"></div>
+              <div class="scaly__prompts" data-faq-prompts hidden>
+                <button class="scaly__prompt" type="button" data-faq-prompt>Combien coûte un site ?</button>
+                <button class="scaly__prompt" type="button" data-faq-prompt>Comment ça se passe ?</button>
+                <button class="scaly__prompt" type="button" data-faq-prompt>Vous pouvez refaire mon site ?</button>
+                <button class="scaly__prompt" type="button" data-faq-prompt>Vous travaillez dans quels pays ?</button>
+              </div>
+              <form class="faq__form" data-faq-form novalidate>
+                <label class="faq__sr" for="faq-input">Ton message pour Scaly</label>
+                <div class="faq__field">
+                  <textarea id="faq-input" name="message" rows="1" maxlength="500" placeholder="Écris ton message…" autocomplete="off" enterkeyhint="send" aria-describedby="faq-err faq-privacy"></textarea>
+                  <button class="faq__send" type="submit" aria-label="Envoyer le message" data-faq-send>
+                    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8h9.5M8.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </div>
+                <p class="faq__err" id="faq-err" role="alert"></p>
+              </form>
+              <div class="faq__foot">
+                <p class="faq__privacy" id="faq-privacy">Évite de partager des informations personnelles ou sensibles avec Scaly.</p>
+                <button class="faq__reset" type="button" data-faq-reset hidden>Nouvelle conversation</button>
+              </div>
             </div>
           </div>
         </div>
