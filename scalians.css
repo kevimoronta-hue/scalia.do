@@ -201,6 +201,9 @@
   .director__body { padding: 30px 28px 30px 26px; }
 }
 
+/* Entry to the application page, under the four directors. */
+.org__join { margin-top: clamp(32px, 4.5vw, 52px); display: flex; justify-content: center; }
+
 /* ============================================================== CLOSE == */
 .sx-close { padding-block: var(--section); }
 .sx-close__wrap { display: grid; gap: 28px; justify-items: start; }

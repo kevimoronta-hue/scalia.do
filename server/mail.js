@@ -247,5 +247,10 @@ async function send(cal, m) {
   if (process.env.RESEND_API_KEY && !cal.DIR) return viaResend(m);
   return cal.sendMail(mime(m));
 }
+// Large attachments (applications: the CV): Gmail's upload endpoint takes
+// the raw message as is, up to 35 MB. The local test calendar keeps its file.
+async function sendLarge(cal, m) {
+  return cal.sendMailUpload ? cal.sendMailUpload(mime(m)) : cal.sendMail(mime(m));
+}
 
-module.exports = { clientMail, ownerMail, reminderMail, send, ics };
+module.exports = { clientMail, ownerMail, reminderMail, send, sendLarge, ics, shell, row, esc };

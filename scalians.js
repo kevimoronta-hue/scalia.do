@@ -145,6 +145,12 @@
     });
   }
 
+  // The application page opens in the language shown here.
+  var join = document.querySelector('[data-join]');
+  if (join) join.addEventListener('click', function () {
+    if (window.ScaliaI18n) join.href = '../join/?lang=' + window.ScaliaI18n.locale();
+  });
+
   var yr = document.getElementById('year');
   if (yr) yr.textContent = String(new Date().getFullYear());
 })();

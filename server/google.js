@@ -190,4 +190,15 @@ async function sendMail(raw) {
   must(res, 'gmail');
 }
 
-module.exports = { configured, busy, bookings, upcoming, setPrivate, insert, get, remove, meetUrl, sendMail, privateKey };
+// Same, through the media upload endpoint: the raw MIME message is the body
+// (no base64 JSON wrapper), for messages carrying a sizeable attachment.
+async function sendMailUpload(raw) {
+  const r = await fetch('https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send?uploadType=media', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + await accessToken(), 'Content-Type': 'message/rfc822' },
+    body: raw
+  });
+  must({ status: r.status }, 'gmail_upload');
+}
+
+module.exports = { configured, busy, bookings, upcoming, setPrivate, insert, get, remove, meetUrl, sendMail, sendMailUpload, privateKey };
