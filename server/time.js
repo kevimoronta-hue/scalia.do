@@ -39,6 +39,17 @@ function isValidZone(tz) {
   try { new Intl.DateTimeFormat('en-US', { timeZone: tz }); return true; } catch (e) { return false; }
 }
 
+// Strict IANA zone check for values coming from a browser or a header:
+// plain zone-name characters, a zone Intl knows, else null. Only the letter
+// case is normalised ("europe/paris" → "Europe/Paris").
+function zoneOf(tz) {
+  if (typeof tz !== 'string' || tz.length > 64 || !/^[A-Za-z][A-Za-z0-9_+\-]*(?:\/[A-Za-z0-9_+\-]+){0,2}$/.test(tz)) return null;
+  let r;
+  try { r = new Intl.DateTimeFormat('en-US', { timeZone: tz }).resolvedOptions().timeZone; } catch (e) { return null; }
+  // Same name in another case → the canonical spelling; an alias (Asia/Kolkata) stays as given.
+  return r && r.toLowerCase() === tz.toLowerCase() ? r : tz;
+}
+
 function ymd(p) { return p.y + '-' + String(p.m).padStart(2, '0') + '-' + String(p.d).padStart(2, '0'); }
 
-module.exports = { parts, offsetAt, zonedToUtc, isValidZone, ymd };
+module.exports = { parts, offsetAt, zonedToUtc, isValidZone, zoneOf, ymd };

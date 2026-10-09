@@ -167,6 +167,7 @@
 .bk__recap-date { font-size: 15.5px; font-weight: 600; letter-spacing: -0.01em; }
 .bk__recap-date::first-letter { text-transform: uppercase; }
 .bk__recap-zone { margin-top: 3px; font-size: 13px; color: var(--fg-inv-2); }
+.bk__recap-zone--alt { margin-top: 1px; font-size: 12px; opacity: .75; }
 .bk__recap-cal { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: rgba(205, 169, 130, 0.14); color: var(--champagne-hi); }
 .bk__link {
   min-height: 44px; padding: 0 6px; border: 0; background: transparent; cursor: pointer;

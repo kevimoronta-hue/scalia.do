@@ -17,7 +17,7 @@
 'use strict';
 const { BOOKING } = require('../server/config');
 const { freeSlots, DAY, MIN } = require('../server/slots');
-const { parts, ymd, isValidZone } = require('../server/time');
+const { parts, ymd, zoneOf } = require('../server/time');
 const { calendar, send, readJson, ip, originOk, limited, EMAIL, clean } = require('../server/http');
 const mail = require('../server/mail');
 const tickets = require('../server/tickets');
@@ -52,7 +52,9 @@ function validate(b) {
   out.projectTypes = Object.keys(BOOKING.projectTypes).filter(k => types.indexOf(k) >= 0);
   if (!errors.projectTypes && BOOKING.projectTypeRequired && !out.projectTypes.length) errors.projectTypes = 'REQUIRED';
   out.locale = LOCALES.indexOf(b.locale) >= 0 ? b.locale : 'fr';
-  out.timezone = isValidZone(b.timezone) ? b.timezone : BOOKING.timezone;
+  // The client's zone decides the latest start they can book: strict.
+  out.timezone = zoneOf(b.timezone);
+  if (!out.timezone) errors.timezone = 'INVALID';
   out.start = typeof b.start === 'string' && b.start.length < 40 ? Date.parse(b.start) : NaN;
   if (!isFinite(out.start)) errors.start = 'INVALID';
   return { errors, data: out };
@@ -149,7 +151,7 @@ module.exports = async function book(req, res) {
       cal.busy(d.start - DAY, d.start + DAY),
       cal.bookings(d.start - DAY, d.start + DAY)
     ]);
-    const free = freeSlots(now, busy, booked).some(s => s.start === d.start && s.day === day);
+    const free = freeSlots(now, busy, booked, d.timezone).some(s => s.start === d.start && s.day === day);
     if (!free) return send(res, 409, { error: 'SLOT_UNAVAILABLE' }, noStore);
 
     // 3. Claim a ticket, then decide.
@@ -198,7 +200,7 @@ module.exports = async function book(req, res) {
     send(res, 201, {
       ok: true,
       // No video link here: it reaches the client with the reminder.
-      booking: { start: new Date(booking.start).toISOString(), end: new Date(booking.end).toISOString(), durationMin: BOOKING.durationMin },
+      booking: { start: new Date(booking.start).toISOString(), end: new Date(booking.end).toISOString(), durationMin: BOOKING.durationMin, timezone: d.timezone },
       // "Ajouter à mon agenda": Google Calendar link and the signed .ics
       // (same UID as the Google event, so no second copy where it exists).
       calendar: booking.meetingUrl ? {

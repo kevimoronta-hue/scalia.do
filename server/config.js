@@ -13,12 +13,17 @@ const BOOKING = {
   // Open days and hours. 1 = Monday … 7 = Sunday. Several ranges per day are
   // allowed, e.g. [['09:00', '12:00'], ['14:00', '18:00']].
   hours: {
-    1: [['09:00', '18:00']],
-    2: [['09:00', '18:00']],
-    3: [['09:00', '18:00']],
-    4: [['09:00', '18:00']],
-    5: [['09:00', '18:00']]
+    1: [['08:00', '18:00']],
+    2: [['08:00', '18:00']],
+    3: [['08:00', '18:00']],
+    4: [['08:00', '18:00']],
+    5: [['08:00', '18:00']]
   },
+
+  // Latest start allowed in the CLIENT's own zone (HH:MM, inclusive):
+  // 20:00 → 21:00 is fine, 20:30 is not. Applied with the visitor's IANA
+  // zone by /api/availability and re-checked by /api/book.
+  clientLatestStart: '20:00',
 
   durationMin: 60,      // length of a meeting
   stepMin: 30,          // spacing of the proposed start times

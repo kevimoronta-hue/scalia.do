@@ -32,6 +32,7 @@
 
   var API_AVAIL = '/api/availability/';
   var API_BOOK = '/api/book/';
+  var SCALIA_TZ = 'America/Santo_Domingo';
   var TRIGGERS = '[data-open-booking]';
   var FRESH = 60000, REVALIDATE = 30000;
 
@@ -55,13 +56,16 @@
 
   var S = {
     data: null, at: 0, pending: null, failed: false,
-    // Visitor's zone: a zone chosen by hand on an earlier visit, else the
-    // browser's, else Scalia's. Never the IP (VPNs and travel mislead it).
+    // Visitor's zone: 1. a zone chosen by hand (kept), 2. the zone of the
+    // connection (scalia_timezone cookie, set by middleware.js: the IANA
+    // name only), 3. the browser's, 4. Scalia's.
     tz: (function () {
       function ok(z) { try { new Intl.DateTimeFormat('en-US', { timeZone: z }); return true; } catch (e) { return false; } }
       var saved = null;
       try { saved = localStorage.getItem('scalia.tz'); } catch (e) {}
       if (saved && ok(saved)) return saved;
+      var net = document.cookie.match(/(?:^|;\s*)scalia_timezone=([A-Za-z0-9_+\-\/]{1,64})(?:;|$)/);
+      if (net && ok(net[1])) return net[1];
       var device = null;
       try { device = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
       return device && ok(device) ? device : 'America/Santo_Domingo';
@@ -93,19 +97,24 @@
   function weekStartsSunday() { return locale() === 'en'; }
 
   /* -------------------------------------------------------------- data ---- */
+  // Slots depend on the visitor's zone (the server drops starts after
+  // 20:00 on their clock): one answer per zone, a zone change refetches.
   function fetchAvail(force) {
-    if (S.pending) return S.pending;
-    if (!force && S.data && Date.now() - S.at < FRESH) return Promise.resolve(S.data);
-    S.pending = fetch(API_AVAIL + (force ? '?fresh=' + Date.now().toString(36) : ''), { headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' })
+    var tz = S.tz;
+    if (S.pending && S.pendingTz === tz) return S.pending;
+    if (!force && S.data && S.data.clientTimezone === tz && Date.now() - S.at < FRESH) return Promise.resolve(S.data);
+    var p = fetch(API_AVAIL + '?tz=' + encodeURIComponent(tz) + (force ? '&fresh=' + Date.now().toString(36) : ''), { headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('http_' + r.status); return r.json(); })
       .then(function (d) {
         if (!d || !Array.isArray(d.slots)) throw new Error('shape');
+        if (tz !== S.tz) return S.data;   // the zone changed meanwhile: that answer is not for it
         S.data = d; S.at = Date.now(); S.failed = false; index();
         return d;
       })
-      .catch(function (e) { S.failed = true; throw e; })
-      .then(function (d) { S.pending = null; return d; }, function (e) { S.pending = null; throw e; });
-    return S.pending;
+      .catch(function (e) { if (tz === S.tz) S.failed = true; throw e; })
+      .then(function (d) { if (S.pending === p) S.pending = null; return d; }, function (e) { if (S.pending === p) S.pending = null; throw e; });
+    S.pending = p; S.pendingTz = tz;
+    return p;
   }
   function index() {
     S.byDay = {}; S.days = [];
@@ -133,7 +142,7 @@
   }
 
   function renderMeta() {
-    var min = S.data ? S.data.durationMin : 30;
+    var min = S.data ? S.data.durationMin : 60;
     el.meta.innerHTML =
       '<span class="bk__chip"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5V8l2.4 1.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>' + F('{n} min', { n: min }) + '</span>' +
       '<span class="bk__chip"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="1.75" y="4" width="8.5" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M10.25 7l4-2.25v6.5l-4-2.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>' + L('Visioconférence') + '</span>';
@@ -183,15 +192,19 @@
     if (open) { el.tzSearch.value = ''; renderZoneList(); el.tzSearch.focus({ preventScroll: false }); }
   }
   function setZone(z) {
-    S.tz = z;
     try { localStorage.setItem('scalia.tz', z); } catch (e) {}   // a manual choice is kept
-    var keep = S.day;
-    index();
-    S.day = null; S.view = null;
-    if (keep && S.byDay[keep]) { S.day = keep; S.view = monthOf(keep); }
     tzPanel(false);
-    renderDate();
     el.tzEdit.focus({ preventScroll: true });
+    if (z === S.tz) return;
+    // Another zone: other days, other times, maybe other slots (20:00 local
+    // limit). Nothing chosen survives; the calendar reloads for that zone.
+    S.tz = z;
+    S.data = null; S.slot = null; S.day = null; S.view = null;
+    index();
+    renderDate();
+    fetchAvail(true).then(function () { if (S.step === 'date') renderDate(); }, function () {
+      if (!S.data && S.tz === z) setStep('error');
+    });
   }
 
   function monthOf(key) { var p = key.split('-'); return { y: +p[0], m: +p[1] }; }
@@ -275,17 +288,29 @@
     if (sel) sel.setAttribute('aria-pressed', 'true');
   }
 
-  function recapHtml(ts) {
+  // Visitor's own time first; Scalia's below when the zones differ (with
+  // Scalia's date when it is another day there).
+  function recapHtml(ts, tz) {
+    tz = tz || S.tz;
+    var scalia = (S.data && S.data.timezone) || SCALIA_TZ;
+    var hm = function (z) { return fmt({ hour: '2-digit', minute: '2-digit' }, z).format(ts); };
+    var other = '';
+    if (scalia !== tz) {
+      var sk = dayKey(ts, scalia);
+      other = '<p class="bk__recap-zone bk__recap-zone--alt">' + F('Heure Scalia : {t} — {tz}', {
+        t: (sk !== dayKey(ts, tz) ? fmt({ weekday: 'short', day: 'numeric', month: 'short' }, 'UTC').format(keyDate(sk)) + ' · ' : '') + hm(scalia), tz: scalia
+      }) + '</p>';
+    }
     return '<span class="bk__recap-cal" aria-hidden="true"><svg viewBox="0 0 16 16" width="18" height="18"><rect x="2" y="3" width="12" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M5.5 1.75v2.5M10.5 1.75v2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>' +
-      '<div class="bk__recap-when"><p class="bk__recap-date">' + longDay(dayKey(ts, S.tz)) + ' · ' + timeOf(ts) + '</p>' +
-      '<p class="bk__recap-zone">' + F('{n} min · heure locale {tz}', { n: S.data ? S.data.durationMin : 30, tz: zoneLabel(S.tz, ts) }) + '</p></div>';
+      '<div class="bk__recap-when"><p class="bk__recap-date">' + longDay(dayKey(ts, tz)) + ' · ' + hm(tz) + '</p>' +
+      '<p class="bk__recap-zone">' + F('Votre heure : {t} — {tz}', { t: hm(tz), tz: tz }) + '</p>' + other + '</div>';
   }
   function renderForm() {
     el.recap.innerHTML = recapHtml(Date.parse(S.slot)) + '<button type="button" class="bk__link" data-bk-back>' + L('Modifier') + '</button>';
   }
   function renderDone() {
     var b = S.booking;
-    el.doneRecap.innerHTML = recapHtml(Date.parse(b.start));
+    el.doneRecap.innerHTML = recapHtml(Date.parse(b.start), b.timezone);
     // "Ajouter à mon agenda": Google Calendar link, or the signed .ics for
     // Apple / Outlook (same UID as the Google invitation: no second copy).
     var c = b.calendar;
@@ -726,8 +751,8 @@
       if (res.status === 422 && res.body.fields) {
         var map = { name: 'REQUIRED', email: 'EMAIL', phone: 'PHONE', message: 'TOO_LONG', projectTypes: 'TYPES' };
         if (res.body.fields.projectTypes) { setError('types', 'TYPES'); delete res.body.fields.projectTypes; }
-        Object.keys(res.body.fields).forEach(function (k) { if (k === 'start') return; setError(k, res.body.fields[k] === 'REQUIRED' ? 'REQUIRED' : (map[k] || 'INVALID')); });
-        if (res.body.fields.start) { setStep('date'); render(); }
+        Object.keys(res.body.fields).forEach(function (k) { if (k === 'start' || k === 'timezone') return; setError(k, res.body.fields[k] === 'REQUIRED' ? 'REQUIRED' : (map[k] || 'INVALID')); });
+        if (res.body.fields.start || res.body.fields.timezone) { setStep('date'); render(); }
         return;
       }
       if (res.status === 429) return failWith(L('Trop de tentatives. Réessayez dans quelques minutes ou écrivez-nous :') + contactHtml());

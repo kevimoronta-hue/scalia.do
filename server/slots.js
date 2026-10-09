@@ -43,6 +43,15 @@ function candidates(fromTs, toTs) {
   return out;
 }
 
+// The client's rule: the meeting starts no later than BOOKING.clientLatestStart
+// on the client's own clock (their zone, DST included).
+function clientOk(start, clientTz) {
+  if (!clientTz) return true;
+  const [lh, lm] = BOOKING.clientLatestStart.split(':').map(Number);
+  const p = parts(start, clientTz);
+  return p.h * 60 + p.mi <= lh * 60 + lm;
+}
+
 function blockOf(start) {
   return {
     from: start - BOOKING.bufferBeforeMin * MIN,
@@ -51,10 +60,11 @@ function blockOf(start) {
 }
 
 // busy: [{ start, end }] in ms (any calendar event); booked: Scalia's own
-// bookings, which keep their buffers around them too.
-function freeSlots(now, busy, booked) {
+// bookings, which keep their buffers around them too. clientTz: the
+// visitor's zone, for the latest local start (Scalia hours ∩ client rule).
+function freeSlots(now, busy, booked, clientTz) {
   const h = horizon(now);
-  const list = candidates(h.from, h.to);
+  const list = candidates(h.from, h.to).filter(c => clientOk(c.start, clientTz));
   const bookedPerDay = {};
   const all = busy.slice();
   for (const b of booked) {
@@ -74,4 +84,4 @@ function freeSlots(now, busy, booked) {
   });
 }
 
-module.exports = { horizon, candidates, freeSlots, blockOf, MIN, DAY };
+module.exports = { horizon, candidates, freeSlots, clientOk, blockOf, MIN, DAY };
