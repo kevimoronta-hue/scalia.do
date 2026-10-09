@@ -37,7 +37,7 @@ const TYPES = {
 // DEV_GEO=<country>:<zone>: the x-vercel-ip-* headers Vercel adds, then the
 // real middleware.js on page requests (its Set-Cookie headers included).
 const GEO = (process.env.DEV_GEO || '').split(':');
-const PAGES = /^\/(?:(?:scalians|mentions-legales|confidentialite)\/.*)?$/;
+const PAGES = /^\/(?:(?:fr|en|es|scalians|mentions-legales|confidentialite)\/.*)?$/;
 const middleware = GEO[0]
   ? (await import('data:text/javascript,' + encodeURIComponent(fs.readFileSync(path.join(ROOT, 'middleware.js'), 'utf8')))).default
   : null;

@@ -12,7 +12,7 @@
    page (304) would come back without these Set-Cookie headers.
    ========================================================================== */
 export const config = {
-  matcher: ['/', '/scalians/:path*', '/mentions-legales/:path*', '/confidentialite/:path*']
+  matcher: ['/', '/fr/:path*', '/en/:path*', '/es/:path*', '/scalians/:path*', '/mentions-legales/:path*', '/confidentialite/:path*']
 };
 
 const MAX_AGE = 86400;

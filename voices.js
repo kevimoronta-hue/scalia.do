@@ -33,20 +33,20 @@
   // EN / ES are faithful translations of it. The player follows the site
   // language live (see setTrack in the player).
   var VOICES = [
-    { id: 'marcela-ledesma',   name: 'Marcela Ledesma',   company: 'Esolutions Latam',     role: '', type: 'photo', photo: 'assets/voices/marcela-ledesma', focus: '50% 22%', rail: 1, 
+    { id: 'marcela-ledesma',   name: 'Marcela Ledesma',   company: 'Esolutions Latam',     role: '', type: 'photo', photo: '/assets/voices/marcela-ledesma', focus: '50% 22%', rail: 1, 
       quote: 'Notre site reflète enfin le sérieux de notre travail. Nos clients le remarquent dès le premier échange.' },
-    { id: 'nata',              name: 'Nata',              company: 'Nata Burguers',        role: '', type: 'photo', photo: 'assets/voices/nata', focus: '50% 22%', rail: 1, 
+    { id: 'nata',              name: 'Nata',              company: 'Nata Burguers',        role: '', type: 'photo', photo: '/assets/voices/nata', focus: '50% 22%', rail: 1, 
       quote: 'Une présence qui donne envie avant même de passer la porte. Exactement l’image que je voulais.' },
-    { id: 'benjamin-herisson', name: 'Benjamin Hérisson', company: 'Bhevia Pharma',        role: '', type: 'video', wistiaId: '428vac09p5', poster: 'assets/voices/benjamin-herisson-poster', captions: { fr: 'assets/voices/captions/benjamin-herisson.fr.vtt', en: 'assets/voices/captions/benjamin-herisson.en.vtt', es: 'assets/voices/captions/benjamin-herisson.es.vtt' }, rail: 1 },
-    { id: 'adrien-vernerey',   name: 'Adrien Vernerey',   company: 'Vernerey Paysage',     role: '', type: 'photo', photo: 'assets/voices/adrien-vernerey', focus: '50% 22%', rail: 1, 
+    { id: 'benjamin-herisson', name: 'Benjamin Hérisson', company: 'Bhevia Pharma',        role: '', type: 'video', wistiaId: '428vac09p5', poster: '/assets/voices/benjamin-herisson-poster', captions: { fr: '/assets/voices/captions/benjamin-herisson.fr.vtt', en: '/assets/voices/captions/benjamin-herisson.en.vtt', es: '/assets/voices/captions/benjamin-herisson.es.vtt' }, rail: 1 },
+    { id: 'adrien-vernerey',   name: 'Adrien Vernerey',   company: 'Vernerey Paysage',     role: '', type: 'photo', photo: '/assets/voices/adrien-vernerey', focus: '50% 22%', rail: 1, 
       quote: 'Scalia a compris notre métier. Le site met nos réalisations en valeur avec la même exigence que nos jardins.' },
-    { id: 'francisco-david',   name: 'Francisco David',   company: 'Fraco',                role: '', type: 'photo', photo: 'assets/voices/francisco-david', focus: '50% 22%', rail: 2, 
+    { id: 'francisco-david',   name: 'Francisco David',   company: 'Fraco',                role: '', type: 'photo', photo: '/assets/voices/francisco-david', focus: '50% 22%', rail: 2, 
       quote: 'Un accompagnement clair du début à la fin. Nous savions toujours où en était le projet.' },
-    { id: 'corentin-lavenan',  name: 'Corentin Lavenan',  company: 'Skaleos',              role: '', type: 'video', wistiaId: 'wodu23wpny', poster: 'assets/voices/corentin-lavenan-poster', captions: { fr: 'assets/voices/captions/corentin-lavenan.fr.vtt', en: 'assets/voices/captions/corentin-lavenan.en.vtt', es: 'assets/voices/captions/corentin-lavenan.es.vtt' }, rail: 2 },
-    { id: 'melissa-hernandez', name: 'Melissa Hernandez', company: 'Miscore',              role: '', type: 'photo', photo: 'assets/voices/melissa-hernandez', focus: '50% 22%', rail: 2, 
+    { id: 'corentin-lavenan',  name: 'Corentin Lavenan',  company: 'Skaleos',              role: '', type: 'video', wistiaId: 'wodu23wpny', poster: '/assets/voices/corentin-lavenan-poster', captions: { fr: '/assets/voices/captions/corentin-lavenan.fr.vtt', en: '/assets/voices/captions/corentin-lavenan.en.vtt', es: '/assets/voices/captions/corentin-lavenan.es.vtt' }, rail: 2 },
+    { id: 'melissa-hernandez', name: 'Melissa Hernandez', company: 'Miscore',              role: '', type: 'photo', photo: '/assets/voices/melissa-hernandez', focus: '50% 22%', rail: 2, 
       quote: 'Élégant, rapide et simple à comprendre. Notre offre n’a jamais été aussi lisible.' },
-    { id: 'rachel-pruden',     name: 'Rachel Pruden',     company: 'L’Éclat des Flots',   role: '', type: 'video', wistiaId: 'f0qwxyvc58', poster: 'assets/voices/rachel-pruden-poster', captions: { fr: 'assets/voices/captions/rachel-pruden.fr.vtt', en: 'assets/voices/captions/rachel-pruden.en.vtt', es: 'assets/voices/captions/rachel-pruden.es.vtt' }, rail: 2 },
-    { id: 'rafael-montero',    name: 'Rafael Montero',    company: 'Dora Electroservices', role: '', type: 'photo', photo: 'assets/voices/rafael-montero', focus: '50% 22%', rail: 2, 
+    { id: 'rachel-pruden',     name: 'Rachel Pruden',     company: 'L’Éclat des Flots',   role: '', type: 'video', wistiaId: 'f0qwxyvc58', poster: '/assets/voices/rachel-pruden-poster', captions: { fr: '/assets/voices/captions/rachel-pruden.fr.vtt', en: '/assets/voices/captions/rachel-pruden.en.vtt', es: '/assets/voices/captions/rachel-pruden.es.vtt' }, rail: 2 },
+    { id: 'rafael-montero',    name: 'Rafael Montero',    company: 'Dora Electroservices', role: '', type: 'photo', photo: '/assets/voices/rafael-montero', focus: '50% 22%', rail: 2, 
       quote: 'Nos clients nous trouvent plus facilement et nous contactent en confiance.' }
   ];
 

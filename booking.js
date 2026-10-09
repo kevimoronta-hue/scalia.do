@@ -27,7 +27,7 @@
 
   var root = document.documentElement;
   var css = document.createElement('link');
-  css.rel = 'stylesheet'; css.href = 'booking.css';
+  css.rel = 'stylesheet'; css.href = '/booking.css';
   document.head.appendChild(css);
 
   var API_AVAIL = '/api/availability/';

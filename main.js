@@ -13,8 +13,8 @@
   /* ------------------------------------------------------------ settings --
      One 9:16 film in two weights. Posters are set in the HTML <picture>. */
   var HERO_MEDIA = {
-    mobile:  { webm: 'assets/video/hero-720.webm',  mp4: 'assets/video/hero-720.mp4' },
-    desktop: { webm: 'assets/video/hero-1080.webm', mp4: 'assets/video/hero-1080.mp4' }
+    mobile:  { webm: '/assets/video/hero-720.webm',  mp4: '/assets/video/hero-720.mp4' },
+    desktop: { webm: '/assets/video/hero-1080.webm', mp4: '/assets/video/hero-1080.mp4' }
   };
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var desktopMQ = matchMedia('(min-width: 1024px)');

@@ -14,6 +14,9 @@
   'use strict';
   var d = document.documentElement;
   var boot = window.SCALIA_I18N_BOOT || { locale: 'fr', currency: 'EUR', root: '' };
+  // /fr/, /en/, /es/: built in their language. Nothing to translate in the
+  // page; another language is another URL.
+  var page = boot.page || null;
   var dicts = window.SCALIA_I18N = window.SCALIA_I18N || {};
   var LOCALES = ['fr', 'en', 'es'];
   var INTL = { fr: 'fr-FR', en: 'en-US', es: 'es-419' };
@@ -76,6 +79,15 @@
   /* --------------------------------------------------------------- apply -- */
   function apply(loc) {
     current = loc;
+    if (!page) translatePage(loc);
+    var og = document.querySelector('meta[property="og:locale"]');
+    if (og) og.setAttribute('content', OG[loc]);
+    d.lang = loc;
+    d.setAttribute('data-locale', loc);
+    syncLangUI();
+    d.dispatchEvent(new CustomEvent('scalia:locale', { detail: { locale: loc } }));
+  }
+  function translatePage(loc) {
     texts.forEach(function (x) {
       var v = t(x.fr, loc);
       var next = x.lead + v + x.trail;
@@ -96,12 +108,6 @@
     });
     document.title = t(head.title, loc);
     if (head.descEl && head.desc) head.descEl.setAttribute('content', t(head.desc, loc));
-    var og = document.querySelector('meta[property="og:locale"]');
-    if (og) og.setAttribute('content', OG[loc]);
-    d.lang = loc;
-    d.setAttribute('data-locale', loc);
-    syncLangUI();
-    d.dispatchEvent(new CustomEvent('scalia:locale', { detail: { locale: loc } }));
   }
 
   function loadDict(loc, cb) {
@@ -123,7 +129,11 @@
   function setLocale(loc, opts) {
     if (LOCALES.indexOf(loc) < 0) return;
     opts = opts || {};
-    if (opts.persist) {
+    if (opts.persist && page) {
+      store('scalia.locale', loc);
+      if (loc !== page) { location.href = (boot.root || '/') + loc + '/' + location.hash; return; }
+    }
+    if (opts.persist && !page) {
       store('scalia.locale', loc);
       // A manual choice replaces any ?lang= in the address.
       try {
@@ -226,7 +236,7 @@
   }
 
   /* ---------------------------------------------------------------- init -- */
-  collect();
+  if (!page) collect();
   initCurrency();
   initLang();
   window.ScaliaI18n = {

@@ -2,7 +2,10 @@
    Scalia · i18n boot (runs in <head>, before first paint)
    Decides the locale and the currency as early as possible so the page is
    never shown in the wrong language:
-     1. ?lang=fr|en|es in the URL (shared links, hreflang alternates)
+     0. the page's own language: /fr/, /en/, /es/ are built in their
+        language (scripts/build-locales.mjs, <html data-page-locale>) and
+        always show it, whatever the saved choice or the IP
+     1. ?lang=fr|en|es in the URL (shared links)
      2. the visitor's saved choice (localStorage scalia.locale)
      3. the visitor's country, from the network: the scalia_country cookie
         written by middleware.js from Vercel's x-vercel-ip-country (country
@@ -55,7 +58,10 @@
   var q = null;
   try { q = new URLSearchParams(location.search).get('lang'); } catch (e) {}
   var saved = read(KEY_LOCALE);
-  if (has(q)) { locale = q; source = 'url'; }
+  var page = d.getAttribute('data-page-locale');
+  if (!has(page)) page = null;
+  if (page) { locale = page; source = 'page'; }
+  else if (has(q)) { locale = q; source = 'url'; }
   else if (has(saved)) { locale = saved; source = 'saved'; }
   else {
     country = edgeCountry();
@@ -86,12 +92,13 @@
   d.lang = locale;
   d.setAttribute('data-locale', locale);
   d.setAttribute('data-currency', currency);
-  window.SCALIA_I18N_BOOT = { locale: locale, source: source, country: country, currency: currency, root: ROOT, timezone: timezone, tzSource: tzSource };
+  window.SCALIA_I18N_BOOT = { locale: locale, source: source, country: country, currency: currency, root: ROOT, timezone: timezone, tzSource: tzSource, page: page };
 
   // French is in the HTML. Other locales: fetch the dictionary now and keep
-  // the page hidden until it is applied (with a safety release).
+  // the page hidden until it is applied (with a safety release). A language
+  // page is already translated: the dictionary only serves the scripts.
   if (locale !== 'fr') {
-    d.classList.add('i18n-wait');
+    if (!page) d.classList.add('i18n-wait');
     var s = document.createElement('script');
     s.src = ROOT + 'i18n/' + locale + '.js';
     s.id = 'i18n-dict-' + locale;
