@@ -420,6 +420,13 @@ button { -webkit-tap-highlight-color: transparent; }
   .nav__links { display: flex; }
   .nav__cta { display: inline-flex; }
   .nav__burger { display: none; }
+  /* Two links on each side of the logo, at the same distance from it (the
+     grid gap); currency, language and the CTA at the outer edges. The logo
+     owns the centre column of a 1fr / auto / 1fr grid: always centred. */
+  .nav__row { column-gap: clamp(24px, 2.6vw, 56px); }
+  .nav__side--l, .nav__side--r { justify-self: stretch; }
+  .nav__side--l .nav__links { margin-left: auto; }
+  .nav__side--r .lang { margin-left: auto; }
 }
 
 /* ------------------------------------------------- currency + language --
