@@ -75,7 +75,9 @@
   /* ------------------------------------------------------------- reveals --
      Same contract as the home page: each [data-reveal] reveals once. Masked
      headlines are watched through their parent (a fully clipped element
-     never intersects). Group children get a 90ms stagger. */
+     never intersects). Group children get a 90ms stagger. A card with a
+     portrait reveals once its photo is decoded: the card and the photo
+     enter as one, never an empty frame followed by a late photo. */
   // Desktop grids stagger within a row only (the second row of directors
   // no longer waits 180/270ms on top of entering later). Computed on load and
   // on resize, never per frame.
@@ -107,11 +109,16 @@
   if (!('IntersectionObserver' in window)) {
     Array.prototype.forEach.call(els, function (el) { el.classList.add('is-in'); });
   } else {
+    var reveal = function (el) {
+      var photo = el.querySelector('.portrait img');
+      var show = function () { el.classList.add('is-in'); };
+      if (photo && photo.decode) photo.decode().then(show, show); else show();
+    };
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
         if (!e.isIntersecting) return;
         if (e.target._rvMasks) e.target._rvMasks.forEach(function (m) { m.classList.add('is-in'); });
-        if (e.target.hasAttribute('data-reveal')) e.target.classList.add('is-in');
+        if (e.target.hasAttribute('data-reveal')) reveal(e.target);
         io.unobserve(e.target);
       });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0 });
