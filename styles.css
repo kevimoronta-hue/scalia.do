@@ -632,9 +632,8 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   font-size: 16px; line-height: 1.5; letter-spacing: -0.01em;
   color: rgba(246, 243, 238, 0.86);
 }
-.hero__ctas { margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
-.hero__ctas .btn--primary { flex: 1 1 100%; }
-.hero__secondary { display: none; }
+.hero__ctas { margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.hero__ctas .btn--primary, .hero__ctas .hero__secondary { flex: 1 1 100%; }
 
 @keyframes hero-in { from { opacity: 0; transform: translate3d(0, 14px, 0); } }
 @keyframes hero-in-title { from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.985); } }
@@ -664,12 +663,10 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .hero__title { font-size: min(var(--h1), 8.6svh); margin-top: 8px; }
   .hero__sub { font-size: 15px; margin-top: 10px; }
   .hero__ctas { margin-top: 16px; }
-  .hero__ctas .btn--primary { --h: 48px; }
+  .hero__ctas .btn--primary, .hero__ctas .hero__secondary { --h: 48px; }
 }
 @media (min-width: 600px) and (max-aspect-ratio: 1/1) {
-  .hero__ctas .btn--primary { flex: 0 0 auto; }
-  .hero__secondary { display: inline-flex; }
-  .hero__tertiary { display: none; }
+  .hero__ctas .btn--primary, .hero__ctas .hero__secondary { flex: 0 0 auto; }
   .hero__sub { font-size: 18px; max-width: 28em; }
   .hero__content { bottom: max(56px, 6svh); }
 }
@@ -705,9 +702,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .hero__sub, .hero__ctas { max-width: min(30em, calc(100vw - var(--film-w) - 2 * var(--gutter))); }
   .hero__sub { font-size: clamp(17px, 0.9rem + 0.35vw, 20px); margin-top: 22px; }
   .hero__ctas { margin-top: 32px; }
-  .hero__ctas .btn--primary { flex: 0 0 auto; }
-  .hero__secondary { display: inline-flex; }
-  .hero__tertiary { display: none; }
+  .hero__ctas .btn--primary, .hero__ctas .hero__secondary { flex: 0 0 auto; }
   .hero__toggle { right: 24px; top: auto; bottom: 24px; }
 }
 @media (min-width: 640px) and (min-aspect-ratio: 1/1) and (max-height: 540px) {
