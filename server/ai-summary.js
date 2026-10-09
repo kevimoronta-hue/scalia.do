@@ -55,52 +55,57 @@ const SCHEMA = {
 // ("éliminer", "à refuser"). (?<!\p{L}) / (?!\p{L}) with the u flag do.
 const START = '(?<!\\p{L})';
 const word = (alts, tail) => new RegExp(START + '(?:' + alts + ')' + (tail || ''), 'iu');
+// Same rules as before, grouped by family so a rejection can name its group
+// (never the word that matched).
 const FORBIDDEN = [
-  // scores, grades, percentages, rankings
-  /\d+(?:[.,]\d+)?\s*(?:\/|sur|out of)\s*\d+/iu,
-  /\d+(?:[.,]\d+)?\s*%/u,
-  /(?<!\p{L})[A-E][+-](?!\p{L})/u,
-  word('score|notation|noté|classement|classé|rang\\s*(?:n°|no|#)?\\s*\\d|percentile|compatibilit|top\\s*\\d|meilleur(?:e|s)? que|moins bon|premier de|dernier de'),
-  // verdicts and recruitment advice
-  word('recrut|embauch|à refuser|refuser|rejet|élimin|à écarter|à appeler|à convoquer|à retenir|à garder|hire|no.?hire|go/no'),
-  word('excellent(?:e)?|mauvais(?:e)?|bon|bonne|idéal(?:e)?|parfait(?:e)?|faible|médiocre', '\\s+(?:candidat|candidate|profil|recrue)'),
-  word('candidat|candidate|profil', '\\s+(?:idéal|parfait|excellent|médiocre|faible)'),
-  word('ce candidat|cette candidate|cette personne|il|elle', '\\s+(?:est|n’est|n\'est|sera|serait)\\s+(?:un|une|le|la|très|trop|clairement|vraiment|idéal|parfait|excellent)'),
-  // sensitive inferences
-  word('relig|croyan|foi |santé|malad|médic|psych|mental|dépress|anxi|trouble|handicap|origine|ethni|racial|nationalit|orientation sexuelle|sexualit|homosex|hétérosex|politique|militant|syndic|âge|âgé|jeune|senior|famille|familial|enfant|enceinte|grossesse|marié|célibataire')
+  ['score', /\d+(?:[.,]\d+)?\s*(?:\/|sur|out of)\s*\d+/iu],
+  ['score', /\d+(?:[.,]\d+)?\s*%/u],
+  ['score', /(?<!\p{L})[A-E][+-](?!\p{L})/u],
+  ['score', word('score|notation|noté|percentile|compatibilit')],
+  ['ranking', word('classement|classé|rang\\s*(?:n°|no|#)?\\s*\\d|top\\s*\\d|meilleur(?:e|s)? que|moins bon|premier de|dernier de')],
+  ['recommendation', word('recrut|embauch|à refuser|refuser|rejet|élimin|à écarter|à appeler|à convoquer|à retenir|à garder|hire|no.?hire|go/no')],
+  ['verdict', word('excellent(?:e)?|mauvais(?:e)?|bon|bonne|idéal(?:e)?|parfait(?:e)?|faible|médiocre', '\\s+(?:candidat|candidate|profil|recrue)')],
+  ['verdict', word('candidat|candidate|profil', '\\s+(?:idéal|parfait|excellent|médiocre|faible)')],
+  ['verdict', word('ce candidat|cette candidate|cette personne|il|elle', '\\s+(?:est|n’est|n\'est|sera|serait)\\s+(?:un|une|le|la|très|trop|clairement|vraiment|idéal|parfait|excellent)')],
+  ['sensitive', word('relig|croyan|foi |santé|malad|médic|psych|mental|dépress|anxi|trouble|handicap|origine|ethni|racial|nationalit|orientation sexuelle|sexualit|homosex|hétérosex|politique|militant|syndic|âge|âgé|jeune|senior|famille|familial|enfant|enceinte|grossesse|marié|célibataire')]
 ];
 
 function clean(v) { return v.replace(/[\u0000-\u001F\u007F\u2028\u2029]/g, ' ').replace(/\s+/g, ' ').trim(); }
-function text(v, min, max) {
-  if (typeof v !== 'string') return null;
-  const s = clean(v);
-  return s.length >= min && s.length <= max ? s : null;
-}
-function list(v, minN, maxN, max) {
-  if (!Array.isArray(v) || v.length < minN || v.length > maxN) return null;
-  const out = v.map(x => text(x, 2, max));
-  return out.every(Boolean) ? out : null;
-}
 function sentences(s) { return (s.match(/[^.!?…]+[.!?…]+/g) || [s]).length; }
 
-// Returns { status: 'ok', data } or { status: 'rejected' }.
+const TEXTS = { workStyle: [10, 320], relationalStyle: [10, 360], summary: [20, 700] };
+const LISTS = { motivations: [1, 4, 100], potentialStrengths: [1, 5, 100], interviewTopics: [1, 4, 160] };
+const KEYS = ['workStyle', 'relationalStyle', 'motivations', 'potentialStrengths', 'interviewTopics', 'summary'];
+
+// Returns { status: 'ok', data } or { status: 'rejected', reason } where the
+// reason is a code only (e.g. "count:motivations", "filter:sensitive").
 function validate(input) {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) return { status: 'rejected' };
-  const KEYS = ['workStyle', 'relationalStyle', 'motivations', 'potentialStrengths', 'interviewTopics', 'summary'];
-  if (Object.keys(input).some(k => KEYS.indexOf(k) < 0)) return { status: 'rejected' };
-  const d = {
-    workStyle: text(input.workStyle, 10, 320),
-    relationalStyle: text(input.relationalStyle, 10, 360),
-    motivations: list(input.motivations, 1, 4, 100),
-    potentialStrengths: list(input.potentialStrengths, 1, 5, 100),
-    interviewTopics: list(input.interviewTopics, 1, 4, 160),
-    summary: text(input.summary, 20, 700)
-  };
-  if (KEYS.some(k => !d[k])) return { status: 'rejected' };
-  if (sentences(d.summary) > 4) return { status: 'rejected' };
+  const no = reason => ({ status: 'rejected', reason });
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return no('schema:not_object');
+  if (Object.keys(input).some(k => KEYS.indexOf(k) < 0)) return no('schema:unknown_field');
+  if (KEYS.some(k => !(k in input))) return no('schema:missing_field');
+  const d = {};
+  for (const k in TEXTS) {
+    if (typeof input[k] !== 'string') return no('type:' + k);
+    const v = clean(input[k]);
+    if (v.length < TEXTS[k][0] || v.length > TEXTS[k][1]) return no('length:' + k);
+    d[k] = v;
+  }
+  for (const k in LISTS) {
+    const [minN, maxN, max] = LISTS[k];
+    if (!Array.isArray(input[k])) return no('type:' + k);
+    if (input[k].length < minN || input[k].length > maxN) return no('count:' + k);
+    if (input[k].some(x => typeof x !== 'string')) return no('type:' + k);
+    const items = input[k].map(clean);
+    if (items.some(x => x.length < 2 || x.length > max)) return no('length:' + k);
+    d[k] = items;
+  }
+  if (sentences(d.summary) > 4) return no('sentences:summary');
   const all = [d.workStyle, d.relationalStyle, d.summary].concat(d.motivations, d.potentialStrengths, d.interviewTopics).join('\n');
-  if (FORBIDDEN.some(re => re.test(all))) return { status: 'rejected' };
-  return { status: 'ok', data: d };
+  const hit = FORBIDDEN.find(([, re]) => re.test(all));
+  if (hit) return no('filter:' + hit[0]);
+  return { status: 'ok', data: { workStyle: d.workStyle, relationalStyle: d.relationalStyle, motivations: d.motivations,
+    potentialStrengths: d.potentialStrengths, interviewTopics: d.interviewTopics, summary: d.summary } };
 }
 
 /* --------------------------------------------------------------- call -- */
@@ -161,9 +166,9 @@ async function generateCandidateSummary(qa, role) {
     if (!out0.text) { logFailure(r.status, out0.reason); log('ai_summary_unavailable'); return { status: 'unavailable' }; }
     const raw = out0.text;
     let parsed;
-    try { parsed = JSON.parse(raw); } catch (e) { log('ai_summary_rejected'); return { status: 'rejected' }; }
+    try { parsed = JSON.parse(raw); } catch (e) { log('ai_summary_rejected reason=json_parse'); return { status: 'rejected', reason: 'json_parse' }; }
     const out = validate(parsed);
-    log(out.status === 'ok' ? 'ai_summary_success' : 'ai_summary_rejected');
+    log(out.status === 'ok' ? 'ai_summary_success' : 'ai_summary_rejected reason=' + out.reason);
     return out;
   } catch (e) {
     log('ai_summary_unavailable');   // timeout, network, unreadable body
