@@ -48,7 +48,8 @@
     dow: $('[data-bk-dow]'), days: $('[data-bk-days]'), day: $('[data-bk-day]'), slots: $('[data-bk-slots]'),
     tzNow: $('[data-bk-tz-now]'), tzEdit: $('[data-bk-tz-edit]'), tzPanel: $('[data-bk-tz-panel]'),
     tzSearch: $('[data-bk-tz-search]'), tzList: $('[data-bk-tz-list]'), recap: $('[data-bk-recap]'), form: $('[data-bk-form]'), fail: $('[data-bk-fail]'),
-    submit: $('[data-bk-submit]'), doneRecap: $('[data-bk-done-recap]'), ics: $('[data-bk-ics]'),
+    submit: $('[data-bk-submit]'), doneRecap: $('[data-bk-done-recap]'),
+    add: $('[data-bk-add]'), addBtn: $('[data-bk-add-btn]'), addMenu: $('[data-bk-add-menu]'),
     types: $('[data-bk-types]'), foot: $('[data-bk-foot]')
   };
 
@@ -285,7 +286,35 @@
   function renderDone() {
     var b = S.booking;
     el.doneRecap.innerHTML = recapHtml(Date.parse(b.start));
+    // "Ajouter à mon agenda": Google Calendar link, or the signed .ics for
+    // Apple / Outlook (same UID as the Google invitation: no second copy).
+    var c = b.calendar;
+    el.add.hidden = !c;
+    addMenu(false);
+    if (!c) return;
+    var g = el.addMenu.querySelector('[data-cal="google"]');
+    var apple = el.addMenu.querySelector('[data-cal="apple"]');
+    var dl = el.addMenu.querySelector('[data-cal="download"]');
+    g.href = c.google;
+    apple.href = c.ics;
+    dl.href = c.ics + (c.ics.indexOf('?') < 0 ? '?' : '&') + 'dl=1';
+    // The likeliest calendar first: Apple on iPhone, iPad and Mac.
+    var appleFirst = /iPhone|iPad|Macintosh/.test(navigator.userAgent);
+    el.addMenu.insertBefore(appleFirst ? apple : g, el.addMenu.firstChild);
   }
+  function addMenu(open) {
+    el.addMenu.hidden = !open;
+    el.addBtn.setAttribute('aria-expanded', String(open));
+  }
+  el.addBtn.addEventListener('click', function () {
+    addMenu(el.addMenu.hidden);
+    if (!el.addMenu.hidden) el.addMenu.querySelector('a').focus({ preventScroll: true });
+  });
+  el.addMenu.addEventListener('click', function (e) { if (e.target.closest('a')) setTimeout(function () { addMenu(false); }, 0); });
+  el.addMenu.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); addMenu(false); el.addBtn.focus(); }
+  });
+  dlg.addEventListener('click', function (e) { if (!el.addMenu.hidden && !e.target.closest('[data-bk-add]')) addMenu(false); });
 
   function render() {
     if (S.step === 'date') renderDate();
@@ -354,7 +383,6 @@
       S.formAt = Date.now();
       return;
     }
-    if (t.hasAttribute('data-bk-ics')) return downloadIcs();
     if (t.hasAttribute('data-bk-retry')) {
       setStep('date'); render();
       fetchAvail(true).then(function () { render(); }, function () { setStep('error'); });
@@ -673,6 +701,7 @@
     }).then(function (res) {
       if (res.status === 201 && res.body.ok) {
         S.booking = res.body.booking;
+        S.booking.calendar = res.body.calendar || null;   // "Ajouter à mon agenda"
         S.at = 0;                                    // the calendar changed: refresh at next open
         setStep('done'); renderDone();
         dropDraft();   // booked: nothing left to resume
@@ -708,28 +737,6 @@
   });
 
   /* ---------------------------------------------------------------- ics --- */
-  function downloadIcs() {
-    var b = S.booking;
-    if (!b) return;
-    function d(iso) { return new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
-    function esc(s) { return String(s).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/[,;]/g, function (m) { return '\\' + m; }); }
-    var title = L('Échange avec Scalia');
-    var lines = [
-      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Scalia//Booking//FR', 'METHOD:PUBLISH',
-      'BEGIN:VEVENT', 'UID:' + d(b.start) + '-scalia@scalia.do', 'DTSTAMP:' + d(new Date().toISOString()),
-      'DTSTART:' + d(b.start), 'DTEND:' + d(b.end), 'SUMMARY:' + esc(title),
-      // No video link yet: it comes with the reminder before the meeting.
-      'DESCRIPTION:' + esc(L('Vous recevrez le lien de visioconférence avant le rendez-vous.') + '\n\nhttps://scalia.do'),
-      'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc(title), 'END:VALARM',
-      'END:VEVENT', 'END:VCALENDAR'
-    ].filter(Boolean).join('\r\n');
-    var url = URL.createObjectURL(new Blob([lines], { type: 'text/calendar;charset=utf-8' }));
-    var a = document.createElement('a');
-    a.href = url; a.download = 'scalia.ics';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-  }
-
   /* ------------------------------------------------------------ triggers --- */
   // One opener for every booking button (sections, navbar, burger menu).
   document.addEventListener('click', function (e) {

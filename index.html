@@ -745,7 +745,7 @@
     <div class="bk__body">
       <!-- 1 · date and time -->
       <section class="bk__pane" data-pane="date">
-        <h2 class="bk__title" id="bk-title-date" tabindex="-1">Choisissez un créneau</h2>
+        <h2 class="bk__title" id="bk-title-date" tabindex="-1">Parlons de votre projet</h2>
         <p class="bk__sub">Sélectionnez le moment qui vous convient.</p>
         <p class="bk__meta" data-bk-meta></p>
         <p class="bk__notice" data-bk-notice role="status" hidden></p>
@@ -865,10 +865,17 @@
         <h2 class="bk__title" id="bk-title-done" tabindex="-1">C’est réservé.</h2>
         <p class="bk__sub">Votre rendez-vous est confirmé. Vous allez recevoir un email avec l’accès à votre échange.</p>
         <div class="bk__recap" data-bk-done-recap></div>
-        <div class="bk__actions">
-          <button class="btn btn--on-dark btn--lg" type="button" data-bk-ics>Ajouter au calendrier</button>
+        <div class="bk__actions bk__done-actions">
+          <div class="bk__add" data-bk-add>
+            <button class="btn btn--primary btn--lg" type="button" data-bk-add-btn aria-expanded="false" aria-controls="bk-add-menu">Ajouter à mon agenda</button>
+            <div class="bk__add-menu" id="bk-add-menu" data-bk-add-menu hidden>
+              <a class="bk__add-opt" data-cal="google" href="#" target="_blank" rel="noopener noreferrer">Google Calendar</a>
+              <a class="bk__add-opt" data-cal="apple" href="#">Apple Calendar (iPhone, iPad, Mac)</a>
+              <a class="bk__add-opt" data-cal="download" href="#">Télécharger le fichier .ics</a>
+            </div>
+          </div>
+          <button class="btn btn--on-dark btn--lg" type="button" data-bk-close>Fermer</button>
         </div>
-        <button class="bk__link" type="button" data-bk-close>Fermer</button>
       </section>
 
       <!-- fallback: only on a real error -->

@@ -25,6 +25,11 @@
       "permanent": false
     },
     {
+      "source": "/middleware.js",
+      "destination": "/introuvable/",
+      "permanent": false
+    },
+    {
       "source": "/scripts/:path*",
       "destination": "/introuvable/",
       "permanent": false

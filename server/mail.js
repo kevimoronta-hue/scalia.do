@@ -7,6 +7,7 @@
 'use strict';
 const crypto = require('crypto');
 const { BOOKING } = require('./config');
+const calendarLinks = require('./calendar-links');
 
 const INTL = { fr: 'fr-FR', en: 'en-US', es: 'es-419' };
 const SITE = 'https://scalia.do';
@@ -31,8 +32,7 @@ const T = {
     rLink: 'Lien de la visioconférence',
     ics: 'L’invitation jointe (.ics) l’ajoute à votre agenda en un geste.',
     change: 'Un empêchement ? Répondez simplement à cet email et nous trouverons un autre moment.',
-    sign: 'À très vite,\nL’équipe Scalia',
-    event: 'Échange avec Scalia'
+    sign: 'À très vite,\nL’équipe Scalia'
   },
   en: {
     subject: 'Your call with Scalia is confirmed',
@@ -52,8 +52,7 @@ const T = {
     rLink: 'Video-call link',
     ics: 'The attached invitation (.ics) adds it to your calendar in one tap.',
     change: 'Something came up? Simply reply to this email and we will find another time.',
-    sign: 'Talk soon,\nThe Scalia team',
-    event: 'Call with Scalia'
+    sign: 'Talk soon,\nThe Scalia team'
   },
   es: {
     subject: 'Tu reunión con Scalia está confirmada',
@@ -73,8 +72,7 @@ const T = {
     rLink: 'Enlace de la videollamada',
     ics: 'La invitación adjunta (.ics) la añade a tu calendario en un gesto.',
     change: '¿Un imprevisto? Responde a este correo y buscaremos otro momento.',
-    sign: 'Hasta pronto,\nEl equipo de Scalia',
-    event: 'Reunión con Scalia'
+    sign: 'Hasta pronto,\nEl equipo de Scalia'
   }
 };
 
@@ -91,41 +89,10 @@ function when(ts, tz, loc) {
 }
 
 /* ---------------------------------------------------------------- ics --- */
-function icsDate(ts) { return new Date(ts).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
-function icsText(s) { return String(s).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/[,;]/g, m => '\\' + m); }
-function fold(line) {
-  const out = [];
-  let buf = Buffer.from(line, 'utf8');
-  while (buf.length > 75) {
-    let cut = 75;
-    while (cut > 0 && (buf[cut] & 0xC0) === 0x80) cut--;   // never split a UTF-8 character
-    out.push(buf.slice(0, cut).toString('utf8'));
-    buf = Buffer.concat([Buffer.from(' '), buf.slice(cut)]);
-  }
-  out.push(buf.toString('utf8'));
-  return out.join('\r\n');
-}
-// The invitation carries the Scalia meeting link (it opens the Meet on the
-// day of the meeting), never the Meet address itself.
+// The client's calendar entry comes from server/calendar-links.js (same
+// title, text and UID as the "Ajouter à mon agenda" button).
 function ics(b, loc) {
-  const t = T[loc] || T.fr;
-  const desc = (b.meetingUrl ? t.join + ': ' + b.meetingUrl + '\n' + t.dayNote : t.rNoMeet) + '\n\n' + SITE;
-  return [
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Scalia//Booking//FR', 'METHOD:PUBLISH', 'CALSCALE:GREGORIAN',
-    'BEGIN:VEVENT',
-    'UID:' + b.id + '@scalia.do',
-    'DTSTAMP:' + icsDate(Date.now()),
-    'DTSTART:' + icsDate(b.start),
-    'DTEND:' + icsDate(b.end),
-    'SUMMARY:' + icsText(t.event),
-    'DESCRIPTION:' + icsText(desc),
-    b.meetingUrl ? 'LOCATION:' + icsText(b.meetingUrl) : null,
-    'URL:' + (b.meetingUrl || SITE),
-    'ORGANIZER;CN=Scalia:mailto:' + BOOKING.fromEmail,
-    'STATUS:CONFIRMED',
-    'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(t.event), 'END:VALARM',
-    'END:VEVENT', 'END:VCALENDAR'
-  ].filter(Boolean).map(fold).join('\r\n') + '\r\n';
+  return calendarLinks.ics({ uid: b.icalUid || b.id + '@google.com', start: b.start, end: b.end, locale: loc, meetingUrl: b.meetingUrl, organizer: BOOKING.fromEmail });
 }
 
 /* ---------------------------------------------------------- templates --- */

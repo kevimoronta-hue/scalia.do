@@ -23,6 +23,7 @@ const mail = require('../server/mail');
 const tickets = require('../server/tickets');
 const links = require('../server/links');
 const phoneFmt = require('../server/phone');
+const calendarLinks = require('../server/calendar-links');
 
 const LOCALES = ['fr', 'en', 'es'];
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -187,6 +188,7 @@ module.exports = async function book(req, res) {
       id: created.id, start: d.start, end: d.start + BOOKING.durationMin * MIN, meetUrl,
       // The client gets the Scalia link (opens the Meet on the day), Scalia the Meet itself.
       meetingUrl: meetUrl ? safeLink(created.id, d.timezone) : null,
+      icalUid: created.iCalUID || created.id + '@google.com',
       name: d.name, email: d.email, phone: d.phoneDisplay, whatsapp: phoneFmt.whatsapp(d.phone), company: d.company, message: d.message,
       projectTypes: d.projectTypes, locale: d.locale, timezone: d.timezone
     };
@@ -197,6 +199,12 @@ module.exports = async function book(req, res) {
       ok: true,
       // No video link here: it reaches the client with the reminder.
       booking: { start: new Date(booking.start).toISOString(), end: new Date(booking.end).toISOString(), durationMin: BOOKING.durationMin },
+      // "Ajouter à mon agenda": Google Calendar link and the signed .ics
+      // (same UID as the Google event, so no second copy where it exists).
+      calendar: booking.meetingUrl ? {
+        google: calendarLinks.googleUrl(booking),
+        ics: booking.meetingUrl.replace(/\/meeting\/([^/]+)\/$/, '/api/ics/?t=$1')
+      } : null,
       emailed: sent[0].status === 'fulfilled'
     }, noStore);
   } catch (e) {

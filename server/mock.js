@@ -69,7 +69,7 @@ async function insert(ev) {
 }
 function shape(rec) {
   return {
-    id: rec.id, status: rec.status, created: new Date(rec.created).toISOString(), etag: rec.etag || '"1"',
+    id: rec.id, iCalUID: rec.id + '@google.com', status: rec.status, created: new Date(rec.created).toISOString(), etag: rec.etag || '"1"',
     extendedProperties: { private: rec.priv || {} },
     start: { dateTime: new Date(rec.start).toISOString() }, end: { dateTime: new Date(rec.end).toISOString() },
     conferenceData: rec.meet ? { entryPoints: [{ entryPointType: 'video', uri: rec.meet }] } : undefined
