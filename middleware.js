@@ -8,7 +8,8 @@
    hand). Nothing else: the IP address, city or coordinates are never read,
    stored or sent anywhere. Pages only; assets and /api are untouched.
    Both cookies arrive with the page itself, so i18n/boot.js reads them on
-   the very first visit (pages are never kept by the browser: vercel.json).
+   the very first visit. Pages are no-store (vercel.json): a revalidated
+   page (304) would come back without these Set-Cookie headers.
    ========================================================================== */
 export const config = {
   matcher: ['/', '/scalians/:path*', '/mentions-legales/:path*', '/confidentialite/:path*']
@@ -45,16 +46,5 @@ export default function middleware(request) {
   if (!set.length) return;                                       // nothing new: continue unchanged
   const headers = new Headers({ 'x-middleware-next': '1' });    // continue to the page
   for (const c of set) headers.append('set-cookie', c);
-  // A revalidation (If-None-Match → 304) would drop these Set-Cookie headers
-  // and leave the cookies of an earlier visit (another country, another
-  // zone). When they change, the page is fetched without the conditional
-  // headers, so it comes back as a 200 that carries them.
-  const keep = [];
-  request.headers.forEach((value, key) => {
-    if (key === 'if-none-match' || key === 'if-modified-since') return;
-    headers.set('x-middleware-request-' + key, value);
-    keep.push(key);
-  });
-  headers.set('x-middleware-override-headers', keep.join(','));
   return new Response(null, { headers });
 }
