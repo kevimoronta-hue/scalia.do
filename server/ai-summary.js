@@ -105,19 +105,30 @@ function validate(input) {
 
 /* --------------------------------------------------------------- call -- */
 function log(event) { console.log('[apply] ' + event); }
+// Diagnostic for a failed call: the HTTP status and OpenAI's error code /
+// type only (e.g. 429 insufficient_quota). Never the key, the request, the
+// answers or the response body. Only an identifier in OpenAI's own form
+// (lowercase snake_case) is written; anything else, or anything carrying a
+// key prefix (sk-), becomes "-".
+const token = v => (typeof v === 'string' && /^[a-z][a-z0-9_.:-]{0,59}$/.test(v) && !/sk-/.test(v)) ? v : '-';
+function logFailure(status, code, type) {
+  log('ai_summary_openai_error status=' + (Number(status) || 0) + ' code=' + token(code) + (type ? ' type=' + token(type) : ''));
+}
 
 // The model's text answer (Responses API): the first output_text of the
-// message. A refusal or an unfinished response gives null.
+// message. A refusal or an unfinished response gives { reason } instead.
 function outputText(body) {
-  if (!body || body.status !== 'completed' || !Array.isArray(body.output)) return null;
+  if (!body || typeof body !== 'object') return { reason: 'no_body' };
+  if (body.status !== 'completed') return { reason: 'status_' + token(body.status) + (body.incomplete_details && body.incomplete_details.reason ? ':' + token(body.incomplete_details.reason) : '') };
+  if (!Array.isArray(body.output)) return { reason: 'no_output' };
   for (const item of body.output) {
     if (!item || item.type !== 'message' || !Array.isArray(item.content)) continue;
     for (const c of item.content) {
-      if (c && c.type === 'refusal') return null;
-      if (c && c.type === 'output_text' && typeof c.text === 'string') return c.text;
+      if (c && c.type === 'refusal') return { reason: 'refusal' };
+      if (c && c.type === 'output_text' && typeof c.text === 'string') return { text: c.text };
     }
   }
-  return null;
+  return { reason: 'no_output_text' };
 }
 
 // qa: [{ q, a }] in French; role: the role sought, as typed (≤ 120 chars).
@@ -139,9 +150,16 @@ async function generateCandidateSummary(qa, role) {
         store: false               // not kept in the OpenAI dashboard logs
       })
     });
-    if (!r.ok) { log('ai_summary_unavailable'); return { status: 'unavailable' }; }   // 4xx (quota, model, key), 5xx
-    const raw = outputText(await r.json());
-    if (raw === null) { log('ai_summary_unavailable'); return { status: 'unavailable' }; }
+    if (!r.ok) {   // 4xx (quota, model, key), 5xx
+      let err = null;
+      try { err = (await r.json()).error; } catch (e) {}
+      logFailure(r.status, err && err.code, err && err.type);
+      log('ai_summary_unavailable');
+      return { status: 'unavailable' };
+    }
+    const out0 = outputText(await r.json());
+    if (!out0.text) { logFailure(r.status, out0.reason); log('ai_summary_unavailable'); return { status: 'unavailable' }; }
+    const raw = out0.text;
     let parsed;
     try { parsed = JSON.parse(raw); } catch (e) { log('ai_summary_rejected'); return { status: 'rejected' }; }
     const out = validate(parsed);
