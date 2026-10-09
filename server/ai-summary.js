@@ -152,7 +152,9 @@ async function generateCandidateSummary(qa, role) {
         model, instructions: SYSTEM, input: prompt,
         text: { format: SCHEMA },
         max_output_tokens: 2000,   // room for reasoning models; the JSON itself is short
-        store: false               // not kept in the OpenAI dashboard logs
+        store: false
+        // Responses API option only. It promises nothing about what OpenAI keeps: the
+        // Scalia project shares inputs and outputs with OpenAI (data sharing setting).
       })
     });
     if (!r.ok) {   // 4xx (quota, model, key), 5xx

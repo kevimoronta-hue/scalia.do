@@ -2223,3 +2223,122 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .nf__text { margin: 18px 0 32px; font-size: var(--lede); line-height: 1.45; color: var(--fg-inv-2); }
 @media (min-width: 1024px) { .nf { padding-inline: max(var(--gutter), calc((100vw - var(--maxw)) / 2 + var(--gutter))); } }
 
+
+/* =============================================================== FAQ ==
+   A calm light pause: heading on the left, a hairline accordion on the
+   right, then a quiet question box. Height animates through a 0fr → 1fr
+   grid row (no measured heights); everything else is opacity/transform. */
+.faq { padding-block: var(--section) calc(var(--section) + 28px); }
+.faq__wrap { display: grid; gap: clamp(32px, 5vw, 56px); }
+.faq__title { max-width: 12em; }
+.faq__lede { margin-top: 16px; max-width: 24em; }
+@media (min-width: 1024px) {
+  .faq__wrap { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: clamp(48px, 6vw, 112px); align-items: start; }
+  .faq__head { position: sticky; top: calc(var(--nav-top, 16px) + var(--nav-h, 64px) + 40px); }
+}
+
+.faq__list { border-top: 1px solid rgba(14, 11, 10, 0.1); }
+.faq__item { border-bottom: 1px solid rgba(14, 11, 10, 0.1); }
+.faq__q { margin: 0; }
+.faq__q button {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  width: 100%; min-height: 64px; padding: 18px 2px;
+  border: 0; background: none; cursor: pointer; text-align: left;
+  font: 600 clamp(16.5px, 0.95rem + 0.3vw, 19px)/1.35 var(--font); letter-spacing: -0.015em; color: var(--fg);
+  transition: color var(--t-ui) ease;
+}
+.faq__q button:focus-visible { outline: 2px solid var(--scalia-gold); outline-offset: 2px; border-radius: 6px; }
+@media (hover: hover) and (pointer: fine) { .faq__q button:hover { color: var(--champagne-lo); } }
+/* + that turns into −: two hairlines, the vertical one rotates away. */
+.faq__icon { position: relative; flex: none; width: 14px; height: 14px; color: var(--champagne-lo); }
+.faq__icon::before, .faq__icon::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1.5px; margin-top: -0.75px; border-radius: 1px; background: currentColor; transition: transform 220ms var(--ease-out); }
+.faq__icon::after { transform: rotate(90deg); }
+.faq__q button[aria-expanded="true"] .faq__icon::after { transform: rotate(0deg); }
+
+.faq__a { display: grid; grid-template-rows: 1fr; }
+.js .faq__a { grid-template-rows: 0fr; opacity: 0; visibility: hidden; transition: grid-template-rows 220ms var(--ease-out), opacity 200ms ease, visibility 0s linear 220ms; }
+.js .faq__item.is-open .faq__a { grid-template-rows: 1fr; opacity: 1; visibility: visible; transition: grid-template-rows 220ms var(--ease-out), opacity 200ms ease 40ms, visibility 0s; }
+.faq__a-in { overflow: hidden; }
+.faq__a p { padding: 0 44px 22px 2px; max-width: 40em; font-size: 16px; line-height: 1.6; color: var(--fg-2); }
+
+/* ------------------------------------------------ AI agent conversation */
+.faq__ask { margin-top: clamp(40px, 5vw, 56px); }
+.faq__ask-title { font-size: clamp(18px, 1rem + 0.4vw, 21px); font-weight: 650; letter-spacing: -0.02em; }
+.faq__ask-sub { margin-top: 6px; font-size: 15.5px; color: var(--fg-2); }
+.faq__sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.faq__chat {
+  margin-top: 18px; padding: 8px 8px 10px;
+  background: #FBF8F3; border: 1px solid #EDE4D6; border-radius: 20px;
+}
+/* The conversation scrolls inside itself; the page never jumps. */
+.faq__log {
+  display: flex; flex-direction: column; gap: 18px;
+  max-height: min(440px, 58vh); overflow-y: auto; overscroll-behavior: contain;
+  padding: 16px 14px 18px;
+  scrollbar-width: thin; scrollbar-color: #E2D6C4 transparent;
+}
+.faq__log:focus-visible { outline: 2px solid var(--champagne); outline-offset: -2px; border-radius: 14px; }
+
+.faq-msg { max-width: 100%; animation: faq-in 220ms var(--ease-out); }
+@keyframes faq-in { from { opacity: 0; transform: translate3d(0, 6px, 0); } }
+.faq-msg__label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 650; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); }
+.faq-msg__label svg { flex: none; color: var(--champagne-lo); }
+.faq-msg__text { font-size: 15.5px; line-height: 1.6; color: var(--fg); white-space: pre-line; overflow-wrap: anywhere; }
+.faq-msg--agent .faq-msg__text { margin-top: 5px; max-width: 36em; }
+.faq-msg--user { align-self: flex-end; max-width: min(86%, 30em); }
+.faq-msg--user .faq-msg__text { padding: 10px 14px; background: #F1E9DC; border-radius: 14px 14px 4px 14px; color: var(--fg); }
+.faq-msg--note .faq-msg__text { color: var(--fg-2); }
+.faq-msg__cta { margin-top: 12px; }
+.faq-msg__wait { display: flex; align-items: center; gap: 10px; color: var(--fg-2); }
+.faq__dots { display: inline-flex; gap: 4px; }
+.faq__dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--champagne-lo); animation: faq-dot 1s ease-in-out infinite; }
+.faq__dots i:nth-child(2) { animation-delay: 150ms; }
+.faq__dots i:nth-child(3) { animation-delay: 300ms; }
+@keyframes faq-dot { 0%, 100% { opacity: 0.25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
+
+.faq__form { margin: 0; }
+.faq__field {
+  display: flex; align-items: flex-end; gap: 8px;
+  padding: 6px 6px 6px 16px;
+  background: #FFFFFF; border: 1px solid rgba(14, 11, 10, 0.12); border-radius: 15px;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.faq__field:focus-within { border-color: var(--champagne); box-shadow: 0 0 0 3px rgba(205, 169, 130, 0.22); }
+.faq__field textarea {
+  flex: 1; min-width: 0; min-height: 44px; max-height: 140px; padding: 11px 0; resize: none;
+  border: 0; background: none; outline: none; font: 400 16px/1.4 var(--font); color: var(--fg);
+}
+.faq__field textarea::placeholder { color: var(--fg-3); }
+.faq__send {
+  flex: none; display: grid; place-items: center; width: 44px; height: 44px;
+  border: 0; border-radius: 12px; cursor: pointer;
+  background: var(--fg); color: var(--fg-inv);
+  transition: transform var(--t-press) var(--ease-out), opacity 160ms ease;
+}
+.faq__send:active { transform: scale(0.95); }
+.faq__send:focus-visible { outline: 2px solid var(--scalia-gold); outline-offset: 2px; }
+.faq__send[disabled] { opacity: 0.45; cursor: progress; }
+.faq__err { margin: 8px 6px 0; font-size: 13.5px; color: #B3412A; }
+.faq__err:empty { display: none; }
+.faq__foot { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin: 10px 8px 0; }
+.faq__privacy { font-size: 12.5px; line-height: 1.5; color: var(--fg-3); }
+.faq__reset {
+  margin-left: auto; padding: 4px 0; border: 0; background: none; cursor: pointer;
+  font: 500 12.5px/1.5 var(--font); color: var(--fg-2);
+  text-decoration: underline; text-decoration-color: rgba(14, 11, 10, 0.25); text-underline-offset: 3px;
+}
+.faq__reset:hover { color: var(--fg); text-decoration-color: currentColor; }
+.faq__reset[hidden] { display: none; }
+
+@media (max-width: 599px) {
+  .faq__chat { padding: 4px 4px 8px; border-radius: 18px; }
+  .faq__log { padding: 14px 10px 16px; max-height: min(420px, 62vh); }
+  .faq__field { padding-left: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .faq__a, .js .faq__item.is-open .faq__a, .faq__icon::before, .faq__icon::after { transition: none; }
+  .faq-msg { animation: none; }
+  .faq__dots i { animation: none; opacity: 0.6; }
+}
