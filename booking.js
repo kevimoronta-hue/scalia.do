@@ -292,15 +292,20 @@
     el.add.hidden = !c;
     addMenu(false);
     if (!c) return;
-    var g = el.addMenu.querySelector('[data-cal="google"]');
-    var apple = el.addMenu.querySelector('[data-cal="apple"]');
-    var dl = el.addMenu.querySelector('[data-cal="download"]');
-    g.href = c.google;
-    apple.href = c.ics;
-    dl.href = c.ics + (c.ics.indexOf('?') < 0 ? '?' : '&') + 'dl=1';
-    // The likeliest calendar first: Apple on iPhone, iPad and Mac.
-    var appleFirst = /iPhone|iPad|Macintosh/.test(navigator.userAgent);
-    el.addMenu.insertBefore(appleFirst ? apple : g, el.addMenu.firstChild);
+    var opt = function (k) { return el.addMenu.querySelector('[data-cal="' + k + '"]'); };
+    opt('google').href = c.google;
+    opt('apple').href = c.ics;
+    var outlook = opt('outlook');
+    outlook.hidden = !c.outlook;
+    if (c.outlook) outlook.href = c.outlook;
+    opt('download').href = c.ics + (c.ics.indexOf('?') < 0 ? '?' : '&') + 'dl=1';
+    // The likeliest calendar first, never opened on its own: Apple on
+    // iPhone, iPad and Mac Safari; Outlook on Windows; Google elsewhere
+    // (Android, Chrome). The .ics download always comes last.
+    var ua = navigator.userAgent;
+    var apple = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints > 1 || !/Chrome|Chromium|Edg|Firefox/.test(ua)));
+    var order = apple ? ['apple', 'google', 'outlook'] : /Windows/.test(ua) ? ['outlook', 'google', 'apple'] : ['google', 'apple', 'outlook'];
+    order.concat('download').forEach(function (k) { el.addMenu.appendChild(opt(k)); });
   }
   function addMenu(open) {
     el.addMenu.hidden = !open;

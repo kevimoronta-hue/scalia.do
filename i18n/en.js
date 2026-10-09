@@ -372,5 +372,6 @@
   "Ajouter à mon agenda": "Add to my calendar",
   "Google Calendar": "Google Calendar",
   "Apple Calendar (iPhone, iPad, Mac)": "Apple Calendar (iPhone, iPad, Mac)",
-  "Télécharger le fichier .ics": "Download the .ics file"
+  "Télécharger le fichier .ics": "Download the .ics file",
+  "Outlook": "Outlook"
 };

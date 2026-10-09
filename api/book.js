@@ -203,6 +203,7 @@ module.exports = async function book(req, res) {
       // (same UID as the Google event, so no second copy where it exists).
       calendar: booking.meetingUrl ? {
         google: calendarLinks.googleUrl(booking),
+        outlook: calendarLinks.outlookUrl(booking),
         ics: booking.meetingUrl.replace(/\/meeting\/([^/]+)\/$/, '/api/ics/?t=$1')
       } : null,
       emailed: sent[0].status === 'fulfilled'

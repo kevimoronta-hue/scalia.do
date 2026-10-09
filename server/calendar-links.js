@@ -36,6 +36,17 @@ function googleUrl(b) {
   return 'https://calendar.google.com/calendar/render?' + q.toString();
 }
 
+// Outlook on the web (Outlook.com / Microsoft 365 accounts signed in).
+function outlookUrl(b) {
+  const t = texts(b.locale, b.meetingUrl);
+  const q = new URLSearchParams({
+    path: '/calendar/action/compose', rru: 'addevent', subject: t.title,
+    startdt: new Date(b.start).toISOString(), enddt: new Date(b.end).toISOString(), body: t.details
+  });
+  if (b.meetingUrl) q.set('location', b.meetingUrl);
+  return 'https://outlook.live.com/calendar/0/deeplink/compose?' + q.toString();
+}
+
 function icsText(s) { return String(s).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/[,;]/g, m => '\\' + m); }
 function fold(line) {
   const out = [];
@@ -71,4 +82,4 @@ function ics(b) {
   ].filter(Boolean).map(fold).join('\r\n') + '\r\n';
 }
 
-module.exports = { texts, googleUrl, ics };
+module.exports = { texts, googleUrl, outlookUrl, ics };
