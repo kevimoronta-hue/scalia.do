@@ -2,8 +2,9 @@
    GET /api/availability
    Free start times for the whole booking window, as exact instants (UTC
    ISO). The browser groups them by day in the visitor's own zone.
-   ?tz=<IANA zone> (the visitor's) also applies the client rule: no start
-   after BOOKING.clientLatestStart on their clock. Unknown zone → 400.
+   ?tz=<IANA zone> (the visitor's) also applies the client rule: starts
+   between BOOKING.clientEarliestStart and clientLatestStart on their clock.
+   Unknown zone → 400.
    ========================================================================== */
 'use strict';
 const { BOOKING } = require('../server/config');
@@ -33,6 +34,7 @@ module.exports = async function availability(req, res) {
     send(res, 200, {
       timezone: BOOKING.timezone,
       clientTimezone: clientTz,
+      clientEarliestStart: BOOKING.clientEarliestStart,
       clientLatestStart: BOOKING.clientLatestStart,
       durationMin: BOOKING.durationMin,
       from: new Date(h.from).toISOString(),

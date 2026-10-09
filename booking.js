@@ -56,20 +56,9 @@
 
   var S = {
     data: null, at: 0, pending: null, failed: false,
-    // Visitor's zone: 1. a zone chosen by hand (kept), 2. the zone of the
-    // connection (scalia_timezone cookie, set by middleware.js: the IANA
-    // name only), 3. the browser's, 4. Scalia's.
-    tz: (function () {
-      function ok(z) { try { new Intl.DateTimeFormat('en-US', { timeZone: z }); return true; } catch (e) { return false; } }
-      var saved = null;
-      try { saved = localStorage.getItem('scalia.tz'); } catch (e) {}
-      if (saved && ok(saved)) return saved;
-      var net = document.cookie.match(/(?:^|;\s*)scalia_timezone=([A-Za-z0-9_+\-\/]{1,64})(?:;|$)/);
-      if (net && ok(net[1])) return net[1];
-      var device = null;
-      try { device = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
-      return device && ok(device) ? device : 'America/Santo_Domingo';
-    })(),
+    // Visitor's zone, decided once in <head> by i18n/boot.js (manual choice >
+    // connection > browser > Scalia's), before any availability request.
+    tz: (window.SCALIA_I18N_BOOT && window.SCALIA_I18N_BOOT.timezone) || 'America/Santo_Domingo',
     byDay: {}, days: [], view: null, day: null, slot: null,
     step: 'date', formAt: 0, booking: null, trigger: null, zones: null
   };
@@ -192,10 +181,10 @@
     if (open) { el.tzSearch.value = ''; renderZoneList(); el.tzSearch.focus({ preventScroll: false }); }
   }
   function setZone(z) {
-    try { localStorage.setItem('scalia.tz', z); } catch (e) {}   // a manual choice is kept
     tzPanel(false);
     el.tzEdit.focus({ preventScroll: true });
-    if (z === S.tz) return;
+    if (z === S.tz) return;   // nothing changed: the detected zone stays automatic
+    try { localStorage.setItem('scalia.tz', z); } catch (e) {}   // a manual choice is kept
     // Another zone: other days, other times, maybe other slots (20:00 local
     // limit). Nothing chosen survives; the calendar reloads for that zone.
     S.tz = z;

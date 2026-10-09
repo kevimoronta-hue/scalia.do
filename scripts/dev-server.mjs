@@ -5,6 +5,9 @@
      node scripts/dev-server.mjs              → http://localhost:4520
      BOOKING_MOCK=1 node scripts/dev-server.mjs
      PORT=3001 HOST=0.0.0.0 node scripts/dev-server.mjs   (phones on Wi-Fi)
+     DEV_GEO=FR:Europe/Paris node scripts/dev-server.mjs  (a visitor's country
+       and zone, as Vercel would send them: pages then go through
+       middleware.js exactly as in production)
    ========================================================================== */
 import http from 'node:http';
 import fs from 'node:fs';
@@ -31,9 +34,28 @@ const TYPES = {
   '.mp4': 'video/mp4', '.webm': 'video/webm', '.vtt': 'text/vtt; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml'
 };
 
+// DEV_GEO=<country>:<zone>: the x-vercel-ip-* headers Vercel adds, then the
+// real middleware.js on page requests (its Set-Cookie headers included).
+const GEO = (process.env.DEV_GEO || '').split(':');
+const PAGES = /^\/(?:(?:scalians|mentions-legales|confidentialite)\/.*)?$/;
+const middleware = GEO[0]
+  ? (await import('data:text/javascript,' + encodeURIComponent(fs.readFileSync(path.join(ROOT, 'middleware.js'), 'utf8')))).default
+  : null;
+function runMiddleware(req, p) {
+  if (!middleware || !PAGES.test(p)) return;
+  const h = new Headers({ 'x-vercel-ip-country': GEO[0], 'x-vercel-ip-timezone': GEO[1] || '' });
+  if (req.headers.cookie) h.set('cookie', req.headers.cookie);
+  const out = middleware(new Request('http://local' + req.url, { headers: h }));
+  const cookies = out ? out.headers.getSetCookie() : [];
+  console.log('[geo] ' + p + ' country=' + GEO[0] + ' tz=' + (GEO[1] || '-') + ' set=' + (cookies.map(c => c.split(';')[0]).join(',') || 'none'));
+  if (cookies.length) return cookies.map(c => c.replace('; Secure', ''));   // plain http locally
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://local');
   const p = decodeURIComponent(url.pathname);
+  const geoCookies = runMiddleware(req, p);
+  if (geoCookies) res.setHeader('Set-Cookie', geoCookies);
 
   // Meeting links, as the rewrite in vercel.json: /meeting/<token>/ → api/meeting
   const meet = p.match(/^\/meeting\/([^/]+)\/?$/);
@@ -90,6 +112,6 @@ const server = http.createServer(async (req, res) => {
 const PORT = +process.env.PORT || 4520;
 const HOST = process.env.HOST || '127.0.0.1';
 server.listen(PORT, HOST, () => {
-  const mock = process.env.BOOKING_MOCK === '1' ? ' · booking: local test calendar' : '';
+  const mock = (process.env.BOOKING_MOCK === '1' ? ' · booking: local test calendar' : '') + (GEO[0] ? ' · geo ' + GEO.join(' ') : '');
   console.log('Scalia dev server on http://' + (HOST === '0.0.0.0' ? 'localhost' : HOST) + ':' + PORT + mock);
 });

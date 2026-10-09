@@ -10,6 +10,13 @@
      4. the browser's preferred languages (no country known, e.g. locally)
      5. French
    A manual choice is saved and always wins over detection on later visits.
+   It also decides the visitor's time zone, once, for the booking:
+     1. a zone chosen by hand (localStorage scalia.tz)
+     2. the zone of the connection: the scalia_timezone cookie (IANA name
+        only), written by middleware.js from x-vercel-ip-timezone
+     3. the browser's zone
+     4. America/Santo_Domingo
+   Both cookies come with the page itself, so this works on the first visit.
    ========================================================================== */
 (function () {
   'use strict';
@@ -58,13 +65,28 @@
     if (!locale) { locale = 'fr'; source = 'default'; }
   }
 
+  function zoneOk(z) {
+    if (!z || z.length > 64) return false;
+    try { new Intl.DateTimeFormat('en-US', { timeZone: z }); return true; } catch (e) { return false; }
+  }
+  var timezone = read('scalia.tz'), tzSource = 'manual';
+  if (!zoneOk(timezone)) {
+    var zc = document.cookie.match(/(?:^|;\s*)scalia_timezone=([A-Za-z0-9_+\-\/]{1,64})(?:;|$)/);
+    timezone = zc && zc[1]; tzSource = 'ip';
+    if (!zoneOk(timezone)) {
+      timezone = null; tzSource = 'browser';
+      try { timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
+      if (!zoneOk(timezone)) { timezone = 'America/Santo_Domingo'; tzSource = 'fallback'; }
+    }
+  }
+
   var currency = read(KEY_CURRENCY);
   if (currency !== 'EUR' && currency !== 'USD') currency = 'EUR';
 
   d.lang = locale;
   d.setAttribute('data-locale', locale);
   d.setAttribute('data-currency', currency);
-  window.SCALIA_I18N_BOOT = { locale: locale, source: source, country: country, currency: currency, root: ROOT };
+  window.SCALIA_I18N_BOOT = { locale: locale, source: source, country: country, currency: currency, root: ROOT, timezone: timezone, tzSource: tzSource };
 
   // French is in the HTML. Other locales: fetch the dictionary now and keep
   // the page hidden until it is applied (with a safety release).

@@ -20,9 +20,10 @@ const BOOKING = {
     5: [['08:00', '18:00']]
   },
 
-  // Latest start allowed in the CLIENT's own zone (HH:MM, inclusive):
-  // 20:00 → 21:00 is fine, 20:30 is not. Applied with the visitor's IANA
-  // zone by /api/availability and re-checked by /api/book.
+  // Start window on the CLIENT's own clock (HH:MM, both inclusive):
+  // 08:00 and 20:00 → 21:00 are fine, 07:30 and 20:30 are not. Applied with
+  // the visitor's IANA zone by /api/availability, re-checked by /api/book.
+  clientEarliestStart: '08:00',
   clientLatestStart: '20:00',
 
   durationMin: 60,      // length of a meeting

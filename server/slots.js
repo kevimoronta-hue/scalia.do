@@ -43,13 +43,15 @@ function candidates(fromTs, toTs) {
   return out;
 }
 
-// The client's rule: the meeting starts no later than BOOKING.clientLatestStart
-// on the client's own clock (their zone, DST included).
+// The client's rule: the meeting starts between BOOKING.clientEarliestStart
+// and BOOKING.clientLatestStart on the client's own clock (their zone, DST
+// included).
+function minutes(hhmm) { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; }
 function clientOk(start, clientTz) {
   if (!clientTz) return true;
-  const [lh, lm] = BOOKING.clientLatestStart.split(':').map(Number);
   const p = parts(start, clientTz);
-  return p.h * 60 + p.mi <= lh * 60 + lm;
+  const local = p.h * 60 + p.mi;
+  return local >= minutes(BOOKING.clientEarliestStart) && local <= minutes(BOOKING.clientLatestStart);
 }
 
 function blockOf(start) {
