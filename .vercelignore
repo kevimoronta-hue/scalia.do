@@ -6,5 +6,8 @@ BRIEF.md
 
 # Local tooling and documentation, not part of the deployment.
 # (server/ is required by the /api functions and must stay deployed.)
-scripts/
+# build-locales.mjs is the build step (vercel.json buildCommand); /scripts/
+# is never served (redirect in vercel.json).
+scripts/*
+!scripts/build-locales.mjs
 .env.example
