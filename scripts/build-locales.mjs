@@ -17,6 +17,12 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://scalia.do/';
 const LOCALES = { fr: 'fr_FR', en: 'en_US', es: 'es_LA' };
+// Social preview per language (1200×630, same artwork, text in that
+// language). French keeps the image and alt text of index.html.
+const PREVIEW = {
+  en: { image: SITE + 'assets/og/scalia-og-en.jpg', alt: 'Scalia — The agency that connects you.' },
+  es: { image: SITE + 'assets/og/scalia-og-es.jpg', alt: 'Scalia — La agencia que te conecta.' }
+};
 const PAGES = ['scalians/', 'mentions-legales/', 'confidentialite/'];   // other pages: keep the language via ?lang=
 const ATTRS = ['aria-label', 'alt', 'title', 'placeholder'];
 // Same in every language (as INVARIANT in i18n.js): never reported missing.
@@ -139,7 +145,12 @@ function build(loc) {
   meta('property', 'og:url', () => page);
   meta('property', 'og:title', t);
   meta('property', 'og:description', t);
-  meta('property', 'og:image:alt', v => t(v, true));   // describes the image itself (French artwork)
+  const pv = PREVIEW[loc];
+  if (pv) {
+    meta('property', 'og:image', () => pv.image);
+    meta('property', 'og:image:alt', () => pv.alt);
+    meta('name', 'twitter:image', () => pv.image);
+  }
   meta('name', 'twitter:title', t);
   meta('name', 'twitter:description', t);
   out = out.replace('<link rel="canonical" href="' + SITE + '">', '<link rel="canonical" href="' + page + '">');
