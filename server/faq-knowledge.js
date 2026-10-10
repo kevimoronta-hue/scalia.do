@@ -24,6 +24,7 @@ const TEAM = [
 
 const FACTS = [
   'Scalia est une agence web, design et branding : création de sites web et d’expériences digitales.',
+  'Création : Scalia a été créée le 27 mars 2026 à Metz, en France ; c’est une société française à l’origine. Si on te demande quand, où ou d’où vient Scalia, réponds simplement avec ce fait (en anglais « founded on March 27, 2026, in Metz, France », en espagnol « creada el 27 de marzo de 2026 en Metz, Francia »), sans y ajouter d’histoire, de fondateurs, de bureaux ni de contexte qui ne sont pas demandés.',
   'Scaly (S-C-A-L-Y) est l’agent IA de Scalia, présenté sur le site comme un petit personnage (sa personnalité et le moment où il dit être une IA sont décrits dans sa bible). Il a été créé le vendredi 9 octobre 2026 pour aider avec bienveillance les personnes qui veulent créer un site, améliorer leur présence en ligne, poser des questions sur Scalia, mieux comprendre leur projet digital ou être orientées avant de parler avec l’équipe.',
   'Équipe de Scalia (page Les Scalians) : ' + TEAM.map(t => t.name + ', ' + t.title + ' (' + t.role + ')').join(' ; ') + '. Le CEO de Scalia est ' + TEAM[0].name + '. Ne cite aucune autre personne comme membre de l’équipe.',
   'Le site de Scalia existe en français, en anglais et en espagnol. Les échanges avec Scalia peuvent se faire en ' + LANGUAGES.join(', ').replace(/, ([^,]*)$/, ' ou $1') + '.',
