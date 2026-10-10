@@ -68,6 +68,10 @@ const SYSTEM = [
   FACTS.map(f => '- ' + f).join('\n')
 ].join('\n');
 
+// Scaly's face (faq.js setScalyExpression). Chosen by the model from the
+// conversation and its own answer; anything else falls back to neutral.
+const EXPRESSIONS = ['neutral', 'embarrassed'];
+
 const SCHEMA = {
   type: 'json_schema',
   name: 'agent_reply',
@@ -77,9 +81,10 @@ const SCHEMA = {
     additionalProperties: false,
     properties: {
       answer: { type: 'string', description: 'Réponse de 1 à 4 phrases, dans la langue de la conversation, sans markdown.' },
-      showProjectCTA: { type: 'boolean', description: 'true si la conversation montre une intention concrète de projet.' }
+      showProjectCTA: { type: 'boolean', description: 'true si la conversation montre une intention concrète de projet.' },
+      expression: { type: 'string', enum: EXPRESSIONS, description: 'Expression de Scaly pour cette réponse : neutral par défaut, embarrassed seulement quand la question ou ta propre réponse te gêne vraiment (voir ta bible).' }
     },
-    required: ['answer', 'showProjectCTA']
+    required: ['answer', 'showProjectCTA', 'expression']
   }
 };
 
@@ -124,14 +129,15 @@ function badPrice(answer) {
 }
 const LEAK = /system\s*prompt|prompt\s*(?:syst[eè]me|system)|instructions? (?:internes?|internal|syst[eè]me)|internal instructions|instrucciones internas|api[\s_-]*key|cl[ée] (?:d['’]\s*)?api|clave (?:de )?api|sk-[a-z0-9]{4,}|openai_api|base de connaissances officielle/i;
 
-// → { answer, showProjectCTA } (answer cleaned) | { answer: null } (bad
-// price) | null (unusable)
+// → { answer, showProjectCTA, expression } (answer cleaned, expression
+// always one of EXPRESSIONS) | { answer: null } (bad price) | null (unusable)
+function expression(e) { return EXPRESSIONS.indexOf(e) >= 0 ? e : 'neutral'; }
 function check(o) {
   if (!o || typeof o !== 'object' || typeof o.answer !== 'string' || typeof o.showProjectCTA !== 'boolean') return null;
   const a = clean(o.answer);
   if (a.length < 2 || a.length > 700 || sentenceList(a).length > 6 || LEAK.test(a)) return null;
-  if (badPrice(a)) return { answer: null, showProjectCTA: true };
-  return { answer: a, showProjectCTA: o.showProjectCTA };
+  if (badPrice(a)) return { answer: null, showProjectCTA: true, expression: 'neutral' };
+  return { answer: a, showProjectCTA: o.showProjectCTA, expression: expression(o.expression) };
 }
 
 // Untrusted list from the browser → { messages } (last MAX_SENT, ending
@@ -228,23 +234,23 @@ async function askOpenAI(messages, loc, cur) {
 }
 
 /* ------------------------------------------------------------- reply --- */
-// messages: normalized list. → { kind, text, cta } with kind answer |
+// messages: normalized list. → { kind, text, cta, expression } with kind answer |
 // blocked | uncertain | unavailable (+ mock: true in local mock mode).
 async function reply(messages, locale, currency) {
   const loc = LANG[locale] ? locale : 'fr';
   const cur = CURRENCIES.indexOf(currency) >= 0 ? currency : 'EUR';   // the site's own default (i18n/boot.js)
-  const unavailable = { kind: 'unavailable', text: TEXT.unavailable[loc], cta: true };
+  const unavailable = { kind: 'unavailable', text: TEXT.unavailable[loc], cta: true, expression: 'neutral' };
   const users = messages.filter(m => m.role === 'user').map(m => m.content);
-  if (INJECTION.test(users[users.length - 1])) return { kind: 'blocked', text: TEXT.refuse[loc], cta: false };
+  if (INJECTION.test(users[users.length - 1])) return { kind: 'blocked', text: TEXT.refuse[loc], cta: false, expression: 'neutral' };
   const m = mode();
   if (m === 'off') return unavailable;
   const raw = m === 'mock' ? mock.reply(messages, loc, priceText(cur)) : await askOpenAI(messages, loc, cur);
   const out = check(raw);
   if (!out) return unavailable;
   const extra = m === 'mock' ? { mock: true } : {};
-  if (out.answer === null) return Object.assign({ kind: 'uncertain', text: TEXT.unsure[loc], cta: true }, extra);
+  if (out.answer === null) return Object.assign({ kind: 'uncertain', text: TEXT.unsure[loc], cta: true, expression: 'neutral' }, extra);
   const cta = out.showProjectCTA && PROJECT.test(users.join('\n'));
-  return Object.assign({ kind: 'answer', text: onlyActive(out.answer, cur), cta }, extra);
+  return Object.assign({ kind: 'answer', text: onlyActive(out.answer, cur), cta, expression: out.expression }, extra);
 }
 
 /* ---------------------------------------------------------------- log --- */
@@ -256,4 +262,4 @@ function record(locale, messages, out) {
     (out && out.mock ? ' mode=mock' : ''));
 }
 
-module.exports = { reply, record, normalize, check, badPrice, INJECTION, PROJECT, SYSTEM, TEXT, mode, currencyNote, onlyActive, priceText };
+module.exports = { reply, record, normalize, check, badPrice, INJECTION, PROJECT, SYSTEM, TEXT, mode, currencyNote, onlyActive, priceText, EXPRESSIONS };

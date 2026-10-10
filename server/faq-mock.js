@@ -12,7 +12,7 @@ const MIN = BOOKING.durationMin;
 
 const norm = s => s.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[’']/g, ' ');
 
-// [test on the last visitor message (normalized), [fr, en, es], showProjectCTA]
+// [test on the last visitor message (normalized), [fr, en, es], showProjectCTA, expression?]
 const RULES = [
   [/(?:ca va|ca roule|que tal|como estas|how are you|how s it going)/, [
     'Oui nickel 😄 Et toi ? Tu veux savoir quoi ?',
@@ -34,6 +34,10 @@ const RULES = [
     'Disons que je suis spécialisé 😄 Lui sait tout sur tout, moi je connais surtout Scalia et les sites qui ramènent des clients. Toi, tu bosses sur quoi ?',
     'Let’s say I’m specialized 😄 It knows a bit of everything, I mostly know Scalia and websites that bring in customers. What are you working on?',
     'Digamos que soy especialista 😄 Él sabe de todo, yo sobre todo de Scalia y de webs que traen clientes. ¿Y tú en qué estás trabajando?'], false],
+  [/copine|girlfriend|novia|crush|amoureux|in love|enamorado/, [
+    'Euh… 😅 Pourquoi tu me demandes ça toi ? Déjà que je vis dans une fenêtre de chat…',
+    'Uh… 😅 Why are you asking me that? I already live in a chat window…',
+    'Eh… 😅 ¿Y por qué me preguntas eso? Si ya vivo en una ventana de chat…'], false, 'embarrassed'],
   [/blague|joke|chiste/, [
     'Pourquoi le site web est allé chez le psy ? Il avait trop de problèmes de cache 😄 Bon, maintenant que j’ai fait mon boulot : t’as pas un site ou un projet à me montrer ?',
     'Why did the website go to therapy? Too many cache issues 😄 Now that I’ve done my job: got a site or a project to show me?',
@@ -135,8 +139,8 @@ function reply(messages, loc, price) {
   const users = messages.filter(m => m.role === 'user').map(m => norm(m.content));
   const last = users[users.length - 1] || '';
   const i = IDX[loc] || 0;
-  for (const [re, texts, cta] of RULES) if (re.test(last)) return { answer: texts[i].replace('{PRICE}', price || '700 €'), showProjectCTA: cta };
-  return { answer: FALLBACK[i], showProjectCTA: false };
+  for (const [re, texts, cta, face] of RULES) if (re.test(last)) return { answer: texts[i].replace('{PRICE}', price || '700 €'), showProjectCTA: cta, expression: face || 'neutral' };
+  return { answer: FALLBACK[i], showProjectCTA: false, expression: 'neutral' };
 }
 
 module.exports = { reply };

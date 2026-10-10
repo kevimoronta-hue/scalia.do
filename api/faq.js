@@ -4,7 +4,7 @@
    conversation and sends its recent turns, the last one being the visitor's
    new message. Same-site origin, JSON only, bounded body, 30 messages per
    IP per 10 minutes plus a short burst limit, visitor messages up to 500
-   characters. Always answers { kind, text, cta }.
+   characters. Always answers { kind, text, cta, expression }.
    ========================================================================== */
 'use strict';
 const { send, readJson, ip, originOk, limited } = require('../server/http');

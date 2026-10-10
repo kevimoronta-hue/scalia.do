@@ -60,6 +60,7 @@
   // mark keeps its place but shows nothing, never a broken-image glyph.
   root.addEventListener('error', function (e) {
     var img = e.target;
+    if (img.classList && img.classList.contains('scaly__img--embarrassed')) { img.hidden = true; return; }   // that face is skipped, Scaly stays neutral
     if (!img.classList || !(img.classList.contains('faq-msg__mark') || img.classList.contains('scaly__mark'))) return;
     if (!img.dataset.retried) { img.dataset.retried = '1'; img.src = '/assets/scaly-head.webp?r=1'; return; }
     img.style.visibility = 'hidden';
@@ -70,6 +71,31 @@
   // { role: 'user'|'assistant', content, cta?, local?, welcome? }
   // local = shown but never sent (unavailable, too many messages).
   var msgs = load(), busy = false, typing = null;
+
+  /* ---------------------------------------------- Scaly's expression
+     One state, one timer, never stored. The API picks the face for each
+     answer (server/faq.js EXPRESSIONS); a face other than neutral shows at
+     once, holds FACE_MS, then eases back. A face whose image is not loaded
+     (or failed) is skipped: Scaly simply stays neutral. To add a face: its
+     <img class="scaly__img scaly__img--NAME"> in the perch, its CSS state,
+     and NAME here and in EXPRESSIONS. */
+  var perch = chat.querySelector('.scaly__perch');
+  var FACES = { neutral: true, embarrassed: true };
+  var FACE_MS = 1600, REACT_MS = 320;   // face on screen; the breath before the answer shows
+  var face = 'neutral', faceT = 0;
+  function faceReady(f) {
+    if (f === 'neutral') return true;
+    var img = perch && perch.querySelector('.scaly__img--' + f);
+    return !!(img && !img.hidden && img.complete && img.naturalWidth > 0);
+  }
+  function setScalyExpression(f) {
+    if (!FACES[f] || !faceReady(f)) f = 'neutral';
+    clearTimeout(faceT); faceT = 0;
+    face = f;
+    if (perch) { if (f === 'neutral') perch.removeAttribute('data-expression'); else perch.setAttribute('data-expression', f); }
+    if (f !== 'neutral') faceT = setTimeout(function () { setScalyExpression('neutral'); }, FACE_MS);
+    return f;
+  }
 
   function valid(m) { return m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string'; }
   function load() {
@@ -212,12 +238,18 @@
       return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; });
     }).then(function (res) {
       var b = res.body || {};
-      showTyping(false);
       if (b.mock && window.console) console.info('[faq] FAQ_AI_MODE=mock (local)');
       if (res.status === 200 && typeof b.text === 'string') {
-        add({ role: 'assistant', content: b.text, cta: !!b.cta, local: b.kind === 'unavailable' || undefined });
+        var answer = { role: 'assistant', content: b.text, cta: !!b.cta, local: b.kind === 'unavailable' || undefined };
+        // Scaly reacts first (his face), then answers after a short breath.
+        if (setScalyExpression(b.expression) !== 'neutral') {
+          return new Promise(function (done) { setTimeout(function () { showTyping(false); add(answer); done(); }, REACT_MS); });
+        }
+        showTyping(false);
+        add(answer);
         return;
       }
+      showTyping(false);
       if (res.status === 429) {
         add({ role: 'assistant', content: L('Doucement 😅 Tu as envoyé beaucoup de messages. Réessaie dans quelques minutes, ou parle directement de ton projet avec Scalia.'), cta: true, local: true });
         return;
@@ -243,6 +275,7 @@
   });
   reset.addEventListener('click', function () {
     if (busy) return;
+    setScalyExpression('neutral');
     forget();
     msgs = [welcome()];
     setError('');
@@ -252,6 +285,7 @@
   });
   // A conversation that is still only the greeting follows the language.
   document.documentElement.addEventListener('scalia:locale', function () {
+    setScalyExpression('neutral');
     if (onlyWelcome()) msgs = [welcome()];
     render();
   });
