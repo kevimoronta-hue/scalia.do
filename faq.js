@@ -52,8 +52,18 @@
   var SEND_MAX = 12, KEEP_MAX = 40, MAX_LEN = 500;
   var WELCOME = 'Salut 👋 Moi c’est Scaly. Tu veux savoir quoi ? Si je peux t’aider sur Scalia, ton site ou ton projet, vas-y.';
   var UNAVAILABLE = 'Je bug un peu là 😅 Réessaie dans quelques secondes, ou si tu veux tu peux directement parler de ton projet avec Scalia.';
-  // Scaly's head (assets/scaly-head.webp), as the mark on his messages.
-  var HEAD = '<img class="faq-msg__mark" src="assets/scaly-head.webp" width="18" height="18" alt="" aria-hidden="true" decoding="async">';
+  // Scaly's head, as the mark on his messages. Absolute path: the page also
+  // lives at /fr/, /en/ and /es/, where "assets/…" would be a 404 (broken
+  // image, a "?" in Safari). Same file as the header mark, so already cached.
+  var HEAD = '<img class="faq-msg__mark" src="/assets/scaly-head.webp" width="18" height="18" alt="" aria-hidden="true" decoding="async">';
+  // Should the head ever fail to load anyway (network): one retry, then the
+  // mark keeps its place but shows nothing, never a broken-image glyph.
+  root.addEventListener('error', function (e) {
+    var img = e.target;
+    if (!img.classList || !(img.classList.contains('faq-msg__mark') || img.classList.contains('scaly__mark'))) return;
+    if (!img.dataset.retried) { img.dataset.retried = '1'; img.src = '/assets/scaly-head.webp?r=1'; return; }
+    img.style.visibility = 'hidden';
+  }, true);
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var touch = window.matchMedia && matchMedia('(hover: none) and (pointer: coarse)').matches;
 
