@@ -676,8 +676,8 @@
     c.rail.playing = false;
     if (hadFocus) {
       var back = visibleCopy(c.rail, c.v.id);
-      // Clones are inert: fall back to the original card's button.
-      var btn = back && !back.closest('[inert]') ? back.querySelector('[data-voice-play]')
+      // Copies are hidden from assistive tech: focus goes back to the original card's button.
+      var btn = back && !back.closest('[aria-hidden="true"]') ? back.querySelector('[data-voice-play]')
         : c.rail.el.querySelector('.voices__set:first-child .voice[data-voice="' + c.v.id + '"] [data-voice-play]');
       if (btn) btn.focus({ preventScroll: true });
     }
@@ -705,8 +705,10 @@
 
   function clone(set) {
     var c = set.cloneNode(true);
+    // Hidden from screen readers and from Tab, but NOT inert: a copy is often
+    // the one on screen, and its play button must answer a tap or a click.
     c.setAttribute('aria-hidden', 'true');
-    c.setAttribute('inert', '');
+    Array.prototype.forEach.call(c.querySelectorAll('button, a[href], input, [tabindex]'), function (f) { f.setAttribute('tabindex', '-1'); });
     c.removeAttribute('role');
     Array.prototype.forEach.call(c.querySelectorAll('[role="listitem"]'), function (li) { li.removeAttribute('role'); });
     return c;
