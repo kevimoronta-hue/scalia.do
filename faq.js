@@ -9,10 +9,10 @@
    · the server decides the text and whether to offer the booking under that
      answer (data-open-booking, handled by booking.js); once shown, a button
      stays where it was in the conversation;
-   · new messages scroll the conversation box only, never the page;
-   · phones: while the keyboard is open (visualViewport), the card shrinks
-     to the visible area above it; when it closes, the card settles back
-     into view once. See "Phone keyboard" below.
+   · this script never scrolls the page. The conversation scrolls inside
+     its own box and stays pinned to its last message; on touch screens the
+     card has a fixed size (styles.css), so the keyboard opening or closing
+     moves nothing but the browser's own focus scroll. See "Scrolling" below.
    ========================================================================== */
 (function () {
   'use strict';
@@ -48,6 +48,7 @@
   // Scaly's smiling eyes (the glow on his visor), as the mark on his messages.
   var EYES = '<svg viewBox="0 0 22 8" width="16" height="6" aria-hidden="true"><path d="M2 6.5Q5.5 1 9 6.5M13 6.5Q16.5 1 20 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var touch = window.matchMedia && matchMedia('(hover: none) and (pointer: coarse)').matches;
 
   // { role: 'user'|'assistant', content, cta?, local?, welcome? }
   // local = shown but never sent (unavailable, too many messages).
@@ -95,7 +96,24 @@
     }
     return x;
   }
+  /* ----------------------------------------------------------- scrolling
+     One rule: the log follows its last message unless the reader scrolled
+     up in it. Only log.scrollTop is ever written, never the page's scroll.
+     · pinned: true until the reader scrolls up, true again at the bottom;
+     · toEnd(): after a new message, smooth inside the log;
+     · a ResizeObserver re-pins when the log's own height changes (the field
+       grows to a second line, the prompts go away), so the last message
+       never slides under the field. */
+  var pinned = true, lastTop = 0;
+  function atEnd() { return log.scrollHeight - log.scrollTop - log.clientHeight < 24; }
+  log.addEventListener('scroll', function () {
+    if (log.scrollTop < lastTop - 2) pinned = atEnd();      // the reader went up
+    else if (atEnd()) pinned = true;
+    lastTop = log.scrollTop;
+  }, { passive: true });
+  if (window.ResizeObserver) new ResizeObserver(function () { if (pinned) log.scrollTop = log.scrollHeight; }).observe(log);
   function toEnd(smooth) {
+    pinned = true;
     if (log.scrollHeight <= log.clientHeight) return;
     if (smooth && !reduce && log.scrollTo) log.scrollTo({ top: log.scrollHeight, behavior: 'smooth' });
     else log.scrollTop = log.scrollHeight;
@@ -120,7 +138,6 @@
     var n = node(m);
     if (typing && typing.parentNode) log.insertBefore(n, typing); else log.appendChild(n);
     chrome();
-    if (kb) fit();
     toEnd(true);
   }
   function showTyping(on) {
@@ -143,18 +160,20 @@
     err.textContent = msg ? L(msg) : '';
     input.setAttribute('aria-invalid', msg ? 'true' : 'false');
   }
+  // The field grows with the text (up to ~4 lines) and only ever shrinks
+  // back when it is emptied: no collapse-and-measure on each key, so typing
+  // never changes the layout under the caret.
   function grow() {
-    input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 140) + 'px';
-    if (kb) fit();
+    if (!input.value) { input.style.height = ''; return; }
+    if (input.scrollHeight > input.clientHeight + 1) input.style.height = Math.min(input.scrollHeight + 2, 120) + 'px';
   }
 
   function submit(text) {
     if (busy) return;
     var typed = text == null;
     var q = (typed ? input.value : text).replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
-    if (!q) { setError('Écris ton message.'); input.focus(); return; }
-    if (q.length > MAX_LEN) { setError('Ton message est trop long (500 caractères max).'); input.focus(); return; }
+    if (!q) { setError('Écris ton message.'); if (!touch) input.focus(); return; }
+    if (q.length > MAX_LEN) { setError('Ton message est trop long (500 caractères max).'); if (!touch) input.focus(); return; }
     setError('');
     busy = true;
     send.disabled = true;
@@ -190,6 +209,9 @@
   }
 
   form.addEventListener('submit', function (e) { e.preventDefault(); submit(); });
+  // Tapping send must not blur the field: on iOS the keyboard would close and
+  // reopen on every message. Keeping focus keeps the keyboard where it is.
+  send.addEventListener('mousedown', function (e) { if (document.activeElement === input) e.preventDefault(); });
   input.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); submit(); }
   });
@@ -204,80 +226,14 @@
     msgs = [welcome()];
     setError('');
     render();
-    // Phones: no keyboard popping up on its own.
-    if (!coarse) input.focus();
+    // Touch screens: no keyboard popping up on its own.
+    if (!touch) input.focus();
   });
   // A conversation that is still only the greeting follows the language.
   document.documentElement.addEventListener('scalia:locale', function () {
     if (onlyWelcome()) msgs = [welcome()];
     render();
   });
-
-  /* ------------------------------------------------------ phone keyboard
-     Why: the layout viewport does not shrink when a phone keyboard opens
-     (iOS Safari, Android Chrome ≥ 108), only the visual viewport does. The
-     browser scrolls just enough to show the field; the rest of a card taller
-     than the visible area stays hidden under the fixed navbar, and when the
-     keyboard closes nothing scrolls back, so the card stays parked too high.
-     Fix: while the keyboard is open (visualViewport shorter than its
-     resting height and focus in the card), the conversation box gets
-     exactly the height left above the keyboard and the card's bottom is
-     aligned with the visible bottom; when it closes, the card scrolls once
-     into view, softly. Driven by visualViewport resize events, no timers. */
-  var vv = window.visualViewport;
-  var coarse = window.matchMedia ? matchMedia('(pointer: coarse)').matches : false;
-  var kb = false, rest = vv ? vv.height : 0, restW = vv ? vv.width : 0, frame = 0;
-
-  function navBottom() {
-    var n = document.querySelector('.nav');
-    if (!n) return 0;
-    var r = n.getBoundingClientRect();
-    return r.bottom > 0 ? r.bottom : 0;
-  }
-  function scrollPage(dy, smooth) {
-    if (Math.abs(dy) < 2) return;
-    var h = document.documentElement, prev = h.style.scrollBehavior;
-    if (!smooth || reduce) h.style.scrollBehavior = 'auto';      // html is scroll-behavior: smooth
-    window.scrollBy({ top: dy, left: 0, behavior: smooth && !reduce ? 'smooth' : 'auto' });
-    h.style.scrollBehavior = prev;
-  }
-  // Keyboard open: give the log the room left, then align the card bottom.
-  function fit() {
-    var visTop = Math.max(vv.offsetTop, navBottom()) + 8;
-    var visBottom = vv.offsetTop + vv.height - 8;
-    var other = card.getBoundingClientRect().height - log.getBoundingClientRect().height;
-    var room = Math.max(96, Math.floor(visBottom - visTop - other));
-    card.style.setProperty('--scaly-kb-log', room + 'px');
-    scrollPage(card.getBoundingClientRect().bottom - visBottom, false);
-    toEnd(false);
-  }
-  // Keyboard closed: one soft scroll so the whole card (or its end) shows.
-  function settle() {
-    var r = card.getBoundingClientRect();
-    var top = navBottom() + 12, bottom = window.innerHeight - 12, dy = 0;
-    if (r.bottom > bottom) dy = r.bottom - bottom;
-    if (r.top - dy < top) dy = r.top - top;
-    if (r.height > bottom - top) dy = r.bottom - bottom;   // taller than the screen: keep the field and last messages
-    scrollPage(dy, true);
-    toEnd(false);
-  }
-  function update() {
-    frame = 0;
-    if (Math.abs(vv.width - restW) > 1) { restW = vv.width; rest = vv.height; }   // rotation
-    if (!kb && vv.height > rest) rest = vv.height;
-    var open = coarse && rest - vv.height > 120 && (kb || chat.contains(document.activeElement));
-    if (open && !kb) { kb = true; card.classList.add('is-kb'); }
-    if (open) { fit(); return; }
-    if (kb) {
-      kb = false;
-      card.classList.remove('is-kb');
-      card.style.removeProperty('--scaly-kb-log');
-      settle();
-    }
-  }
-  if (vv && coarse) {
-    vv.addEventListener('resize', function () { if (!frame) frame = requestAnimationFrame(update); });
-  }
 
   if (!msgs.length) msgs = [welcome()];
   render();

@@ -713,28 +713,33 @@
               <div class="scaly__perch" aria-hidden="true">
                 <img class="scaly__img" src="assets/scaly.webp" width="480" height="641" alt="" loading="lazy" decoding="async">
               </div>
-              <!-- The visor: Scaly's black glass face, his smiling eyes. -->
-              <div class="scaly__visor">
+              <!-- Who answers: Scaly's eyes, his name, his role. Light, no band. -->
+              <div class="scaly__head">
                 <svg class="scaly__eyes" viewBox="0 0 22 8" width="22" height="8" aria-hidden="true"><path d="M2 6.5Q5.5 1 9 6.5M13 6.5Q16.5 1 20 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                 <p class="scaly__name">Scaly <span class="scaly__role">· Agent IA Scalia</span></p>
               </div>
-              <div class="faq__log" data-faq-log data-i18n-skip role="log" aria-live="polite" tabindex="0"></div>
-              <div class="scaly__prompts" data-faq-prompts hidden>
-                <button class="scaly__prompt" type="button" data-faq-prompt>Combien coûte un site ?</button>
-                <button class="scaly__prompt" type="button" data-faq-prompt>Comment ça se passe ?</button>
-                <button class="scaly__prompt" type="button" data-faq-prompt>Vous pouvez refaire mon site ?</button>
-                <button class="scaly__prompt" type="button" data-faq-prompt>Vous travaillez dans quels pays ?</button>
-              </div>
-              <form class="faq__form" data-faq-form novalidate>
-                <label class="faq__sr" for="faq-input">Ton message pour Scaly</label>
-                <div class="faq__field">
-                  <textarea id="faq-input" name="message" rows="1" maxlength="500" placeholder="Écris ton message…" autocomplete="off" enterkeyhint="send" aria-describedby="faq-err faq-privacy"></textarea>
-                  <button class="faq__send" type="submit" aria-label="Envoyer le message" data-faq-send>
-                    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8h9.5M8.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </button>
+              <!-- Body: conversation + field. On touch screens its height is fixed
+                   (svh), so nothing in the card changes size while chatting or
+                   when the keyboard opens and closes. -->
+              <div class="scaly__body">
+                <div class="faq__log" data-faq-log data-i18n-skip role="log" aria-live="polite" tabindex="0"></div>
+                <div class="scaly__prompts" data-faq-prompts hidden>
+                  <button class="scaly__prompt" type="button" data-faq-prompt>Combien coûte un site ?</button>
+                  <button class="scaly__prompt" type="button" data-faq-prompt>Comment ça se passe ?</button>
+                  <button class="scaly__prompt" type="button" data-faq-prompt>Vous pouvez refaire mon site ?</button>
+                  <button class="scaly__prompt" type="button" data-faq-prompt>Vous travaillez dans quels pays ?</button>
                 </div>
-                <p class="faq__err" id="faq-err" role="alert"></p>
-              </form>
+                <form class="faq__form" data-faq-form novalidate>
+                  <label class="faq__sr" for="faq-input">Ton message pour Scaly</label>
+                  <div class="faq__field">
+                    <textarea id="faq-input" name="message" rows="1" maxlength="500" placeholder="Écris ton message…" autocomplete="off" enterkeyhint="send" aria-describedby="faq-err faq-privacy"></textarea>
+                    <button class="faq__send" type="submit" aria-label="Envoyer le message" data-faq-send>
+                      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8h9.5M8.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <p class="faq__err" id="faq-err" role="alert"></p>
+                </form>
+              </div>
               <div class="faq__foot">
                 <p class="faq__privacy" id="faq-privacy">Évite de partager des informations personnelles ou sensibles avec Scaly.</p>
                 <button class="faq__reset" type="button" data-faq-reset hidden>Nouvelle conversation</button>

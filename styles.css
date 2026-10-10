@@ -2313,7 +2313,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 }
 
 /* The perch: nothing on the card clips, so the feet hang over the rim in
-   front of the visor and the body rises above it. */
+   front of the card's head row and the body rises above it. */
 .scaly__perch {
   position: absolute; z-index: 3; top: 0; right: var(--scaly-right);
   width: var(--scaly-w);
@@ -2326,27 +2326,25 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   background: radial-gradient(50% 50% at 50% 30%, rgba(64, 42, 22, 0.28), rgba(64, 42, 22, 0) 70%);
 }
 
-/* The visor: black glass, a warm reflection, his glowing eyes. */
-.scaly__visor {
-  position: relative; overflow: hidden;
-  display: flex; align-items: center; gap: 10px;
-  min-height: 50px; padding: 8px 16px;
+/* Who answers: his glowing eyes, his name, his role. No band: the card
+   stays light, Scaly himself is the header. */
+.scaly__head {
+  display: flex; align-items: center; gap: 9px;
+  min-height: 46px; padding: 10px 14px 4px;
   padding-right: calc(var(--scaly-w) * 0.78 + var(--scaly-right));   /* the feet hang here */
-  border-radius: 21px;
-  background:
-    radial-gradient(120% 140% at 85% -40%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%),
-    linear-gradient(180deg, #221A16 0%, var(--scaly-ink) 60%, #0B0908 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(226, 172, 86, 0.25);
 }
-.scaly__eyes { flex: none; color: #FFE3A8; filter: drop-shadow(0 0 3px var(--scaly-glow)) drop-shadow(0 0 8px rgba(244, 196, 110, 0.35)); }
-.scaly__name { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; color: #FBF6EE; }
-.scaly__role { font-weight: 500; color: rgba(237, 220, 196, 0.72); }
+.scaly__eyes { flex: none; color: var(--scaly-gold); filter: drop-shadow(0 0 3px var(--scaly-glow)); }
+.scaly__name { font-size: 16px; font-weight: 650; letter-spacing: -0.015em; color: var(--fg); }
+.scaly__role { font-size: 13.5px; font-weight: 500; color: var(--fg-2); }
+
+/* Body: conversation above, field below, one column. */
+.scaly__body { display: flex; flex-direction: column; }
 
 /* The conversation scrolls inside itself; the page never jumps. */
 .faq__log {
   display: flex; flex-direction: column; gap: 14px;
   max-height: min(440px, 58vh); max-height: min(440px, 58svh);
-  overflow-y: auto; overscroll-behavior: contain;
+  overflow-y: auto; overscroll-behavior: contain; overflow-anchor: none;
   padding: 16px 8px 16px;
   scrollbar-width: thin; scrollbar-color: #E2D6C4 transparent;
 }
@@ -2425,24 +2423,41 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .faq__send[disabled] { opacity: 0.45; cursor: progress; }
 .faq__err { margin: 8px 6px 0; font-size: 13.5px; color: #B3412A; }
 .faq__err:empty { display: none; }
-.faq__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 16px; margin: 6px 8px 0; }
-.faq__privacy { padding: 6px 0; font-size: 12.5px; line-height: 1.5; color: #6F675F; }
+/* Privacy note, then the reset link inline. It sits below the field, so
+   the link appearing never moves the field or the conversation. */
+.faq__foot { margin: 10px 8px 2px; font-size: 12.5px; line-height: 1.5; color: #6F675F; }
+.faq__privacy { display: inline; }
+.faq__privacy::after { content: " "; }
+.faq__reset::before { content: "·"; display: inline-block; margin-right: 6px; color: #6F675F; text-decoration: none; }   /* hides with the link */
 .faq__reset {
-  margin-left: auto; min-height: 44px; padding: 0 2px; border: 0; background: none; cursor: pointer;
-  font: 500 12.5px/1.5 var(--font); color: var(--fg-2);
+  /* 44px touch target without changing the line height. */
+  display: inline-block; padding: 12px 4px; margin: -12px -4px; border: 0; background: none; cursor: pointer;
+  font: inherit; font-weight: 500; color: var(--fg-2); white-space: nowrap;
   text-decoration: underline; text-decoration-color: rgba(14, 11, 10, 0.25); text-underline-offset: 3px;
 }
 .faq__reset:hover { color: var(--fg); text-decoration-color: currentColor; }
 .faq__reset:focus-visible { outline: 2px solid var(--scaly-gold); outline-offset: 2px; border-radius: 4px; }
 .faq__reset[hidden] { display: none; }
 
-/* Phone keyboard open (faq.js, visualViewport): the card shrinks to what is
-   visible above the keyboard, the conversation keeps its last message. */
-.scaly__card.is-kb .faq__log { max-height: var(--scaly-kb-log, 40vh); }
-.scaly__card.is-kb .scaly__prompts,
-.scaly__card.is-kb .faq__foot { display: none; }
-/* No room above the card then: Scaly steps aside until the keyboard closes. */
-.scaly__card.is-kb .scaly__perch { visibility: hidden; }
+/* Touch screens: one stable box. The body has a fixed height in small-
+   viewport units (svh: the height with the browser bars shown, which does
+   not change with the keyboard or the toolbar), the log fills it and its
+   content sits at the bottom, right above the field. Messages, prompts,
+   typing and the keyboard never change the card's size, so there is nothing
+   for the page to re-anchor or for iOS to chase. */
+@media (hover: none) and (pointer: coarse) {
+  .scaly__body { height: clamp(300px, 52svh, 470px); }
+  .scaly__body .faq__log { flex: 1 1 auto; min-height: 0; max-height: none; }
+  .faq__log > :first-child { margin-top: auto; }
+  .scaly__world { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+  /* Prompts on one swipeable row: the welcome keeps its room. */
+  /* width 0 + min-width 100%: the row's one-line content must not count in
+     the page's minimum width, or the FAQ column above would be laid out
+     wider while the prompts show and reflow when they go. */
+  .scaly__prompts { width: 0; min-width: 100%; flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; padding-top: 2px; padding-bottom: 12px; }
+  .scaly__prompts::-webkit-scrollbar { display: none; }
+  .scaly__prompt { flex: none; white-space: nowrap; }
+}
 
 @media (min-width: 1024px) {
   .scaly { --scaly-w: 140px; --scaly-right: 30px; }
@@ -2452,7 +2467,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .scaly { --scaly-w: 98px; --scaly-right: 16px; }
   .scaly__world { border-radius: 28px; background-image: linear-gradient(180deg, rgba(251, 248, 243, 0.9) 0%, rgba(251, 248, 243, 0.4) 30%, rgba(251, 248, 243, 0) 55%), url("assets/scaly-world-sm.webp"); background-position: center, 78% 30%; }
   .scaly__card { padding: 5px 5px 8px; border-radius: 24px; margin-top: calc(var(--scaly-w) * 1.335 * 0.8377 - 56px); }
-  .scaly__visor { min-height: 46px; padding-left: 13px; border-radius: 19px; }
+  .scaly__head { padding-left: 12px; }
   .faq__log { padding: 14px 4px 14px; max-height: min(420px, 62vh); max-height: min(420px, 62svh); }
   .faq-msg--agent { max-width: 96%; }
   .scaly__prompts { padding: 0 4px 10px; }
