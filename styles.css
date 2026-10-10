@@ -2291,8 +2291,11 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .faq__q button[aria-expanded="true"] .faq__icon::after { transform: rotate(0deg); }
 
 .faq__a { display: grid; grid-template-rows: 1fr; }
-.js .faq__a { grid-template-rows: 0fr; opacity: 0; visibility: hidden; transition: grid-template-rows 220ms var(--ease-out), opacity 200ms ease, visibility 0s linear 220ms; }
-.js .faq__item.is-open .faq__a { grid-template-rows: 1fr; opacity: 1; visibility: visible; transition: grid-template-rows 220ms var(--ease-out), opacity 200ms ease 40ms, visibility 0s; }
+/* Closing (this rule): 200ms, the text fades a little ahead of the row.
+   Opening (next rule): 280ms on a progressive curve, the text fading in
+   from the first frame, no delay. */
+.js .faq__a { grid-template-rows: 0fr; opacity: 0; visibility: hidden; transition: grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1), opacity 140ms ease, visibility 0s linear 200ms; }
+.js .faq__item.is-open .faq__a { grid-template-rows: 1fr; opacity: 1; visibility: visible; transition: grid-template-rows 280ms cubic-bezier(0.32, 0.72, 0, 1), opacity 200ms ease, visibility 0s; }
 .faq__a-in { overflow: hidden; }
 .faq__a p { padding: 0 44px 22px 2px; max-width: 40em; font-size: 16px; line-height: 1.6; color: var(--fg-2); }
 
