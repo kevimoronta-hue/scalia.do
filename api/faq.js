@@ -29,7 +29,9 @@ module.exports = async function faqRoute(req, res) {
   const n = faq.normalize(body && body.messages);
   if (n.error) return send(res, 422, { error: n.error, field: 'messages' }, noStore);
 
-  const out = await faq.reply(n.messages, locale);
+  // The € / $ the visitor chose on the site; anything else → the site's default.
+  const currency = ['EUR', 'USD'].indexOf(body && body.currency) >= 0 ? body.currency : 'EUR';
+  const out = await faq.reply(n.messages, locale, currency);
   faq.record(locale, n.messages, out);
   send(res, 200, out, noStore);
 };

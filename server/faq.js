@@ -171,7 +171,31 @@ function mode() {
   return m;
 }
 
-async function askOpenAI(messages, loc) {
+/* ----------------------------------------------------------- currency --- */
+// The visitor's active currency comes from the site's own € / $ switch
+// (ScaliaI18n.currency(), sent by faq.js); written like the pricing card
+// (main.js): "700 €" / "700 $". Never both, never a conversion.
+const CURRENCIES = ['EUR', 'USD'];
+function priceText(cur) { return cur === 'USD' ? PRICE.USD + ' $' : PRICE.EUR + ' €'; }
+function currencyNote(cur) {
+  const other = cur === 'USD' ? 'EUR' : 'USD';
+  return 'DEVISE ACTIVE DU VISITEUR : ' + cur + '. Prix Scalia affiché pour ce visiteur : ' + priceText(cur) + '. ' +
+    'Quand tu parles du prix Scalia, donne uniquement ce montant, dans cette devise ; ne mentionne pas l’autre devise et ne fais aucune conversion. ' +
+    'Seulement si le visiteur demande explicitement l’autre devise : le montant est le même, ' + priceText(other) + ', et il peut changer la devise avec le sélecteur € / $ du site.';
+}
+// Safety net for "700 € ou 700 $" (or "$700 or €700"): keeps only the
+// active amount. Other amounts (general prices elsewhere) are untouched.
+function onlyActive(text, cur) {
+  const sym = { EUR: '(?:€|EUR|euros?)', USD: '(?:US\\$|\\$|USD|dollars?|dólares?)' };
+  const n = '(?:' + PRICE.EUR + '|' + PRICE.USD + ')';
+  const tok = c => '(?:' + n + '\\s*' + sym[c] + '|' + sym[c] + '\\s*' + n + ')';
+  const mine = tok(cur), other = tok(cur === 'USD' ? 'EUR' : 'USD'), or = '\\s*(?:ou|or|o|/)\\s*';
+  return text
+    .replace(new RegExp('(' + mine + ')' + or + other, 'gi'), '$1')
+    .replace(new RegExp(other + or + '(' + mine + ')', 'gi'), '$1');
+}
+
+async function askOpenAI(messages, loc, cur) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
@@ -180,7 +204,7 @@ async function askOpenAI(messages, loc) {
       headers: { Authorization: 'Bearer ' + process.env.OPENAI_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL,
-        instructions: SYSTEM + '\n\nLangue du site : ' + LANG[loc] + '. Réponds dans cette langue, sauf si le visiteur t’écrit clairement dans une autre langue : réponds alors dans la sienne.',
+        instructions: SYSTEM + '\n\nLangue du site : ' + LANG[loc] + '. Réponds dans cette langue, sauf si le visiteur t’écrit clairement dans une autre langue : réponds alors dans la sienne.\n' + currencyNote(cur),
         input: messages.map(m => ({ role: m.role, content: m.content })),
         text: { format: SCHEMA }, max_output_tokens: 1200,
         store: false
@@ -202,20 +226,21 @@ async function askOpenAI(messages, loc) {
 /* ------------------------------------------------------------- reply --- */
 // messages: normalized list. → { kind, text, cta } with kind answer |
 // blocked | uncertain | unavailable (+ mock: true in local mock mode).
-async function reply(messages, locale) {
+async function reply(messages, locale, currency) {
   const loc = LANG[locale] ? locale : 'fr';
+  const cur = CURRENCIES.indexOf(currency) >= 0 ? currency : 'EUR';   // the site's own default (i18n/boot.js)
   const unavailable = { kind: 'unavailable', text: TEXT.unavailable[loc], cta: true };
   const users = messages.filter(m => m.role === 'user').map(m => m.content);
   if (INJECTION.test(users[users.length - 1])) return { kind: 'blocked', text: TEXT.refuse[loc], cta: false };
   const m = mode();
   if (m === 'off') return unavailable;
-  const raw = m === 'mock' ? mock.reply(messages, loc) : await askOpenAI(messages, loc);
+  const raw = m === 'mock' ? mock.reply(messages, loc, priceText(cur)) : await askOpenAI(messages, loc, cur);
   const out = check(raw);
   if (!out) return unavailable;
   const extra = m === 'mock' ? { mock: true } : {};
   if (out.answer === null) return Object.assign({ kind: 'uncertain', text: TEXT.unsure[loc], cta: true }, extra);
   const cta = out.showProjectCTA && PROJECT.test(users.join('\n'));
-  return Object.assign({ kind: 'answer', text: out.answer, cta }, extra);
+  return Object.assign({ kind: 'answer', text: onlyActive(out.answer, cur), cta }, extra);
 }
 
 /* ---------------------------------------------------------------- log --- */
@@ -227,4 +252,4 @@ function record(locale, messages, out) {
     (out && out.mock ? ' mode=mock' : ''));
 }
 
-module.exports = { reply, record, normalize, check, badPrice, INJECTION, PROJECT, SYSTEM, TEXT, mode };
+module.exports = { reply, record, normalize, check, badPrice, INJECTION, PROJECT, SYSTEM, TEXT, mode, currencyNote, onlyActive, priceText };

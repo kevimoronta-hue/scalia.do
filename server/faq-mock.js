@@ -70,10 +70,10 @@ const RULES = [
     'La maquette arrive en 72 heures max. Une fois validée, on vise une mise en ligne en une semaine environ, dans le cadre prévu.',
     'The mockup is ready within 72 hours. Once it’s approved, we aim to go live in about a week, within the agreed scope.',
     'La maqueta está lista en 72 horas como máximo. Una vez validada, apuntamos a publicar en una semana más o menos, dentro de lo previsto.'], false],
-  [/combien|prix|cout|tarif|how much|price|cost|precio|cuesta|cuanto/, [
-    'Le tarif Scalia, c’est 700 € ou 700 $, selon la devise choisie. Si ton projet sort du cadre prévu, on en parle avant de lancer quoi que ce soit.',
-    'Scalia’s rate is 700 € or 700 $, depending on the currency. If your project goes beyond the planned scope, we talk about it before starting anything.',
-    'La tarifa de Scalia es de 700 € o 700 $, según la moneda. Si tu proyecto va más allá de lo previsto, lo hablamos antes de empezar.'], true],
+  [/combien|prix|\bcout|tarif|how much|price|\bcosts?\b|precio|cuesta|cuanto/, [
+    'Le tarif Scalia, c’est {PRICE} pour le périmètre présenté sur le site. Si ton projet sort de ce cadre, on en parle avant de lancer quoi que ce soit.',
+    'Scalia’s rate is {PRICE} for the scope presented on the site. If your project goes beyond it, we talk about it before starting anything.',
+    'La tarifa de Scalia es de {PRICE} para el alcance presentado en el sitio. Si tu proyecto va más allá, lo hablamos antes de empezar.'], true],
   [/\bseo\b/, [
     'Le SEO sert à améliorer la visibilité d’un site dans les moteurs de recherche. Ça passe notamment par le contenu, la structure du site, la performance et la pertinence des pages.',
     'SEO is about making a site more visible in search engines. It mostly comes down to content, site structure, performance and how relevant the pages are.',
@@ -82,10 +82,10 @@ const RULES = [
     'Responsive, ça veut dire que le site s’adapte bien aux téléphones, tablettes et ordinateurs. La navigation et le contenu restent confortables quelle que soit la taille de l’écran.',
     'Responsive means the site adapts properly to phones, tablets and computers, so browsing and reading stay comfortable on any screen.',
     'Responsive significa que la web se adapta bien a móviles, tabletas y ordenadores, y que se navega cómodo en cualquier pantalla.'], false],
-  [/panama|costa rica|france|francia|dominic|\bpays\b|\bpais|ou (?:avez|travaill)|bosse|where|donde|countries/, [
-    'Scalia a déjà réalisé des projets en République dominicaine, en France, au Panama et au Costa Rica. Tout se fait à distance, en français, en anglais ou en espagnol.',
-    'Scalia has already delivered projects in the Dominican Republic, France, Panama and Costa Rica. Everything is done remotely, in English, French or Spanish.',
-    'Scalia ya ha hecho proyectos en República Dominicana, Francia, Panamá y Costa Rica. Todo se hace a distancia, en español, inglés o francés.'], false],
+  [/panama|costa rica|france|francia|dominic|\bpays\b|\bpais|ou (?:avez|travaill)|bosse|where|donde|countries|internation/, [
+    'Scalia travaille notamment avec des entreprises en France et accompagne aussi des projets en Amérique latine : en République dominicaine, au Panama et au Costa Rica. Tout se fait à distance. Et toi, ton projet est dans quel pays ?',
+    'Scalia works notably with companies in France and also supports projects in Latin America: the Dominican Republic, Panama and Costa Rica. Everything is done remotely. Where is your project based?',
+    'Scalia trabaja especialmente con empresas en Francia y también acompaña proyectos en América Latina: República Dominicana, Panamá y Costa Rica. Todo se hace a distancia. ¿Y tu proyecto en qué país está?'], false],
   [/comment ca (?:se passe|marche)|how does it work|como funciona|process|demarche/, [
     'Simple : on échange sur ton projet, Scalia te prépare une maquette sans coût en 72 heures max, tu valides, puis on passe à la réalisation et à la mise en ligne.',
     'Simple: we talk about your project, Scalia prepares a mockup at no cost within 72 hours, you approve it, then we build and launch.',
@@ -130,11 +130,12 @@ const FALLBACK = [
 ];
 const IDX = { fr: 0, en: 1, es: 2 };
 
-function reply(messages, loc) {
+// price: the active "700 €" / "700 $" (server/faq.js priceText).
+function reply(messages, loc, price) {
   const users = messages.filter(m => m.role === 'user').map(m => norm(m.content));
   const last = users[users.length - 1] || '';
   const i = IDX[loc] || 0;
-  for (const [re, texts, cta] of RULES) if (re.test(last)) return { answer: texts[i], showProjectCTA: cta };
+  for (const [re, texts, cta] of RULES) if (re.test(last)) return { answer: texts[i].replace('{PRICE}', price || '700 €'), showProjectCTA: cta };
   return { answer: FALLBACK[i], showProjectCTA: false };
 }
 

@@ -20,6 +20,8 @@
 
   function L(fr) { return window.ScaliaI18n ? window.ScaliaI18n.t(fr) : fr; }
   function locale() { return window.ScaliaI18n ? window.ScaliaI18n.locale() : 'fr'; }
+  // The € / $ chosen with the site's switch (ScaliaI18n, the single source).
+  function currency() { return window.ScaliaI18n ? window.ScaliaI18n.currency() : (document.documentElement.getAttribute('data-currency') || 'EUR'); }
 
   /* ----------------------------------------------------------- accordion */
   root.addEventListener('click', function (e) {
@@ -189,7 +191,7 @@
     fetch('/api/faq/', {
       method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ locale: locale(), messages: history })
+      body: JSON.stringify({ locale: locale(), currency: currency(), messages: history })
     }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; });
     }).then(function (res) {
