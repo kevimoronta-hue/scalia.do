@@ -60,6 +60,8 @@
   burger.addEventListener('click', function () { setMenu(nav.dataset.open !== 'true'); });
   scrim.addEventListener('click', function () { setMenu(false); });
   menu.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+  // Scaly's line (same as the home page): if his artwork ever fails to load, only his name stays.
+  menu.addEventListener('error', function (e) { if (e.target.classList && e.target.classList.contains('menu__scaly-img')) e.target.hidden = true; }, true);
   document.addEventListener('keydown', function (e) {
     if (nav.dataset.open !== 'true') return;
     if (e.key === 'Escape') { setMenu(false); burger.focus(); }
