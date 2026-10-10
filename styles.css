@@ -1498,8 +1498,9 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 }
 
 /* ============================================================ VOICES ==
-   Client gallery: two rails of 9:16 cards. The motion lives in voices.js
-   (one Web Animation per track); this file only lays the band out. */
+   Client gallery: two rails of 9:16 cards. Each rail is a native horizontal
+   scroller (the finger, the axis lock and the momentum are the browser's);
+   voices.js adds the slow drift and the endless loop. */
 .voices { overflow: hidden; padding-block: var(--section) calc(var(--section) + 28px); }
 .voices__head > * { max-width: 760px; }
 .voices__head .h2 { margin-top: 14px; }
@@ -1524,11 +1525,18 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .voices__rail {
   position: relative;
   width: 100%; max-width: var(--band, 100%); margin-inline: auto;
-  overflow: hidden; overflow: clip;            /* clip: focus can never scroll it */
-  touch-action: pan-y;                          /* vertical page scroll stays native */
+  /* Native horizontal scroller: a sideways swipe scrolls the rail (1:1,
+     native momentum), an up/down one scrolls the page; the browser locks the
+     axis. No scrollbar, no rubber band handed to the page or to the
+     browser's back / forward swipe. */
+  overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
   -webkit-user-select: none; user-select: none;
   -webkit-touch-callout: none;
 }
+.voices__rail::-webkit-scrollbar { display: none; }
 @media (min-width: 768px) {
   .voices__rail {
     --fade: 64px;   /* voices.js keeps an opened video clear of this fade */

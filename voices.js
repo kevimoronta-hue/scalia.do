@@ -20,10 +20,10 @@
 
    Portraits, quotes and identities are published with the clients' approval.
 
-   MOTION: each rail is one Web Animation on its track (compositor, no per-frame
-   JS while it drifts). Hover, drag, focus and video playback only change that
-   rail's playbackRate / currentTime. A short rAF runs only while a speed ramp
-   or a release glide is in progress.
+   MOTION: each rail is a native horizontal scroller. Touch, pen and
+   trackpad scroll it natively (iOS: its own 1:1 drag, axis lock and
+   momentum); the slow drift, the pause / resume, a mouse drag and the
+   infinite loop are driven from ONE position per rail. See "engine" below.
    ========================================================================== */
 (function () {
   'use strict';
@@ -144,10 +144,10 @@
     track.innerHTML = '<div class="voices__set" role="list">' +
       list.map(function (v) { return '<div role="listitem">' + cardHTML(v) + '</div>'; }).join('') + '</div>';
     return {
-      el: el, track: track, dir: n === 1 ? 1 : -1,   // 1 = drifts right, -1 = drifts left
-      anim: null, set: 0, dur: 0,
-      rate: 0, target: 0, rampRaf: 0, resumeT: 0,
-      hover: false, focus: false, drag: null, glideRaf: 0, playing: null, visible: false,
+      el: el, track: track, orig: track.firstElementChild, dir: n === 1 ? 1 : -1,   // 1 = drifts right, -1 = drifts left
+      set: 0, a: 0, pos: 0, s: -1, f: 0, built: false,
+      k: 0, kFrom: 0, kTo: 0, kT0: 0, kMs: 0, v: 0, resumeT: 0, idleT: 0,
+      hover: false, focus: false, touching: false, scrolling: false, mouse: null, playing: null, visible: false,
       static: STATIC   // native horizontal scroll, no animation, no clones
     };
   }).filter(Boolean);
@@ -155,51 +155,115 @@
   label();
   document.documentElement.addEventListener('scalia:locale', label);
 
-  // Clones fill the band so the loop never shows an edge. They are decoration
-  // for the eye only: hidden from assistive tech and out of the tab order.
-  // One loop period = one set + one gap (the gap between the set and its clone).
+  /* --------------------------------------------------------------- engine --
+     Each rail is a NATIVE horizontal scroller (styles.css: overflow-x auto).
+     · Finger, pen, trackpad: the browser's own scrolling. On iPhone that is
+       iOS itself: 1:1 under the finger, its axis lock with the page, its
+       momentum. While a visitor holds or scrolls a rail, nothing here
+       writes to it.
+     · The drift, the pause / resume, a mouse drag and the loop are ours.
+     ONE position per rail: r.pos, a scroll offset in px (float).
+       scrollLeft = floor(pos); the sub-pixel rest is the track's translateX,
+       so the slow drift stays perfectly smooth. After a visitor's scroll,
+       r.pos is read back from scrollLeft.
+     The loop: the original set sits in the middle of 2·a + 1 identical sets
+     (clones are inert and hidden from assistive tech). Between gestures the
+     engine keeps r.pos inside the middle set by jumping exactly one period,
+     which shows the very same picture; a sets on each side (≥ BUFFER px)
+     leave room for any flick, so a gesture never meets an edge. */
+  var BUFFER = 3500;       // px of copies on each side of the middle set
+  var IDLE_MS = 140;       // no scroll for this long: the gesture and its momentum are over
+  var TAU = 260, V_FLICK = 0.08, V_MAX = 3.5, V_STOP = 0.04;   // mouse release glide
+  var loopRaf = 0, lastNow = 0;
+
   function measure(r) {
     var gap = parseFloat(getComputedStyle(r.track).columnGap) || 0;
     r.gap = gap;
-    r.set = r.track.firstElementChild.getBoundingClientRect().width + gap;
+    r.set = r.orig.getBoundingClientRect().width + gap;
   }
-
+  function clone(set) {
+    var c = set.cloneNode(true);
+    c.setAttribute('aria-hidden', 'true');
+    c.setAttribute('inert', '');
+    c.removeAttribute('role');
+    Array.prototype.forEach.call(c.querySelectorAll('[role="listitem"]'), function (li) { li.removeAttribute('role'); });
+    return c;
+  }
   function build(r, band) {
-    var set = r.track.firstElementChild;
-    while (r.track.children.length > 1) r.track.removeChild(r.track.lastElementChild);
+    var q = r.built ? phase(r) : null;            // keep the place across rebuilds
+    Array.prototype.slice.call(r.track.children).forEach(function (c) { if (c !== r.orig) r.track.removeChild(c); });
     if (!r.set) return;
-    var copies = Math.max(1, Math.ceil(band / r.set));
-    for (var i = 0; i < copies; i++) {
-      var c = set.cloneNode(true);
-      c.setAttribute('aria-hidden', 'true');
-      c.setAttribute('inert', '');
-      c.removeAttribute('role');
-      Array.prototype.forEach.call(c.querySelectorAll('[role="listitem"]'), function (li) { li.removeAttribute('role'); });
-      r.track.appendChild(c);
+    r.a = Math.max(2, Math.ceil(Math.max(BUFFER, band) / r.set));
+    for (var i = 0; i < r.a; i++) { r.track.insertBefore(clone(r.orig), r.orig); r.track.appendChild(clone(r.orig)); }
+    if (q === null) {
+      // First layout: the rails start out of phase, as they always have.
+      var f = (0.37 * (r.dir > 0 ? 1 : 2)) % 1;
+      q = r.dir > 0 ? 1 - f : f;
     }
-
-    var speed = desktopMQ.matches ? SPEED.desktop : SPEED.mobile;
-    var keepT = r.anim ? frac(r) : 0.37 * (r.dir > 0 ? 1 : 2);   // rails start out of phase
-    if (r.anim) r.anim.cancel();
-    r.dur = (r.set / speed) * 1000;
-    var from = r.dir > 0 ? -r.set : 0, to = r.dir > 0 ? 0 : -r.set;
-    r.anim = r.track.animate(
-      [{ transform: 'translate3d(' + from + 'px,0,0)' }, { transform: 'translate3d(' + to + 'px,0,0)' }],
-      { duration: r.dur, iterations: Infinity, easing: 'linear' }
-    );
-    r.anim.currentTime = (keepT % 1) * r.dur;
-    r.anim.playbackRate = r.rate;
-    if (!r.visible) r.anim.pause();
+    r.pos = (r.a + q) * r.set;
+    r.s = -1;
+    r.built = true;
+    paint(r);
   }
 
-  function frac(r) { return r.anim && r.dur ? (((r.anim.currentTime || 0) % r.dur) + r.dur) % r.dur / r.dur : 0; }
+  function phase(r) { var p = (r.pos / r.set) % 1; return p < 0 ? p + 1 : p; }
+  function normalize(r) {
+    if (!r.set || r.playing) return;              // a player stage sits in the content: never jump under it
+    var lo = r.a * r.set, hi = lo + r.set;
+    while (r.pos < lo) r.pos += r.set;
+    while (r.pos >= hi) r.pos -= r.set;
+  }
+  function paint(r) {
+    var s = Math.floor(r.pos);
+    r.f = r.pos - s;
+    if (s !== r.s) { r.s = s; r.el.scrollLeft = s; }
+    r.track.style.transform = 'translate3d(' + (-r.f).toFixed(3) + 'px,0,0)';
+  }
+  // A visitor moved the rail: take its position back from the browser.
+  function sync(r) { r.s = r.el.scrollLeft; r.pos = r.s + (r.f || 0); }
+  function speed() { return desktopMQ.matches ? SPEED.desktop : SPEED.mobile; }   // px per second
 
-  // Move a rail by dx CSS px (positive = to the right), 1:1 with the finger.
+  // Move the content by dx CSS px (positive = to the right).
   function nudge(r, dx) {
-    if (!r.anim || !r.set) return;
-    var t = (r.anim.currentTime || 0) + r.dir * dx * (r.dur / r.set);
-    r.anim.currentTime = ((t % r.dur) + r.dur) % r.dur;
+    if (!r.set || !dx) return;
+    r.pos -= dx;
+    normalize(r); paint(r);
   }
+
+  // Drift factor r.k, eased from its current value: never a jump in speed.
+  function setK(r, to, ms) {
+    r.kFrom = r.k; r.kTo = to; r.kT0 = performance.now(); r.kMs = ms || 0;
+    if (!ms) r.k = to;
+    wake();
+  }
+  function stepK(r, now) {
+    if (r.k === r.kTo) return;
+    var p = r.kMs ? Math.min(1, (now - r.kT0) / r.kMs) : 1;
+    var e = r.kTo > r.kFrom ? p * p * (3 - 2 * p) : 1 - Math.pow(1 - p, 3);
+    r.k = p >= 1 ? r.kTo : r.kFrom + (r.kTo - r.kFrom) * e;
+  }
+  function busy(r) { return r.visible && r.set && (r.k > 0 || r.kTo > 0 || r.v !== 0); }
+  // One rAF loop for both rails, only while something drifts, eases or glides.
+  function tick(now) {
+    loopRaf = 0;
+    var dt = lastNow ? Math.min(50, now - lastNow) : 16;
+    lastNow = now;
+    var again = false;
+    state.forEach(function (r) {
+      if (r.static || !r.set || r.touching || r.scrolling || r.mouse) return;   // the visitor has it
+      stepK(r, now);
+      var d = -r.dir * speed() * r.k * dt / 1000;   // dir 1 drifts right: the offset decreases
+      if (r.v) {
+        d -= r.v * dt;
+        r.v *= Math.exp(-dt / TAU);
+        if (Math.abs(r.v) < V_STOP) { r.v = 0; settle(r); }
+      }
+      if (d) { r.pos += d; normalize(r); paint(r); }
+      if (busy(r)) again = true;
+    });
+    if (again) loopRaf = requestAnimationFrame(tick); else lastNow = 0;
+  }
+  function wake() { if (!loopRaf) { lastNow = 0; loopRaf = requestAnimationFrame(tick); } }
 
   // Horizontal shift (px) that brings a card fully inside its rail.
   function inView(r, card) {
@@ -210,51 +274,41 @@
     if (c.right > b.right - pad) return b.right - pad - c.right;
     return 0;
   }
-  // Same, eased over a short glide (used when a video opens half off screen).
-  // `each(dx)` lets a stage laid over the card follow the same glide.
-  function slideIntoView(r, card, each) {
+  // Same, eased over a short glide (used when a video opens half off screen;
+  // the player stage lives in the scrolled content and follows by itself).
+  function slideIntoView(r, card) {
     var total = inView(r, card), moved = 0, t0 = 0;
-    each = each || function () {};
     if (!total) return;
-    if (reduce) { nudge(r, total); each(total); return; }
+    if (reduce) { nudge(r, total); return; }
     requestAnimationFrame(function step(now) {
       if (!t0) t0 = now;
-      var k = Math.min(1, (now - t0) / 520), e = 1 - Math.pow(1 - k, 3), dx = total * e - moved;
-      nudge(r, dx); each(dx); moved = total * e;
+      var k = Math.min(1, (now - t0) / 520), e = 1 - Math.pow(1 - k, 3);
+      nudge(r, total * e - moved); moved = total * e;
       if (k < 1) requestAnimationFrame(step);
     });
   }
 
-  /* ----------------------------------------------------------- speed ramp -- */
+  /* ------------------------------------------------------------ pause / resume -- */
+  // The drift runs only when nothing holds the rail.
   function wanted(r) {
-    return reduce || r.hover || r.focus || r.drag || r.glideRaf || r.playing || !r.visible ? 0 : 1;
+    return reduce || r.hover || r.focus || r.touching || r.scrolling || r.mouse || r.v || r.playing || !r.visible ? 0 : 1;
   }
+  // One rule, one timer per rail: a hand on the rail stops it at once; hover,
+  // focus or a video ease it out. Motion comes back RESUME_DELAY after the
+  // interaction has really ended (finger up AND momentum over), easing in
+  // from where the rail stands. Any new touch cancels a pending resume.
   function settle(r, immediate) {
     clearTimeout(r.resumeT);
-    var w = wanted(r);
-    if (w === 0) return ramp(r, 0, immediate ? 0 : RAMP_OUT);
-    // Coming back to motion always waits a beat, then eases in.
-    r.resumeT = setTimeout(function () { if (wanted(r) === 1) ramp(r, 1, RAMP_IN); }, immediate ? 0 : RESUME_DELAY);
+    if (wanted(r) === 0) return setK(r, 0, immediate || r.touching || r.scrolling || r.mouse ? 0 : RAMP_OUT);
+    r.resumeT = setTimeout(function () { if (wanted(r) === 1) setK(r, 1, RAMP_IN); }, immediate ? 0 : RESUME_DELAY);
   }
-  function ramp(r, to, ms) {
-    cancelAnimationFrame(r.rampRaf);
-    if (!r.anim) return;
-    var from = r.rate, t0 = 0;
-    if (!ms || from === to) { apply(r, to); return; }
-    (function step(now) {
-      if (!t0) t0 = now;
-      var k = Math.min(1, (now - t0) / ms);
-      var e = to > from ? k * k * (3 - 2 * k) : 1 - Math.pow(1 - k, 3);
-      apply(r, from + (to - from) * e);
-      if (k < 1) r.rampRaf = requestAnimationFrame(step);
-    })(performance.now());
-  }
-  function apply(r, rate) {
-    r.rate = rate;
-    if (!r.anim) return;
-    r.anim.playbackRate = rate;
-    if (rate === 0) { if (r.anim.playState === 'running') r.anim.pause(); }
-    else if (r.anim.playState !== 'running' && r.visible) r.anim.play();
+  // End of a visitor's gesture (or of its momentum): read the position back,
+  // re-centre the loop (same picture), then let the drift come back.
+  function endGesture(r) {
+    if (r.touching) return;          // still held: touchend will come back here
+    r.scrolling = false;
+    sync(r); normalize(r); paint(r);
+    settle(r);
   }
 
   /* ---------------------------------------------------------- interaction -- */
@@ -275,59 +329,75 @@
       if (!kb) return;
       r.focus = true; settle(r, true);
       var card = e.target.closest('.voice');
-      if (card && !r.playing) nudge(r, inView(r, card));
+      if (card && !r.playing) { sync(r); nudge(r, inView(r, card)); }
     });
     el.addEventListener('focusout', function (e) {
       if (!el.contains(e.relatedTarget)) { r.focus = false; settle(r); }
     });
 
-    // Drag / swipe. touch-action: pan-y leaves vertical scrolling to the
-    // browser; a horizontal gesture comes to us as pointer moves.
+    // Touch / pen / trackpad: the browser scrolls; we only listen (passive).
+    function idleSoon() { clearTimeout(r.idleT); r.idleT = setTimeout(function () { endGesture(r); }, IDLE_MS); }
+    el.addEventListener('touchstart', function () {
+      r.touching = true; r.v = 0; clearTimeout(r.idleT);
+      settle(r, true);                                  // stops at once, exactly where it is
+    }, { passive: true });
+    function touchEnd() { r.touching = false; idleSoon(); }   // a tap or a hold resumes too
+    el.addEventListener('touchend', touchEnd, { passive: true });
+    el.addEventListener('touchcancel', touchEnd, { passive: true });
+    el.addEventListener('scroll', function () {
+      if (el.scrollLeft === r.s && !r.touching) return;        // our own write
+      if (!r.scrolling) { r.scrolling = true; r.v = 0; settle(r, true); }
+      idleSoon();
+    }, { passive: true });
+
+    // Mouse (desktop): drag 1:1, short glide on release. Touch never comes here.
     var moved = 0;
     el.addEventListener('pointerdown', function (e) {
-      if (e.button !== 0 || r.playing) return;   // a playing video holds its rail still
-      cancelAnimationFrame(r.glideRaf); r.glideRaf = 0;
-      r.drag = { id: e.pointerId, x: e.clientX, t: e.timeStamp, v: 0, captured: false };
+      if (e.pointerType !== 'mouse' || e.button !== 0 || r.playing) return;
+      sync(r);
+      r.v = 0;
+      r.mouse = { id: e.pointerId, x0: e.clientX, x: e.clientX, claimed: false, s: [] };
       moved = 0;
       settle(r, true);
     });
     el.addEventListener('pointermove', function (e) {
-      var d = r.drag;
+      var d = r.mouse;
       if (!d || d.id !== e.pointerId) return;
-      var dx = e.clientX - d.x, dt = Math.max(1, e.timeStamp - d.t);
+      if (!d.claimed) {
+        if (Math.abs(e.clientX - d.x0) < 3) return;
+        d.claimed = true;
+        try { el.setPointerCapture(e.pointerId); } catch (_) {}
+        el.classList.add('is-dragging');
+      }
+      var dx = e.clientX - d.x;
+      d.x = e.clientX;
       moved += Math.abs(dx);
-      if (!d.captured && moved > 4) { d.captured = true; try { el.setPointerCapture(e.pointerId); } catch (_) {} el.classList.add('is-dragging'); }
       nudge(r, dx);
-      d.v = 0.8 * (dx / dt) + 0.2 * d.v;   // px/ms, lightly smoothed
-      d.x = e.clientX; d.t = e.timeStamp;
+      d.s.push(e.clientX, e.timeStamp);
+      while (d.s.length > 4 && e.timeStamp - d.s[1] > 100) d.s.splice(0, 2);
     });
     function release(e) {
-      var d = r.drag;
+      var d = r.mouse;
       if (!d || d.id !== e.pointerId) return;
-      r.drag = null;
+      r.mouse = null;
       el.classList.remove('is-dragging');
-      var v = e.type === 'pointercancel' ? 0 : d.v;
-      if (Math.abs(v) > 0.05 && e.timeStamp - d.t < 80) glide(r, v);
-      else settle(r);
+      var v = 0, s = d.s, n = s.length;
+      if (d.claimed && e.type === 'pointerup' && !reduce && n >= 4 && e.timeStamp - s[n - 1] < 60) {
+        // Speed over the last ~50 ms of the latest stretch in one direction.
+        var k = n - 4, last = Math.sign(s[n - 2] - s[k]);
+        while (k >= 2 && s[n - 1] - s[k - 1] <= 50 && Math.sign(s[k] - s[k - 2]) !== -last) k -= 2;
+        v = (s[n - 2] - s[k]) / Math.max(1, s[n - 1] - s[k + 1]);
+      }
+      if (Math.abs(v) > V_FLICK) { r.v = Math.max(-V_MAX, Math.min(V_MAX, v)); wake(); }
+      settle(r);
     }
     el.addEventListener('pointerup', release);
     el.addEventListener('pointercancel', release);
     el.addEventListener('lostpointercapture', release);
-    // A drag never ends in a click on the card under the finger.
+    // A mouse drag never ends in a click on the card under it.
     el.addEventListener('click', function (e) { if (moved > 6) { e.preventDefault(); e.stopPropagation(); moved = 0; } }, true);
     el.addEventListener('dragstart', function (e) { e.preventDefault(); });
   });
-
-  // Release momentum: short exponential decay, then the rail breathes again.
-  function glide(r, v) {
-    var last = 0;
-    r.glideRaf = requestAnimationFrame(function step(now) {
-      if (last) { var dt = Math.min(32, now - last); nudge(r, v * dt); v *= Math.pow(0.0035, dt / 1000); }
-      last = now;
-      if (Math.abs(v) > 0.01 && !r.drag) r.glideRaf = requestAnimationFrame(step);
-      else { r.glideRaf = 0; settle(r); }
-    });
-  }
 
   /* --------------------------------------------------------- Scalia player --
      Wistia is only the video host. Its public media JSON lists the encoded
@@ -444,12 +514,13 @@
     if (current && current.v === v && current.rail === r) return;
     closeVideo();
     r.playing = true; settle(r, true);
+    if (!r.static) { sync(r); r.el.style.overflowX = 'hidden'; }   // a playing video holds its rail: no swipe under it
 
     var b = r.el.getBoundingClientRect(), c = card.getBoundingClientRect();
     var img = card.querySelector('.voice__img img');
     var stage = buildStage(v, img && (img.currentSrc || img.src));
     var mine = current = { v: v, rail: r, stage: stage, video: stage.querySelector('video'), cards: [], idleT: 0, io: null };
-    var x = c.left - b.left + (r.static ? r.el.scrollLeft : 0);
+    var x = c.left - b.left + r.el.scrollLeft;   // in the rail's scrolled content: it follows the rail
     stage.style.cssText = 'left:' + x + 'px;top:' + (c.top - b.top) + 'px;width:' + c.width + 'px;height:' + c.height + 'px';
     r.el.appendChild(stage);
     mine.cards = Array.prototype.slice.call(r.el.querySelectorAll('.voice[data-voice="' + v.id + '"]'));
@@ -461,7 +532,7 @@
       var d = inView(r, card);
       if (d) r.el.scrollBy({ left: -d, behavior: reduce ? 'auto' : 'smooth' });
     } else {
-      slideIntoView(r, card, function (dx) { x += dx; stage.style.left = x + 'px'; });
+      slideIntoView(r, card);
     }
     if (window.scaliaTrack) window.scaliaTrack('testimonial_play', { video: v.wistiaId });
     stage.querySelector('[data-act="toggle"]').focus({ preventScroll: true });
@@ -643,6 +714,7 @@
     c.stage.remove();
     c.cards.forEach(function (k) { k.classList.remove('is-playing'); });
     c.rail.playing = false;
+    if (!c.rail.static) c.rail.el.style.overflowX = '';
     if (hadFocus) {
       var back = visibleCopy(c.rail, c.v.id);
       // Clones are inert: fall back to the original card's button.
@@ -708,7 +780,7 @@
         var r = state.filter(function (s) { return s.el === e.target; })[0];
         if (!r) return;
         r.visible = e.isIntersecting;
-        if (!r.visible) { clearTimeout(r.resumeT); ramp(r, 0, 0); }
+        if (!r.visible) { clearTimeout(r.resumeT); r.v = 0; setK(r, 0, 0); }
         else settle(r, true);
       });
     }, { rootMargin: '80px 0px' });
