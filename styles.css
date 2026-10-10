@@ -2439,16 +2439,20 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .faq__reset:focus-visible { outline: 2px solid var(--scaly-gold); outline-offset: 2px; border-radius: 4px; }
 .faq__reset[hidden] { display: none; }
 
+/* Signature: Scaly is made by Scalia. Same asset and size as the booking's. */
+.scaly__sign { display: flex; justify-content: center; margin: 14px 0 4px; }
+.scaly__sign img { display: block; height: 26px; width: auto; }
+@media (min-width: 1024px) { .scaly__sign img { height: 30px; } }
+
 /* Touch screens: one stable box. The body has a fixed height in small-
    viewport units (svh: the height with the browser bars shown, which does
-   not change with the keyboard or the toolbar), the log fills it and its
-   content sits at the bottom, right above the field. Messages, prompts,
-   typing and the keyboard never change the card's size, so there is nothing
-   for the page to re-anchor or for iOS to chase. */
+   not change with the keyboard or the toolbar) and the log fills it, its
+   content starting at the top. Messages, prompts, typing and the keyboard
+   never change the card's size, so there is nothing for the page to
+   re-anchor or for iOS to chase. */
 @media (hover: none) and (pointer: coarse) {
   .scaly__body { height: clamp(300px, 52svh, 470px); }
   .scaly__body .faq__log { flex: 1 1 auto; min-height: 0; max-height: none; }
-  .faq__log > :first-child { margin-top: auto; }
   .scaly__world { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
   /* Prompts on one swipeable row: the welcome keeps its room. */
   /* width 0 + min-width 100%: the row's one-line content must not count in

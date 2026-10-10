@@ -507,6 +507,7 @@
   "Envoyer le message": "Enviar el mensaje",
   "Évite de partager des informations personnelles ou sensibles avec Scaly.": "Evita compartir información personal o sensible con Scaly.",
   "Nouvelle conversation": "Nueva conversación",
+  "Powered by Scalia": "Powered by Scalia",
   "Salut 👋 Moi c’est Scaly. Tu veux savoir quoi ? Si je peux t’aider sur Scalia, ton site ou ton projet, vas-y.": "Hola 👋 Soy Scaly. ¿Qué quieres saber? Si puedo ayudarte con Scalia, tu web o tu proyecto, dime.",
   "Toi": "Tú",
   "Conversation avec Scaly, l’agent IA de Scalia": "Conversación con Scaly, el agente IA de Scalia",

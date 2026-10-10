@@ -9,10 +9,9 @@
    · the server decides the text and whether to offer the booking under that
      answer (data-open-booking, handled by booking.js); once shown, a button
      stays where it was in the conversation;
-   · this script never scrolls the page. The conversation scrolls inside
-     its own box and stays pinned to its last message; on touch screens the
-     card has a fixed size (styles.css), so the keyboard opening or closing
-     moves nothing but the browser's own focus scroll. See "Scrolling" below.
+   · two scrolls, never mixed: the conversation scrolls inside its own box
+     ("Scrolling" below); the page is written at most once per keyboard
+     cycle, by the phone keyboard state machine ("Phone keyboard" below).
    ========================================================================== */
 (function () {
   'use strict';
@@ -123,13 +122,15 @@
     reset.hidden = fresh;
     prompts.hidden = !fresh;
   }
+  // A fresh conversation starts at the top of the box; a restored one
+  // opens on its latest exchange.
   function render() {
     log.textContent = '';
     msgs.forEach(function (m) { log.appendChild(node(m)); });
     if (typing) log.appendChild(typing);
     chrome();
     log.setAttribute('aria-label', L('Conversation avec Scaly, l’agent IA de Scalia'));
-    toEnd(false);
+    if (onlyWelcome()) { pinned = false; log.scrollTop = 0; } else toEnd(false);
   }
   function add(m) {
     msgs.push(m);
@@ -179,6 +180,9 @@
     send.disabled = true;
     add({ role: 'user', content: q });
     if (typed) { input.value = ''; grow(); }
+    // Phones: sending closes the keyboard (the state machine below brings
+    // the page back once it is gone).
+    if (touch) input.blur();
     showTyping(true);
     var history = msgs.filter(function (m) { return !m.local; }).slice(-SEND_MAX)
       .map(function (m) { return { role: m.role, content: m.content }; });
@@ -209,9 +213,8 @@
   }
 
   form.addEventListener('submit', function (e) { e.preventDefault(); submit(); });
-  // Tapping send must not blur the field: on iOS the keyboard would close and
-  // reopen on every message. Keeping focus keeps the keyboard where it is.
-  send.addEventListener('mousedown', function (e) { if (document.activeElement === input) e.preventDefault(); });
+  // Desktop: clicking send keeps the caret in the field.
+  send.addEventListener('mousedown', function (e) { if (!touch && document.activeElement === input) e.preventDefault(); });
   input.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); submit(); }
   });
@@ -234,6 +237,65 @@
     if (onlyWelcome()) msgs = [welcome()];
     render();
   });
+
+  /* ------------------------------------------------------ phone keyboard
+     Touch screens with visualViewport only. One state, one page write.
+     RESTING        nothing to do; the card is wherever the page puts it.
+     KEYBOARD_OPEN  the field has focus. The browser itself scrolls the
+                    field above the keyboard; we add nothing. We only note
+                    where the page was just before (restY) and the visible
+                    height at rest (restH), and whether the keyboard really
+                    showed (the visible height dropped).
+     RESTORING      the field lost focus (send, Done, tap outside) or the
+                    keyboard went away: wait for visualViewport to be back
+                    near restH, then, in the next frame, put the page back
+                    at restY once (smooth unless reduced motion) → RESTING.
+     Nothing to restore if the keyboard never showed (hardware keyboard) or
+     if the reader scrolled the page themself while typing. A focus during
+     RESTORING keeps the first resting point. visualViewport is read, never
+     used to scroll on each resize; no timers. */
+  var vv = touch && window.visualViewport;
+  var RESTING = 0, KEYBOARD_OPEN = 1, RESTORING = 2;
+  var state = RESTING, restY = 0, restH = 0, shown = false, moved = false, downY = null;
+  var SHOWN = 150, BACK = 100;   // px: a keyboard is far taller; toolbars move less
+
+  function open() {
+    if (state === RESTING) {
+      restY = downY !== null ? downY : window.scrollY;
+      restH = vv.height;
+    }
+    downY = null;
+    state = KEYBOARD_OPEN; shown = false; moved = false;
+  }
+  function close() {
+    if (state !== KEYBOARD_OPEN) return;
+    if (!shown || moved) { state = RESTING; return; }
+    state = RESTORING;
+    settle();
+  }
+  function settle() {
+    if (state !== RESTORING || vv.height < restH - BACK) return;
+    state = RESTING;
+    requestAnimationFrame(function () {
+      if (Math.abs(window.scrollY - restY) > 2) window.scrollTo({ top: restY, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  }
+  if (vv) {
+    // Where the page is before the browser scrolls for the keyboard.
+    input.addEventListener('touchstart', function () { if (state === RESTING) downY = window.scrollY; }, { passive: true });
+    input.addEventListener('focus', open);
+    input.addEventListener('blur', close);
+    vv.addEventListener('resize', function () {
+      if (state === KEYBOARD_OPEN) {
+        if (vv.height < restH - SHOWN) shown = true;
+        else if (shown) close();               // keyboard hidden, field still focused (Android back)
+      } else if (state === RESTORING) settle();
+    });
+    // The reader scrolling the page (not the conversation) while typing.
+    document.addEventListener('touchmove', function (e) {
+      if (state === KEYBOARD_OPEN && !log.contains(e.target)) moved = true;
+    }, { passive: true });
+  }
 
   if (!msgs.length) msgs = [welcome()];
   render();

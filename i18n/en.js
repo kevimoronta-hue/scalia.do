@@ -508,6 +508,7 @@
   "Envoyer le message": "Send the message",
   "Évite de partager des informations personnelles ou sensibles avec Scaly.": "Avoid sharing personal or sensitive information with Scaly.",
   "Nouvelle conversation": "New conversation",
+  "Powered by Scalia": "Powered by Scalia",
   "Salut 👋 Moi c’est Scaly. Tu veux savoir quoi ? Si je peux t’aider sur Scalia, ton site ou ton projet, vas-y.": "Hey 👋 I’m Scaly. What do you want to know? If I can help with Scalia, your website or your project, just ask.",
   "Toi": "You",
   "Conversation avec Scaly, l’agent IA de Scalia": "Conversation with Scaly, Scalia’s AI agent",
