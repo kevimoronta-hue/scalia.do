@@ -1457,21 +1457,47 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .ident__wrap { display: grid; gap: 16px; }
 
 .ident-cards { display: grid; gap: 12px; max-width: 480px; width: 100%; margin-inline: auto; }
+/* Brand-system cards: a sheet of warm paper, the artwork set in it like a
+   print in a passe-partout, the copy underneath. One photographic family
+   (assets/cards/ident-*): same paper, light and palette in all four. */
 .ident-card {
   position: relative;
-  padding: 22px 22px 24px;
-  border-radius: 20px;
+  padding: 10px 10px 22px;
+  border-radius: 22px;
   background:
-    radial-gradient(90% 70% at 0% 0%, #FFFFFF, rgba(255, 255, 255, 0) 70%),
-    linear-gradient(180deg, #FBFAF8 0%, #F3F0EB 100%);
+    radial-gradient(120% 80% at 0% 0%, #FFFFFF, rgba(255, 255, 255, 0) 65%),
+    linear-gradient(180deg, #FDFBF7 0%, #F5F1EA 100%);
   box-shadow:
     inset 0 1px 0 #FFFFFF,
-    0 0 0 1px rgba(14, 11, 10, 0.07),
-    0 1px 2px rgba(14, 11, 10, 0.05),
-    0 18px 36px -24px rgba(14, 11, 10, 0.3);
+    0 0 0 1px rgba(138, 100, 64, 0.12),
+    0 1px 2px rgba(14, 11, 10, 0.04),
+    0 22px 40px -28px rgba(64, 42, 22, 0.32);
 }
-.ident-card__title { font-size: 19px; font-weight: 650; letter-spacing: -0.024em; line-height: 1.2; }
-.ident-card__text { margin-top: 8px; font-size: 15.5px; line-height: 1.5; color: var(--fg-2); }
+/* Hover lift drawn by a layer that only fades: the card's own transform
+   and transition belong to the reveal ([data-reveal]). */
+.ident-card::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(138, 100, 64, 0.2), 0 30px 50px -30px rgba(64, 42, 22, 0.34);
+  opacity: 0; transition: opacity 240ms var(--ease-out);
+}
+.ident-card__art {
+  display: block; overflow: hidden;
+  aspect-ratio: 960 / 638;
+  border-radius: 14px;
+  background: #EFE9DF;                       /* paper tone while the image loads */
+  box-shadow: 0 0 0 1px rgba(14, 11, 10, 0.05);
+}
+.ident-card__art img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 240ms var(--ease-out); }
+.ident-card__title { margin: 18px 12px 0; font-size: 19px; font-weight: 650; letter-spacing: -0.024em; line-height: 1.2; }
+.ident-card__text { margin: 8px 12px 0; font-size: 15.5px; line-height: 1.5; color: var(--fg-2); }
+@media (hover: hover) and (pointer: fine) {
+  .ident-card:hover::after { opacity: 1; }
+  .ident-card:hover .ident-card__art img { transform: scale(1.025); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ident-card::after, .ident-card__art img { transition: none; }
+  .ident-card:hover .ident-card__art img { transform: none; }
+}
 
 .ident__notice {
   margin-top: clamp(20px, 3vw, 32px);
@@ -1494,7 +1520,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 }
 @media (min-width: 1100px) {
   .ident-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-  .ident-card { padding: 24px 24px 26px; }
+  .ident-card { padding: 10px 10px 24px; }
 }
 
 /* ============================================================ VOICES ==

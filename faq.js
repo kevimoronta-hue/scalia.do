@@ -29,6 +29,12 @@
     if (!btn) return;
     var item = btn.closest('.faq__item');
     var open = !item.classList.contains('is-open');
+    // One answer open at a time: opening this one closes the others.
+    if (open) Array.prototype.forEach.call(root.querySelectorAll('.faq__item.is-open'), function (other) {
+      other.classList.remove('is-open');
+      var b = other.querySelector('[data-faq-toggle]');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    });
     item.classList.toggle('is-open', open);
     btn.setAttribute('aria-expanded', String(open));
   });
