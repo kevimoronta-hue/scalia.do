@@ -20,10 +20,10 @@
 
    Portraits, quotes and identities are published with the clients' approval.
 
-   MOTION: each rail is a native horizontal scroller. Touch, pen and
-   trackpad scroll it natively (iOS: its own 1:1 drag, axis lock and
-   momentum); the slow drift, the pause / resume, a mouse drag and the
-   infinite loop are driven from ONE position per rail. See "engine" below.
+   MOTION: one engine (see "engine" below). Each rail clips a track of
+   identical copies; ONE value per rail, the track's offset, drawn as a
+   transform: drift, drag, momentum and loop all move that value and
+   nothing else. No scroller, no scroll position: the page never moves.
    ========================================================================== */
 (function () {
   'use strict';
@@ -64,7 +64,8 @@
   var RAMP_IN = 900, RAMP_OUT = 380;
 
   var root = document.getElementById('voix');
-  if (!root) return;
+  if (!root || root.__voicesBooted) return;      // one engine per page: never a second set of listeners
+  root.__voicesBooted = true;
   var rails = Array.prototype.slice.call(root.querySelectorAll('[data-voices-rail]'));
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -144,11 +145,14 @@
     track.innerHTML = '<div class="voices__set" role="list">' +
       list.map(function (v) { return '<div role="listitem">' + cardHTML(v) + '</div>'; }).join('') + '</div>';
     return {
-      el: el, track: track, orig: track.firstElementChild, dir: n === 1 ? 1 : -1,   // 1 = drifts right, -1 = drifts left
-      set: 0, a: 0, pos: 0, s: -1, f: 0, built: false,
-      k: 0, kFrom: 0, kTo: 0, kT0: 0, kMs: 0, v: 0, resumeT: 0, idleT: 0,
-      hover: false, focus: false, touching: false, scrolling: false, mouse: null, playing: null, visible: false,
-      static: STATIC   // native horizontal scroll, no animation, no clones
+      n: n, el: el, track: track, orig: track.firstElementChild,
+      dir: n === 1 ? 1 : -1,     // 1 = drifts right, -1 = drifts left
+      x: 0, P: 0, gap: 0,        // track offset (px), period (set + gap)
+      k: 0, kFrom: 0, kTo: 0, kT0: 0, kMs: 0,   // drift factor, eased
+      v: 0, glide: null,         // release momentum (px/ms), eased slide
+      fTo: 0, fShown: 0, fV: 0, fT: 0, fNew: false, fXt: false,   // drag: finger target / drawn offset (px), finger speed (px/ms), last event time, new event?, extrapolated?
+      resumeT: 0,
+      hover: false, focus: false, press: false, drag: false, playing: false, visible: false
     };
   }).filter(Boolean);
 
@@ -156,81 +160,29 @@
   document.documentElement.addEventListener('scalia:locale', label);
 
   /* --------------------------------------------------------------- engine --
-     Each rail is a NATIVE horizontal scroller (styles.css: overflow-x auto).
-     · Finger, pen, trackpad: the browser's own scrolling. On iPhone that is
-       iOS itself: 1:1 under the finger, its axis lock with the page, its
-       momentum. While a visitor holds or scrolls a rail, nothing here
-       writes to it.
-     · The drift, the pause / resume, a mouse drag and the loop are ours.
-     ONE position per rail: r.pos, a scroll offset in px (float).
-       scrollLeft = floor(pos); the sub-pixel rest is the track's translateX,
-       so the slow drift stays perfectly smooth. After a visitor's scroll,
-       r.pos is read back from scrollLeft.
-     The loop: the original set sits in the middle of 2·a + 1 identical sets
-     (clones are inert and hidden from assistive tech). Between gestures the
-     engine keeps r.pos inside the middle set by jumping exactly one period,
-     which shows the very same picture; a sets on each side (≥ BUFFER px)
-     leave room for any flick, so a gesture never meets an edge. */
-  var BUFFER = 3500;       // px of copies on each side of the middle set
-  var IDLE_MS = 140;       // no scroll for this long: the gesture and its momentum are over
-  var TAU = 260, V_FLICK = 0.08, V_MAX = 3.5, V_STOP = 0.04;   // mouse release glide
-  var loopRaf = 0, lastNow = 0;
+     ONE source of truth per rail: r.x, the track's horizontal offset (px).
+     The rail only clips (overflow hidden): it is not a scroller, nothing in
+     it has a scroll position, so nothing here can ever move the page. The
+     track holds identical copies of the set; the picture at x and at x ± P
+     (one period: set + gap) is the same, so the loop keeps x inside one
+     period by whole periods: invisible, DOM untouched, height untouched.
+     ONE rAF loop for both rails, alive only while something moves. Per
+     frame it writes the tracks' transforms and nothing else. */
+  var TAU = 260, V_FLICK = 0.08, V_MAX = 3.5, V_STOP = 0.02;   // release momentum
+  var raf = 0, lastNow = 0;
 
-  function measure(r) {
-    var gap = parseFloat(getComputedStyle(r.track).columnGap) || 0;
-    r.gap = gap;
-    r.set = r.orig.getBoundingClientRect().width + gap;
-  }
-  function clone(set) {
-    var c = set.cloneNode(true);
-    c.setAttribute('aria-hidden', 'true');
-    c.setAttribute('inert', '');
-    c.removeAttribute('role');
-    Array.prototype.forEach.call(c.querySelectorAll('[role="listitem"]'), function (li) { li.removeAttribute('role'); });
-    return c;
-  }
-  function build(r, band) {
-    var q = r.built ? phase(r) : null;            // keep the place across rebuilds
-    Array.prototype.slice.call(r.track.children).forEach(function (c) { if (c !== r.orig) r.track.removeChild(c); });
-    if (!r.set) return;
-    r.a = Math.max(2, Math.ceil(Math.max(BUFFER, band) / r.set));
-    for (var i = 0; i < r.a; i++) { r.track.insertBefore(clone(r.orig), r.orig); r.track.appendChild(clone(r.orig)); }
-    if (q === null) {
-      // First layout: the rails start out of phase, as they always have.
-      var f = (0.37 * (r.dir > 0 ? 1 : 2)) % 1;
-      q = r.dir > 0 ? 1 - f : f;
-    }
-    r.pos = (r.a + q) * r.set;
-    r.s = -1;
-    r.built = true;
-    paint(r);
-  }
-
-  function phase(r) { var p = (r.pos / r.set) % 1; return p < 0 ? p + 1 : p; }
-  function normalize(r) {
-    if (!r.set || r.playing) return;              // a player stage sits in the content: never jump under it
-    var lo = r.a * r.set, hi = lo + r.set;
-    while (r.pos < lo) r.pos += r.set;
-    while (r.pos >= hi) r.pos -= r.set;
-  }
-  function paint(r) {
-    var s = Math.floor(r.pos);
-    r.f = r.pos - s;
-    if (s !== r.s) { r.s = s; r.el.scrollLeft = s; }
-    r.track.style.transform = 'translate3d(' + (-r.f).toFixed(3) + 'px,0,0)';
-  }
-  // A visitor moved the rail: take its position back from the browser.
-  function sync(r) { r.s = r.el.scrollLeft; r.pos = r.s + (r.f || 0); }
   function speed() { return desktopMQ.matches ? SPEED.desktop : SPEED.mobile; }   // px per second
-
-  // Move the content by dx CSS px (positive = to the right).
-  function nudge(r, dx) {
-    if (!r.set || !dx) return;
-    r.pos -= dx;
-    normalize(r); paint(r);
+  function paint(r) { r.track.style.transform = 'translate3d(' + r.x.toFixed(2) + 'px,0,0)'; }
+  // x stays in [-1.5P, -0.5P): half a period of copies on the left, the rest
+  // on the right. Never while a video plays (its stage rides on the track).
+  function wrap(r) {
+    if (!r.P || r.playing) return;
+    var k = Math.floor(r.x / r.P + 0.5) + 1;
+    if (k) r.x -= k * r.P;
   }
+  function move(r, dx) { if (!r.P || !dx) return; r.x += dx; wrap(r); paint(r); }
 
-  // Drift factor r.k, eased from its current value: never a jump in speed.
+  // Drift factor r.k, eased from where it stands: never a jump in speed.
   function setK(r, to, ms) {
     r.kFrom = r.k; r.kTo = to; r.kT0 = performance.now(); r.kMs = ms || 0;
     if (!ms) r.k = to;
@@ -242,28 +194,51 @@
     var e = r.kTo > r.kFrom ? p * p * (3 - 2 * p) : 1 - Math.pow(1 - p, 3);
     r.k = p >= 1 ? r.kTo : r.kFrom + (r.kTo - r.kFrom) * e;
   }
-  function busy(r) { return r.visible && r.set && (r.k > 0 || r.kTo > 0 || r.v !== 0); }
-  // One rAF loop for both rails, only while something drifts, eases or glides.
   function tick(now) {
-    loopRaf = 0;
+    raf = 0;
     var dt = lastNow ? Math.min(50, now - lastNow) : 16;
     lastNow = now;
     var again = false;
     state.forEach(function (r) {
-      if (r.static || !r.set || r.touching || r.scrolling || r.mouse) return;   // the visitor has it
+      if (!r.P) return;
+      if (r.drag) { drawDrag(r, now, dt); again = true; return; }   // the finger has it
       stepK(r, now);
-      var d = -r.dir * speed() * r.k * dt / 1000;   // dir 1 drifts right: the offset decreases
+      var dx = r.dir * speed() * r.k * dt / 1000;
       if (r.v) {
-        d -= r.v * dt;
+        dx += r.v * dt;
         r.v *= Math.exp(-dt / TAU);
         if (Math.abs(r.v) < V_STOP) { r.v = 0; settle(r); }
       }
-      if (d) { r.pos += d; normalize(r); paint(r); }
-      if (busy(r)) again = true;
+      if (r.glide) {
+        var g = r.glide, p = Math.min(1, (now - g.t0) / g.ms), e = 1 - Math.pow(1 - p, 3);
+        dx += g.total * e - g.done; g.done = g.total * e;
+        if (p >= 1) r.glide = null;
+      }
+      move(r, dx);
+      if (r.glide || r.v || (r.visible && (r.k || r.kTo))) again = true;
     });
-    if (again) loopRaf = requestAnimationFrame(tick); else lastNow = 0;
+    if (again) raf = requestAnimationFrame(tick); else lastNow = 0;
   }
-  function wake() { if (!loopRaf) { lastNow = 0; loopRaf = requestAnimationFrame(tick); } }
+  function wake() { if (!raf) { lastNow = 0; raf = requestAnimationFrame(tick); } }
+
+  // Drag, drawn on the screen's own frames (pointermove only records): one
+  // transform write per frame, at whatever rate the display runs. A frame
+  // with a new finger event draws the finger's real position. The first
+  // frame without one extrapolates at the finger's speed, by at most one
+  // frame; further empty frames hold still. The next real event puts the
+  // rail back exactly under the finger (1:1), and so does a finger that has
+  // stopped (no event for 50 ms).
+  function drawDrag(r, now, dt) {
+    var want;
+    if (r.fNew) { want = r.fTo; r.fNew = false; r.fXt = false; }
+    else if (!r.fXt && r.fV && now - r.fT < 50) { want = r.fTo + r.fV * Math.max(0, Math.min(now - r.fT, dt)); r.fXt = true; }
+    else if (r.fShown !== r.fTo && now - r.fT >= 50) want = r.fTo;   // the finger has stopped: back exactly under it
+    else return;
+    move(r, want - r.fShown);
+    r.fShown = want;
+  }
+  // The rail exactly under the finger (release): no extrapolation left.
+  function settleDrag(r) { move(r, r.fTo - r.fShown); r.fShown = r.fTo; }
 
   // Horizontal shift (px) that brings a card fully inside its rail.
   function inView(r, card) {
@@ -274,129 +249,116 @@
     if (c.right > b.right - pad) return b.right - pad - c.right;
     return 0;
   }
-  // Same, eased over a short glide (used when a video opens half off screen;
-  // the player stage lives in the scrolled content and follows by itself).
-  function slideIntoView(r, card) {
-    var total = inView(r, card), moved = 0, t0 = 0;
-    if (!total) return;
-    if (reduce) { nudge(r, total); return; }
-    requestAnimationFrame(function step(now) {
-      if (!t0) t0 = now;
-      var k = Math.min(1, (now - t0) / 520), e = 1 - Math.pow(1 - k, 3);
-      nudge(r, total * e - moved); moved = total * e;
-      if (k < 1) requestAnimationFrame(step);
-    });
-  }
 
-  /* ------------------------------------------------------------ pause / resume -- */
-  // The drift runs only when nothing holds the rail.
+  /* -------------------------------------------------------- pause / resume --
+     One rule, one timer per rail. Anything holding the rail stops the drift
+     (a finger at once; hover, focus or a video ease it out). The drift comes
+     back RESUME_DELAY after the last hold has ended and the momentum is over,
+     easing in from where the rail stands. */
   function wanted(r) {
-    return reduce || r.hover || r.focus || r.touching || r.scrolling || r.mouse || r.v || r.playing || !r.visible ? 0 : 1;
+    return reduce || r.hover || r.focus || r.press || r.drag || r.v || r.glide || r.playing || !r.visible ? 0 : 1;
   }
-  // One rule, one timer per rail: a hand on the rail stops it at once; hover,
-  // focus or a video ease it out. Motion comes back RESUME_DELAY after the
-  // interaction has really ended (finger up AND momentum over), easing in
-  // from where the rail stands. Any new touch cancels a pending resume.
   function settle(r, immediate) {
     clearTimeout(r.resumeT);
-    if (wanted(r) === 0) return setK(r, 0, immediate || r.touching || r.scrolling || r.mouse ? 0 : RAMP_OUT);
+    if (wanted(r) === 0) return setK(r, 0, immediate || r.press ? 0 : RAMP_OUT);
     r.resumeT = setTimeout(function () { if (wanted(r) === 1) setK(r, 1, RAMP_IN); }, immediate ? 0 : RESUME_DELAY);
   }
-  // End of a visitor's gesture (or of its momentum): read the position back,
-  // re-centre the loop (same picture), then let the drift come back.
-  function endGesture(r) {
-    if (r.touching) return;          // still held: touchend will come back here
-    r.scrolling = false;
-    sync(r); normalize(r); paint(r);
-    settle(r);
+
+  /* ----------------------------------------------------------- interaction --
+     ONE gesture system: pointer events (finger, pen and mouse alike).
+     CSS gives the rail touch-action: pan-y, so a vertical swipe belongs to
+     the browser (the page scrolls natively and we get pointercancel), and a
+     horizontal one comes to us: the rail follows 1:1, the page does not
+     move. Axis lock: the first 8px decide. Release: a short momentum, then
+     the drift returns. */
+  function velocity(s, tUp) {
+    var n = s.length;
+    if (n < 4 || tUp - s[n - 1] > 60) return 0;           // held still before letting go
+    var i = n - 2;
+    while (i >= 2 && s[n - 1] - s[i - 1] <= 80) i -= 2;   // the last ~80 ms
+    var v = (s[n - 2] - s[i]) / Math.max(1, s[n - 1] - s[i + 1]);
+    return Math.abs(v) > V_FLICK ? Math.max(-V_MAX, Math.min(V_MAX, v)) : 0;
   }
 
-  /* ---------------------------------------------------------- interaction -- */
-  state.forEach(function (r) {
-    var el = r.el;
-    if (r.static) return;   // the browser scrolls it; nothing to drive
+  if (!STATIC) state.forEach(function (r) {
+    var el = r.el, g = null, moved = 0;
 
-    if (finePointer) {
-      el.addEventListener('mouseenter', function () { r.hover = true; settle(r); });
-      el.addEventListener('mouseleave', function () { r.hover = false; settle(r); });
-    }
+    el.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') { r.hover = true; settle(r); } });
+    el.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { r.hover = false; settle(r); } });
 
-    // Keyboard: focusing a card holds the rail and brings the card into view.
-    // Only keyboard focus holds the rail; a mouse or touch focus must not.
+    // Keyboard focus holds the rail and brings the card into view.
     el.addEventListener('focusin', function (e) {
       var kb = true;
       try { kb = e.target.matches(':focus-visible'); } catch (_) {}
       if (!kb) return;
       r.focus = true; settle(r, true);
       var card = e.target.closest('.voice');
-      if (card && !r.playing) { sync(r); nudge(r, inView(r, card)); }
+      if (card && !r.playing) move(r, inView(r, card));
     });
     el.addEventListener('focusout', function (e) {
       if (!el.contains(e.relatedTarget)) { r.focus = false; settle(r); }
     });
 
-    // Touch / pen / trackpad: the browser scrolls; we only listen (passive).
-    function idleSoon() { clearTimeout(r.idleT); r.idleT = setTimeout(function () { endGesture(r); }, IDLE_MS); }
-    el.addEventListener('touchstart', function () {
-      r.touching = true; r.v = 0; clearTimeout(r.idleT);
-      settle(r, true);                                  // stops at once, exactly where it is
-    }, { passive: true });
-    function touchEnd() { r.touching = false; idleSoon(); }   // a tap or a hold resumes too
-    el.addEventListener('touchend', touchEnd, { passive: true });
-    el.addEventListener('touchcancel', touchEnd, { passive: true });
-    el.addEventListener('scroll', function () {
-      if (el.scrollLeft === r.s && !r.touching) return;        // our own write
-      if (!r.scrolling) { r.scrolling = true; r.v = 0; settle(r, true); }
-      idleSoon();
-    }, { passive: true });
-
-    // Mouse (desktop): drag 1:1, short glide on release. Touch never comes here.
-    var moved = 0;
     el.addEventListener('pointerdown', function (e) {
-      if (e.pointerType !== 'mouse' || e.button !== 0 || r.playing) return;
-      sync(r);
-      r.v = 0;
-      r.mouse = { id: e.pointerId, x0: e.clientX, x: e.clientX, claimed: false, s: [] };
+      if (!e.isPrimary || e.button !== 0 || r.playing || g) return;
+      g = { id: e.pointerId, mouse: e.pointerType === 'mouse', x0: e.clientX, y0: e.clientY, x: e.clientX, on: false, s: [] };
       moved = 0;
-      settle(r, true);
+      r.press = true; r.v = 0; r.glide = null;
+      settle(r, true);                               // stops at once, exactly where it is
     });
     el.addEventListener('pointermove', function (e) {
-      var d = r.mouse;
-      if (!d || d.id !== e.pointerId) return;
-      if (!d.claimed) {
-        if (Math.abs(e.clientX - d.x0) < 3) return;
-        d.claimed = true;
+      if (!g || e.pointerId !== g.id) return;
+      if (!g.on) {
+        var ax = Math.abs(e.clientX - g.x0), ay = Math.abs(e.clientY - g.y0), slop = g.mouse ? 3 : 8;
+        if (ax < slop && ay < slop) return;
+        if (!g.mouse && ay >= ax) return end(e);   // vertical: the page's
+        g.on = true; r.drag = true;
+        r.fTo = r.fShown = 0; r.fV = 0; r.fNew = r.fXt = false;
         try { el.setPointerCapture(e.pointerId); } catch (_) {}
         el.classList.add('is-dragging');
       }
-      var dx = e.clientX - d.x;
-      d.x = e.clientX;
+      var dx = e.clientX - g.x;
+      g.x = e.clientX;
       moved += Math.abs(dx);
-      nudge(r, dx);
-      d.s.push(e.clientX, e.timeStamp);
-      while (d.s.length > 4 && e.timeStamp - d.s[1] > 100) d.s.splice(0, 2);
+      g.s.push(e.clientX, e.timeStamp);
+      if (g.s.length > 24) g.s.splice(0, 2);
+      // Record only: the frame loop draws it.
+      r.fTo += dx; r.fT = performance.now(); r.fNew = true;   // same clock as the frames
+      var s = g.s, n = s.length, i = n - 2;
+      while (i >= 2 && s[n - 1] - s[i - 1] <= 50) i -= 2;   // finger speed over the last ~50 ms
+      r.fV = s[n - 1] > s[i + 1] ? (s[n - 2] - s[i]) / (s[n - 1] - s[i + 1]) : 0;
+      wake();
     });
-    function release(e) {
-      var d = r.mouse;
-      if (!d || d.id !== e.pointerId) return;
-      r.mouse = null;
-      el.classList.remove('is-dragging');
-      var v = 0, s = d.s, n = s.length;
-      if (d.claimed && e.type === 'pointerup' && !reduce && n >= 4 && e.timeStamp - s[n - 1] < 60) {
-        // Speed over the last ~50 ms of the latest stretch in one direction.
-        var k = n - 4, last = Math.sign(s[n - 2] - s[k]);
-        while (k >= 2 && s[n - 1] - s[k - 1] <= 50 && Math.sign(s[k] - s[k - 2]) !== -last) k -= 2;
-        v = (s[n - 2] - s[k]) / Math.max(1, s[n - 1] - s[k + 1]);
+    function end(e) {
+      if (!g || e.pointerId !== g.id) return;
+      var d = g; g = null;
+      r.press = false;
+      if (d.on) {
+        settleDrag(r);
+        r.drag = false;
+        el.classList.remove('is-dragging');
+        if (e.type === 'pointerup' && !reduce) r.v = velocity(d.s, e.timeStamp);
       }
-      if (Math.abs(v) > V_FLICK) { r.v = Math.max(-V_MAX, Math.min(V_MAX, v)); wake(); }
-      settle(r);
+      settle(r); wake();
     }
-    el.addEventListener('pointerup', release);
-    el.addEventListener('pointercancel', release);
-    el.addEventListener('lostpointercapture', release);
-    // A mouse drag never ends in a click on the card under it.
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+    el.addEventListener('lostpointercapture', function (e) {
+      if (e.target === el) end(e);
+    });
+    // A drag never ends in a click on the card under it.
     el.addEventListener('click', function (e) { if (moved > 6) { e.preventDefault(); e.stopPropagation(); moved = 0; } }, true);
     el.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+    // Trackpad: a sideways two-finger swipe moves the rail; up / down stays the page's.
+    el.addEventListener('wheel', function (e) {
+      if (r.playing || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      r.v = 0; r.glide = null;
+      setK(r, 0, 0);
+      move(r, -e.deltaX * (e.deltaMode === 1 ? 16 : 1));
+      settle(r);                                     // resumes RESUME_DELAY after the last one
+    }, { passive: false });
   });
 
   /* --------------------------------------------------------- Scalia player --
@@ -513,26 +475,24 @@
     if (!v || !isVideo(v) || !r) return;
     if (current && current.v === v && current.rail === r) return;
     closeVideo();
-    r.playing = true; settle(r, true);
-    if (!r.static) { sync(r); r.el.style.overflowX = 'hidden'; }   // a playing video holds its rail: no swipe under it
+    r.playing = true; settle(r, true);              // a playing video holds its rail: no drift, no drag under it
 
-    var b = r.el.getBoundingClientRect(), c = card.getBoundingClientRect();
+    var b = r.track.getBoundingClientRect(), c = card.getBoundingClientRect();
     var img = card.querySelector('.voice__img img');
     var stage = buildStage(v, img && (img.currentSrc || img.src));
     var mine = current = { v: v, rail: r, stage: stage, video: stage.querySelector('video'), cards: [], idleT: 0, io: null };
-    var x = c.left - b.left + r.el.scrollLeft;   // in the rail's scrolled content: it follows the rail
-    stage.style.cssText = 'left:' + x + 'px;top:' + (c.top - b.top) + 'px;width:' + c.width + 'px;height:' + c.height + 'px';
-    r.el.appendChild(stage);
+    // In the track: the stage rides on the track's transform.
+    stage.style.cssText = 'left:' + (c.left - b.left) + 'px;top:' + (c.top - b.top) + 'px;width:' + c.width + 'px;height:' + c.height + 'px';
+    r.track.appendChild(stage);
     mine.cards = Array.prototype.slice.call(r.el.querySelectorAll('.voice[data-voice="' + v.id + '"]'));
     mine.cards.forEach(function (k) { k.classList.add('is-playing'); });
     wire(mine, c.width);
 
     // Rail and stage glide together until the card sits fully in view.
-    if (r.static) {
-      var d = inView(r, card);
-      if (d) r.el.scrollBy({ left: -d, behavior: reduce ? 'auto' : 'smooth' });
-    } else {
-      slideIntoView(r, card);
+    var d = STATIC ? 0 : inView(r, card);           // the static row: the visitor swipes it
+    if (d) {
+      if (reduce) move(r, d);
+      else { r.glide = { total: d, done: 0, t0: performance.now(), ms: 520 }; wake(); }
     }
     if (window.scaliaTrack) window.scaliaTrack('testimonial_play', { video: v.wistiaId });
     stage.querySelector('[data-act="toggle"]').focus({ preventScroll: true });
@@ -714,7 +674,6 @@
     c.stage.remove();
     c.cards.forEach(function (k) { k.classList.remove('is-playing'); });
     c.rail.playing = false;
-    if (!c.rail.static) c.rail.el.style.overflowX = '';
     if (hadFocus) {
       var back = visibleCopy(c.rail, c.v.id);
       // Clones are inert: fall back to the original card's button.
@@ -734,63 +693,94 @@
   // One listener for the whole page: the open player (if any) follows the language.
   document.documentElement.addEventListener('scalia:locale', function () { if (current && current.onLocale) current.onLocale(); });
 
-  /* ------------------------------------------------------------ lifecycle -- */
-  // Both rails share ONE band: as wide as the container, never wider than the
-  // shortest set, so the rails stay aligned and nobody shows twice in a rail.
+
+  /* ------------------------------------------------------------ lifecycle --
+     Layout runs once at start, then only if a card or the window WIDTH really
+     changes (rotation, desktop window). It reads two widths, adds copies if a
+     wider screen needs them (it never removes or rebuilds any), and keeps
+     each rail's place. A phone's URL bar or keyboard changes only the height:
+     nothing to do, nothing read. */
   var railsEl = root.querySelector('.voices__rails');
-  var lastKey = '';
-  function buildAll() {
-    if (STATIC) return;   // static row: CSS only
-    state.forEach(measure);
-    var container = railsEl.getBoundingClientRect().width || window.innerWidth;
-    var band = container;
-    state.forEach(function (r) { if (r.set) band = Math.min(band, r.set - r.gap); });
+  var lastW = 0, lastCard = 0, rzRaf = 0;
+
+  function clone(set) {
+    var c = set.cloneNode(true);
+    c.setAttribute('aria-hidden', 'true');
+    c.setAttribute('inert', '');
+    c.removeAttribute('role');
+    Array.prototype.forEach.call(c.querySelectorAll('[role="listitem"]'), function (li) { li.removeAttribute('role'); });
+    return c;
+  }
+  function cardW() { var c = root.querySelector('.voice'); return c ? Math.round(c.getBoundingClientRect().width) : 0; }
+  function layout() {
+    var keep = state.map(function (r) { return r.P ? r.x / r.P : null; });   // place, in periods
+    lastW = window.innerWidth; lastCard = cardW();
+    state.forEach(function (r) {
+      r.gap = parseFloat(getComputedStyle(r.track).columnGap) || 0;
+      r.P = r.orig.getBoundingClientRect().width + r.gap;
+    });
+    // Both rails share ONE band: as wide as the container, never wider than
+    // the shortest set, so nobody shows twice in a rail.
+    var band = railsEl.getBoundingClientRect().width || lastW;
+    state.forEach(function (r) { if (r.P) band = Math.min(band, r.P - r.gap); });
     railsEl.style.setProperty('--band', Math.floor(band) + 'px');
-    lastKey = key();
-    state.forEach(function (r) { build(r, band); });
-  }
-  function key() { return state.map(function (r) { return Math.round(r.track.firstElementChild.getBoundingClientRect().width); }).join() + '|' + Math.round(railsEl.getBoundingClientRect().width); }
-  buildAll();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(buildAll);
-
-  // Rebuild only when a card size or the container width really changes
-  // (breakpoint, rotation, window resize). Mobile URL-bar moves do not resize
-  // the cards (svh), so they never trigger it.
-  var rzT;
-  function maybeRebuild() {
-    clearTimeout(rzT);
-    rzT = setTimeout(function () {
-      if (key() === lastKey) return;
-      closeVideo();
-      buildAll();
-    }, 140);
-  }
-  if ('ResizeObserver' in window) {
-    var ro = new ResizeObserver(maybeRebuild);
-    ro.observe(railsEl);
-    state.forEach(function (r) { ro.observe(r.track.firstElementChild); });
-  } else {
-    window.addEventListener('resize', maybeRebuild);
+    var widest = Math.max(lastW, screen.width || 0, screen.height || 0);
+    state.forEach(function (r, i) {
+      if (!r.P) return;
+      var need = Math.ceil(widest / r.P) + 3;     // [-1.5P, -0.5P) + the widest band
+      while (r.track.children.length < need) r.track.appendChild(clone(r.orig));
+      // First layout: the rails start out of phase, as they always have.
+      r.x = keep[i] !== null ? keep[i] * r.P : -(r.dir > 0 ? 0.63 : 0.74) * r.P;
+      wrap(r); paint(r);
+    });
   }
 
-  // Off screen, rails stop entirely (no compositor work, no battery).
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        var r = state.filter(function (s) { return s.el === e.target; })[0];
-        if (!r) return;
-        r.visible = e.isIntersecting;
-        if (!r.visible) { clearTimeout(r.resumeT); r.v = 0; setK(r, 0, 0); }
-        else settle(r, true);
+  if (!STATIC) {
+    layout();
+    window.addEventListener('resize', function () {
+      if (rzRaf) return;
+      rzRaf = requestAnimationFrame(function () {
+        rzRaf = 0;
+        if (window.innerWidth === lastW && !finePointer) return;   // height only (URL bar, keyboard)
+        if (window.innerWidth === lastW && cardW() === lastCard) return;
+        closeVideo();
+        layout();
       });
-    }, { rootMargin: '80px 0px' });
-    state.forEach(function (r) { io.observe(r.el); });
-    new IntersectionObserver(function (entries, obs) {
-      if (entries[0].isIntersecting) { prefetchSources(); obs.disconnect(); }
-    }, { rootMargin: '600px 0px' }).observe(root);
-  } else {
-    state.forEach(function (r) { r.visible = true; settle(r, true); });
-    prefetchSources();
+    }, { passive: true });
   }
+
+  // ONE observer: the section near the screen → rails drift (and the three
+  // tiny video JSON files are fetched once); away → everything stops.
+  function show(on) {
+    state.forEach(function (r) {
+      r.visible = on;
+      if (on) settle(r, true);
+      else { clearTimeout(r.resumeT); r.v = 0; r.glide = null; setK(r, 0, 0); }
+    });
+  }
+  var prefetched = false;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      var on = entries[entries.length - 1].isIntersecting;
+      if (on && !prefetched) { prefetched = true; prefetchSources(); }
+      if (!STATIC) show(on);
+    }, { rootMargin: '200px 0px' }).observe(root);
+  } else {
+    prefetchSources();
+    if (!STATIC) show(true);
+  }
+
+  // Back / forward cache: the page is frozen as is, nothing re-runs on
+  // return (the guard above), the loop simply restarts where it stood.
+  window.addEventListener('pagehide', function () {
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0; lastNow = 0;
+    closeVideo();
+    state.forEach(function (r) { clearTimeout(r.resumeT); r.press = r.drag = false; r.v = 0; r.glide = null; r.el.classList.remove('is-dragging'); });
+  });
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted && !STATIC) state.forEach(function (r) { if (r.visible) settle(r, true); });
+  });
+
   }   // boot
 })();
