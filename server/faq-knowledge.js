@@ -13,10 +13,19 @@ const { BOOKING } = require('./config');
 const PRICE = { EUR: 700, USD: 700 };   // = main.js PRICES.landing
 const COUNTRIES_WITH_PROJECTS = ['République dominicaine', 'France', 'Panama', 'Costa Rica'];
 const LANGUAGES = ['français', 'anglais', 'espagnol'];
+// The team as shown on the Scalians page (scalians/index.html): keep in sync.
+const TEAM = [
+  { name: 'Kevi Moronta', title: 'CEO', role: 'Direction générale : porte la vision de Scalia, fixe la direction, arbitre les priorités et coordonne les pôles' },
+  { name: 'Yeice Triana', title: 'Director of Strategy', role: 'Stratégie & Développement : positionnement, opportunités et croissance de Scalia' },
+  { name: 'Adan Moronta', title: 'Tech Director', role: 'Développement & Qualité : sites rapides, stables, standards techniques exigeants' },
+  { name: 'Yolaine Gomez', title: 'Growth Director', role: 'Commercial, Prospection & Acquisition : prospection, acquisition et développement du portefeuille' },
+  { name: 'Sohany Galan', title: 'Creative Director', role: 'Design, UX & Identité : direction artistique, design, UX, identité visuelle et cohérence de marque' }
+];
 
 const FACTS = [
   'Scalia est une agence web, design et branding : création de sites web et d’expériences digitales.',
-  'L’agent IA de Scalia s’appelle Scaly. C’est une intelligence artificielle, pas une personne.',
+  'Scaly (S-C-A-L-Y) est l’agent IA de Scalia. C’est une intelligence artificielle, pas une personne. Il a été créé le vendredi 9 octobre 2026 pour aider avec bienveillance les personnes qui veulent créer un site, améliorer leur présence en ligne, poser des questions sur Scalia, mieux comprendre leur projet digital ou être orientées avant de parler avec l’équipe.',
+  'Équipe de Scalia (page Les Scalians) : ' + TEAM.map(t => t.name + ', ' + t.title + ' (' + t.role + ')').join(' ; ') + '. Le CEO de Scalia est ' + TEAM[0].name + '. Ne cite aucune autre personne comme membre de l’équipe.',
   'Le site de Scalia existe en français, en anglais et en espagnol. Les échanges avec Scalia peuvent se faire en ' + LANGUAGES.join(', ').replace(/, ([^,]*)$/, ' ou $1') + '.',
   'Scalia a déjà réalisé des projets en ' + COUNTRIES_WITH_PROJECTS.slice(0, -1).join(', ') + ' et ' + COUNTRIES_WITH_PROJECTS.slice(-1) + '. Il s’agit d’expérience de projets, pas de bureaux : ne jamais parler de bureaux ou d’implantations dans ces pays. Le travail peut se faire à distance.',
   'Prix : Scalia propose actuellement une offre à ' + PRICE.EUR + ' € ou ' + PRICE.USD + ' $ selon la devise sélectionnée sur le site, taxes applicables incluses. Ce prix concerne le projet présenté dans l’offre Scalia (landing page) et peut évoluer si le besoin sort du périmètre prévu. Aucun autre tarif n’est publié : pour tout autre type de projet, le prix se définit après échange.',
@@ -31,4 +40,4 @@ const FACTS = [
   'Candidatures : les personnes qui souhaitent rejoindre l’équipe peuvent postuler depuis la page Les Scalians.'
 ];
 
-module.exports = { FACTS, PRICE, COUNTRIES_WITH_PROJECTS };
+module.exports = { FACTS, PRICE, COUNTRIES_WITH_PROJECTS, TEAM };

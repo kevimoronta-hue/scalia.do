@@ -26,6 +26,46 @@ const RULES = [
     'Avec plaisir 🙂 Si t’as une autre question, vas-y.',
     'Anytime 🙂 If you have another question, go ahead.',
     'Con gusto 🙂 Si tienes otra pregunta, dime.'], false],
+  [/riche|millionnaire|\brich\b|millonario/, [
+    'Si j’avais ce bouton-là, je le vendrais très cher 😄 Par contre, on peut clairement travailler pour que ton site présente mieux ton activité et convertisse davantage. Tu fais quoi exactement ?',
+    'If I had that button, I’d sell it for a lot 😄 What we can do is make your site present your business better and convert more. What do you do exactly?',
+    'Si tuviera ese botón, lo vendería carísimo 😄 Lo que sí podemos hacer es que tu web presente mejor tu actividad y convierta más. ¿A qué te dedicas exactamente?'], false],
+  [/chatgpt|meilleur que|better than|mejor que/, [
+    'Disons que je suis spécialisé 😄 Lui sait tout sur tout, moi je connais surtout Scalia et les sites qui ramènent des clients. Toi, tu bosses sur quoi ?',
+    'Let’s say I’m specialized 😄 It knows a bit of everything, I mostly know Scalia and websites that bring in customers. What are you working on?',
+    'Digamos que soy especialista 😄 Él sabe de todo, yo sobre todo de Scalia y de webs que traen clientes. ¿Y tú en qué estás trabajando?'], false],
+  [/blague|joke|chiste/, [
+    'Pourquoi le site web est allé chez le psy ? Il avait trop de problèmes de cache 😄 Bon, maintenant que j’ai fait mon boulot : t’as pas un site ou un projet à me montrer ?',
+    'Why did the website go to therapy? Too many cache issues 😄 Now that I’ve done my job: got a site or a project to show me?',
+    '¿Por qué la web fue al psicólogo? Tenía demasiados problemas de caché 😄 Bueno, ya hice mi trabajo: ¿tienes una web o un proyecto que enseñarme?'], false],
+  [/tu t ?appelles|ton nom|tu es qui|t es qui|who are you|your name|como te llamas|quien eres/, [
+    'Moi c’est Scaly 😄 L’agent IA de Scalia. Je suis là pour t’aider à y voir plus clair sur ton site ou ton projet. Et toi, tu bosses sur quoi ?',
+    'I’m Scaly 😄 Scalia’s AI agent. I’m here to help you see clearer about your website or your project. What are you working on?',
+    'Soy Scaly 😄 El agente IA de Scalia. Estoy aquí para ayudarte a ver más claro tu web o tu proyecto. ¿Y tú en qué estás trabajando?'], false],
+  [/cree quand|ete cree|created|creado|pourquoi tu existes|why do you exist|por que existes|tu es ne/, [
+    'Le 9 octobre 2026 😄 Je suis encore jeune. J’ai surtout été créé pour aider les gens à y voir plus clair sur leurs sites et leurs projets avant de passer avec l’équipe Scalia. D’ailleurs, toi, tu bosses sur quoi ?',
+    'On October 9, 2026 😄 I’m still young. I was mostly created to help people see clearer about their websites and projects before talking with the Scalia team. By the way, what are you working on?',
+    'El 9 de octubre de 2026 😄 Todavía soy joven. Me crearon sobre todo para ayudar a la gente a ver más claro su web y sus proyectos antes de hablar con el equipo de Scalia. Por cierto, ¿tú en qué estás trabajando?'], false],
+  [/\bceo\b|patron|qui dirige|who runs|director general|jefe/, [
+    'Kevi Moronta. Il dirige Scalia et coordonne l’équipe autour des projets. Tu voulais en savoir plus sur l’agence ou tu regardes surtout pour ton propre projet ?',
+    'Kevi Moronta. He runs Scalia and coordinates the team around the projects. Did you want to know more about the agency, or are you mostly looking for your own project?',
+    'Kevi Moronta. Dirige Scalia y coordina al equipo en torno a los proyectos. ¿Querías saber más sobre la agencia o estás mirando sobre todo para tu propio proyecto?'], false],
+  [/(?:qui|who|quien).*(?:design|ux|identite|graphi|creati)/, [
+    'Sohany Galan, notre Creative Director : design, UX et identité. Tu cherches justement à revoir l’identité de ton entreprise ou ton site ?',
+    'Sohany Galan, our Creative Director: design, UX and identity. Are you looking to rework your brand identity or your site?',
+    'Sohany Galan, nuestra Creative Director: diseño, UX e identidad. ¿Buscas justamente renovar la identidad de tu empresa o tu web?'], false],
+  [/qui travaille|l equipe|equipe|\bteam\b|equipo|scalians/, [
+    'L’équipe : Kevi Moronta (CEO), Yeice Triana (stratégie), Adan Moronta (tech), Yolaine Gomez (growth) et Sohany Galan (design et identité). Tu cherches quelqu’un en particulier pour ton projet ?',
+    'The team: Kevi Moronta (CEO), Yeice Triana (strategy), Adan Moronta (tech), Yolaine Gomez (growth) and Sohany Galan (design and identity). Looking for someone in particular for your project?',
+    'El equipo: Kevi Moronta (CEO), Yeice Triana (estrategia), Adan Moronta (tech), Yolaine Gomez (growth) y Sohany Galan (diseño e identidad). ¿Buscas a alguien en particular para tu proyecto?'], false],
+  [/^(?:oui |si |yes |ouais )?(?:tranquille|bien|tres bien|nickel|ca va|fine|good|great|todo bien|muy bien)\b/, [
+    'Top 😄 D’ailleurs, tu passais juste voir ou tu as un petit projet en tête ?',
+    'Nice 😄 By the way, just looking around or got a little project in mind?',
+    'Genial 😄 Por cierto, ¿solo estabas mirando o tienes algún proyecto en mente?'], false],
+  [/(?:j ai|j ai deja|i (?:already )?have|ya tengo|tengo) (?:deja )?(?:un |a |una )?(?:site|website|web|sitio)/, [
+    'Ah cool. Il te convient, ou il y a quelque chose qui te gêne dessus ?',
+    'Nice. Are you happy with it, or is something bothering you about it?',
+    'Genial. ¿Te convence o hay algo que no te gusta?'], false],
   [/prend combien|combien de temps|delai|how long|takes|tarda|cuanto tiempo|plazo/, [
     'La maquette arrive en 72 heures max. Une fois validée, on vise une mise en ligne en une semaine environ, dans le cadre prévu.',
     'The mockup is ready within 72 hours. Once it’s approved, we aim to go live in about a week, within the agreed scope.',

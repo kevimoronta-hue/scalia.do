@@ -45,8 +45,8 @@
   var SEND_MAX = 12, KEEP_MAX = 40, MAX_LEN = 500;
   var WELCOME = 'Salut 👋 Moi c’est Scaly. Tu veux savoir quoi ? Si je peux t’aider sur Scalia, ton site ou ton projet, vas-y.';
   var UNAVAILABLE = 'Je bug un peu là 😅 Réessaie dans quelques secondes, ou si tu veux tu peux directement parler de ton projet avec Scalia.';
-  // Scaly's smiling eyes (the glow on his visor), as the mark on his messages.
-  var EYES = '<svg viewBox="0 0 22 8" width="16" height="6" aria-hidden="true"><path d="M2 6.5Q5.5 1 9 6.5M13 6.5Q16.5 1 20 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+  // Scaly's head (assets/scaly-head.webp), as the mark on his messages.
+  var HEAD = '<img class="faq-msg__mark" src="assets/scaly-head.webp" width="18" height="18" alt="" aria-hidden="true" decoding="async">';
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var touch = window.matchMedia && matchMedia('(hover: none) and (pointer: coarse)').matches;
 
@@ -78,7 +78,7 @@
   }
   function agentLabel() {
     var p = el('p', 'faq-msg__label');
-    p.innerHTML = EYES;
+    p.innerHTML = HEAD;
     p.appendChild(el('span', null, 'Scaly'));
     return p;
   }
