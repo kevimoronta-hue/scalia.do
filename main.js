@@ -156,6 +156,8 @@
   burger.addEventListener('click', function () { setMenu(nav.dataset.open !== 'true'); });
   scrim.addEventListener('click', function () { setMenu(false); });
   menu.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+  // Scaly's line: if his artwork ever fails to load, only his name stays.
+  menu.addEventListener('error', function (e) { if (e.target.classList && e.target.classList.contains('menu__scaly-img')) e.target.hidden = true; }, true);
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && nav.dataset.open === 'true') { setMenu(false); burger.focus(); }
     // keep Tab inside the menu while it is open

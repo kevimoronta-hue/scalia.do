@@ -554,6 +554,12 @@ html.i18n-wait body { visibility: hidden; }
   font-size: 22px; font-weight: 600; letter-spacing: -0.028em;
 }
 .menu ul a[aria-current] { color: var(--scalia-gold); }
+/* Scaly's line: his artwork (whole, its own margins kept) then his name,
+   inside the same 56px row as the other links. */
+.menu__scaly { gap: 6px; transform-origin: 0 50%; transition: transform 160ms var(--ease-out); }
+.menu__scaly:active { transform: scale(0.97); }
+.menu__scaly-img { flex: none; display: block; width: 28px; height: 28px; }
+@media (prefers-reduced-motion: reduce) { .menu__scaly { transition: none; } }
 .menu ul a:active { color: var(--scalia-gold); }
 .menu li, .menu__cta, .menu__sig { opacity: 0; transform: translateY(6px); transition: opacity 220ms ease, transform 260ms var(--ease-out); }
 .nav[data-open="true"] ~ .menu li, .nav[data-open="true"] ~ .menu .menu__cta, .nav[data-open="true"] ~ .menu .menu__sig { opacity: 1; transform: none; }
