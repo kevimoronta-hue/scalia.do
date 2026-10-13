@@ -147,6 +147,10 @@
     });
   }
 
+  // iOS Safari applies :active (the press on .btn) only when a touch
+  // listener exists; the home page has one (booking.js), this page did not.
+  document.addEventListener('touchstart', function () {}, { passive: true });
+
   // The application page opens in the language shown here.
   var join = document.querySelector('[data-join]');
   if (join) join.addEventListener('click', function () {
