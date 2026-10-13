@@ -72,7 +72,7 @@
           <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-lang-option data-lang="es" lang="es"><span class="lang__flag" aria-hidden="true">🇩🇴</span><span class="lang__name">Español</span><span class="lang__iso">ES</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
         </ul>
       </div>
-      <a class="btn btn--primary btn--sm nav__cta" href="../#rendez-vous">Parler de mon projet</a>
+      <a class="btn btn--primary btn--sm nav__cta" href="../#rendez-vous" data-open-booking>Parler de mon projet</a>
       <button class="nav__burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Ouvrir le menu">
         <span></span><span></span>
       </button>
@@ -92,7 +92,7 @@
       <li><a class="menu__scaly" href="../#scaly"><img class="menu__scaly-img" src="/assets/scaly-menu.webp" width="28" height="28" alt="" aria-hidden="true" decoding="async"><span data-i18n-skip>Scaly</span></a></li>
     </ul>
   </nav>
-  <a class="btn btn--primary btn--lg btn--block menu__cta" href="../#rendez-vous">Parler de mon projet</a>
+  <a class="btn btn--primary btn--lg btn--block menu__cta" href="../#rendez-vous" data-open-booking>Parler de mon projet</a>
   <p class="menu__sig">L’agence qui vous connecte.</p>
 </div>
 
@@ -272,7 +272,7 @@
     <div class="wrap sx-close__wrap">
       <h2 class="h2" id="sx-close-title" data-reveal="mask">Une seule équipe <span class="tone-2">derrière votre présence.</span></h2>
       <div class="sx-close__ctas" data-reveal="rise" style="--rv-d:140ms">
-        <a class="btn btn--primary btn--lg" href="../#rendez-vous">Parler de mon projet</a>
+        <a class="btn btn--primary btn--lg" href="../#rendez-vous" data-open-booking>Parler de mon projet</a>
         <a class="btn btn--secondary btn--lg" href="../"><svg class="btn__arrow btn__arrow--back" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8 10 12.5"/></svg>Retour à l’accueil</a>
       </div>
     </div>
@@ -332,10 +332,184 @@
   <span class="wa-fab__tip" aria-hidden="true">WhatsApp</span>
 </a>
 
+<!-- ====================================================== SCALIA BOOKING
+     Same sheet as the home page (index.html #bk), paths one level up.
+     Copied from it, never edited here: scripts/build-locales.mjs stops
+     the build if the two ever differ. -->
+<dialog class="bk" id="bk" aria-labelledby="bk-title-date" data-step="date">
+  <div class="bk__sheet">
+    <header class="bk__head">
+      <button class="bk__icon bk__back" type="button" data-bk-back aria-label="Retour" hidden>
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <img class="bk__logo" src="../assets/scalia-horizontal.webp" width="509" height="200" alt="Scalia" loading="lazy">
+      <button class="bk__icon bk__close" type="button" data-bk-close aria-label="Fermer">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+
+    <div class="bk__body">
+      <!-- 1 · date and time -->
+      <section class="bk__pane" data-pane="date">
+        <h2 class="bk__title" id="bk-title-date" tabindex="-1">Parlons de votre projet</h2>
+        <p class="bk__sub">Sélectionnez le moment qui vous convient.</p>
+        <p class="bk__meta" data-bk-meta></p>
+        <p class="bk__notice" data-bk-notice role="status" hidden></p>
+        <div class="bk__pick">
+          <div class="bk__cal">
+            <div class="bk__month">
+              <p class="bk__month-name" data-bk-month aria-live="polite"></p>
+              <div class="bk__month-nav">
+                <button class="bk__icon" type="button" data-bk-prev aria-label="Mois précédent">
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="bk__icon" type="button" data-bk-next aria-label="Mois suivant">
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="bk__dow" data-bk-dow aria-hidden="true"></div>
+            <div class="bk__days" data-bk-days></div>
+          </div>
+          <div class="bk__times">
+            <p class="bk__day" data-bk-day></p>
+            <ul class="bk__slots" data-bk-slots aria-labelledby="bk-slots-label"></ul>
+            <span class="sr-only" id="bk-slots-label">Horaires disponibles</span>
+          </div>
+        </div>
+        <div class="bk__tz">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M1.75 8h12.5M8 1.75c1.9 2 1.9 10.5 0 12.5M8 1.75c-1.9 2-1.9 10.5 0 12.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+          <span class="bk__tz-label">Heure locale</span>
+          <span class="bk__tz-now" data-bk-tz-now data-i18n-skip></span>
+          <button class="bk__link bk__tz-edit" type="button" data-bk-tz-edit aria-expanded="false" aria-controls="bk-tz-panel">Modifier</button>
+          <div class="bk__tz-panel" id="bk-tz-panel" data-bk-tz-panel hidden>
+            <label class="sr-only" for="bk-tz-search">Rechercher un fuseau horaire</label>
+            <input class="bk__tz-search" id="bk-tz-search" type="search" placeholder="Ville, ex. Madrid, New York" autocomplete="off" spellcheck="false" enterkeyhint="search" data-bk-tz-search>
+            <ul class="bk__tz-list" data-bk-tz-list aria-label="Fuseaux horaires" data-i18n-skip></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 · details -->
+      <section class="bk__pane" data-pane="form" hidden>
+        <h2 class="bk__title" id="bk-title-form" tabindex="-1">Vos coordonnées</h2>
+        <div class="bk__recap" data-bk-recap></div>
+        <form class="bk__form" data-bk-form novalidate>
+          <div class="bk__field">
+            <label for="bk-name">Prénom et nom</label>
+            <input id="bk-name" name="name" type="text" autocomplete="name" maxlength="80" required aria-describedby="bk-name-err">
+            <p class="bk__err" id="bk-name-err"></p>
+          </div>
+          <div class="bk__field">
+            <label for="bk-email">Email</label>
+            <input id="bk-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required aria-describedby="bk-email-err">
+            <p class="bk__err" id="bk-email-err"></p>
+          </div>
+          <div class="bk__field">
+            <label for="bk-phone">Téléphone / WhatsApp <span class="bk__opt">facultatif</span></label>
+            <div class="bk__phone">
+              <button class="bk__cc" type="button" data-bk-cc aria-expanded="false" aria-controls="bk-cc-panel" aria-label="Indicatif pays">
+                <span class="bk__cc-flag" data-bk-cc-flag aria-hidden="true"></span><span data-bk-cc-dial data-i18n-skip></span>
+                <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <input id="bk-phone" name="phone" type="tel" autocomplete="tel-national" inputmode="tel" maxlength="24" aria-describedby="bk-phone-err">
+            </div>
+            <!-- Country picker: bottom sheet on phones, popover from 760px. -->
+            <div class="bk__ccp" id="bk-cc-panel" data-bk-cc-panel role="dialog" aria-labelledby="bk-ccp-title" hidden>
+              <div class="bk__ccp-scrim" data-ccp-close></div>
+              <div class="bk__ccp-panel" data-ccp-panel>
+                <div class="bk__ccp-top" data-ccp-drag>
+                  <span class="bk__ccp-grab" aria-hidden="true"></span>
+                  <p class="bk__ccp-title" id="bk-ccp-title">Choisir un pays</p>
+                  <button class="bk__icon bk__ccp-close" type="button" data-ccp-close aria-label="Fermer">
+                    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </button>
+                </div>
+                <label class="sr-only" for="bk-cc-search">Rechercher un pays ou un indicatif</label>
+                <div class="bk__ccp-search">
+                  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="4.75" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                  <input id="bk-cc-search" type="search" placeholder="Pays ou indicatif" autocomplete="off" spellcheck="false" enterkeyhint="search" data-bk-cc-search>
+                </div>
+                <div class="bk__ccp-list" data-bk-cc-list data-i18n-skip></div>
+              </div>
+            </div>
+            <p class="bk__err" id="bk-phone-err"></p>
+          </div>
+          <div class="bk__field">
+            <label for="bk-company">Entreprise / activité <span class="bk__opt">facultatif</span></label>
+            <input id="bk-company" name="company" type="text" autocomplete="organization" maxlength="120">
+          </div>
+          <fieldset class="bk__field bk__types" aria-describedby="bk-types-err">
+            <legend>Que souhaitez-vous créer ?</legend>
+            <p class="bk__hint">Plusieurs choix possibles.</p>
+            <div class="bk__type-list" data-bk-types>
+              <button class="bk__type" type="button" data-type="landing_page" aria-pressed="false"><svg class="bk__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Landing page</span></button>
+              <button class="bk__type" type="button" data-type="multi_page" aria-pressed="false"><svg class="bk__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Site multi-pages</span></button>
+              <button class="bk__type" type="button" data-type="visual_identity" aria-pressed="false"><svg class="bk__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Identité visuelle / design graphique</span></button>
+              <button class="bk__type" type="button" data-type="logo" aria-pressed="false"><svg class="bk__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Création ou refonte de logo</span></button>
+              <button class="bk__type" type="button" data-type="other" aria-pressed="false"><svg class="bk__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Autre</span></button>
+            </div>
+            <p class="bk__err" id="bk-types-err"></p>
+          </fieldset>
+          <div class="bk__field">
+            <label for="bk-message">Parlez-nous brièvement de votre projet <span class="bk__opt">facultatif</span></label>
+            <textarea id="bk-message" name="message" rows="3" maxlength="1500"></textarea>
+          </div>
+          <div class="bk__hp" aria-hidden="true">
+            <label for="bk-website">Site web</label>
+            <input id="bk-website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+          <p class="bk__fail" data-bk-fail role="alert" hidden></p>
+          <button class="btn btn--primary btn--lg btn--block bk__submit" type="submit" data-bk-submit>Confirmer le rendez-vous</button>
+          <p class="bk__legal" data-i18n="html">Vos informations servent uniquement à organiser cet échange. <a href="../confidentialite/">Politique de confidentialité</a></p>
+        </form>
+      </section>
+
+      <!-- 3 · confirmed -->
+      <section class="bk__pane bk__done" data-pane="done" hidden>
+        <span class="bk__seal" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h2 class="bk__title" id="bk-title-done" tabindex="-1">C’est réservé.</h2>
+        <p class="bk__sub">Votre rendez-vous est confirmé. Vous allez recevoir un email avec l’accès à votre échange.</p>
+        <div class="bk__recap" data-bk-done-recap></div>
+        <div class="bk__actions bk__done-actions">
+          <div class="bk__add" data-bk-add>
+            <button class="btn btn--primary btn--lg" type="button" data-bk-add-btn aria-expanded="false" aria-controls="bk-add-menu">Ajouter à mon agenda</button>
+            <div class="bk__add-menu" id="bk-add-menu" data-bk-add-menu hidden>
+              <a class="bk__add-opt" data-cal="google" href="#" target="_blank" rel="noopener noreferrer">Google Calendar</a>
+              <a class="bk__add-opt" data-cal="apple" href="#">Apple Calendar (iPhone, iPad, Mac)</a>
+              <a class="bk__add-opt" data-cal="outlook" href="#" target="_blank" rel="noopener noreferrer">Outlook</a>
+              <a class="bk__add-opt" data-cal="download" href="#">Télécharger le fichier .ics</a>
+            </div>
+          </div>
+          <button class="btn btn--on-dark btn--lg" type="button" data-bk-close>Fermer</button>
+        </div>
+      </section>
+
+      <!-- fallback: only on a real error -->
+      <section class="bk__pane bk__down" data-pane="error" hidden>
+        <h2 class="bk__title" id="bk-title-error" tabindex="-1">Les créneaux ne sont pas disponibles pour le moment.</h2>
+        <p class="bk__sub">Écrivez-nous : nous vous proposons un moment rapidement.</p>
+        <div class="bk__actions">
+          <a class="btn btn--primary btn--lg" data-contact="whatsapp" href="https://wa.me/33769965798" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a class="btn btn--on-dark btn--lg" data-contact="email" href="mailto:contact@scalia.do">contact@scalia.do</a>
+        </div>
+        <button class="bk__link" type="button" data-bk-retry>Réessayer</button>
+      </section>
+    </div>
+
+    <!-- Signature: assets/powered-by-scalia.webp (Scalia's own artwork,
+         transparent) replaces the text version once it has loaded. -->
+    <footer class="bk__foot" data-bk-foot data-powered-src="../assets/powered-by-scalia.webp">
+      <span class="bk__foot-text"><span>Powered by</span> <img src="../assets/scalia-wordmark.webp" width="785" height="120" alt="Scalia" loading="lazy"></span>
+    </footer>
+  </div>
+</dialog>
+
 <script src="../i18n/i18n.js"></script>
 <script src="../contact.js"></script>
 <script src="../analytics.js"></script>
 <script src="../scalians.js"></script>
+<script src="../booking.js"></script>
 <script src="../fab.js"></script>
 </body>
 </html>

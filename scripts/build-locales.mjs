@@ -170,3 +170,18 @@ for (const loc of Object.keys(LOCALES)) {
   if (missing.size) failed = true;
 }
 if (failed && process.env.LOCALES_STRICT === '1') process.exit(1);
+
+// The booking sheet also lives on the Scalians page (scalians/index.html),
+// as an exact copy of the home page's #bk with its paths one level up. Any
+// drift stops the build: edit index.html, then copy the block over.
+{
+  const block = s => { const a = s.indexOf('<dialog class="bk" id="bk"'), b = s.indexOf('</dialog>', a); return a < 0 || b < 0 ? null : s.slice(a, b + 9); };
+  const up = s => s.replace(/(\b(?:src|data-powered-src)=")assets\//g, '$1../assets/').replace(/href="confidentialite\/"/g, 'href="../confidentialite/"');
+  const home = block(source);
+  const copy = block(fs.readFileSync(path.join(ROOT, 'scalians', 'index.html'), 'utf8'));
+  if (!home || !copy || copy !== up(home)) {
+    console.error('✗ scalians/index.html: the booking sheet (#bk) differs from index.html. Copy it over (paths one level up).');
+    process.exit(1);
+  }
+  console.log('booking sheet: scalians/ in sync with index.html');
+}
