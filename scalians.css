@@ -7,11 +7,14 @@
 
 .page-scalians { background: var(--ink-900); }
 
-/* Directions: four tints inside the same champagne family. */
-.director--strategy { --pole: #D8B98F; }
-.director--tech     { --pole: #CDB79C; }   /* cooler champagne */
-.director--growth   { --pole: #CF9466; }   /* copper */
-.director--creative { --pole: #D9AE8C; }   /* warmer champagne */
+/* Directions: one tint each, all inside the same champagne family. */
+.director--strategy  { --pole: #D8B98F; }
+.director--tech      { --pole: #CDB79C; }   /* cooler champagne */
+.director--growth    { --pole: #CF9466; }   /* copper */
+.director--creative  { --pole: #D9AE8C; }   /* warmer champagne */
+.director--security  { --pole: #C9B9A4; }   /* greyed champagne */
+.director--marketing { --pole: #D6A27A; }   /* rose copper */
+.director--finance   { --pole: #D2C0A0; }   /* pale gold */
 
 /* ================================================================ HERO == */
 .sx-hero {
@@ -193,6 +196,8 @@
   .directors { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
   .director { max-width: none; }
   .director__portrait { aspect-ratio: 1 / 1; }
+  /* An odd count leaves the last card alone on its row: centred, same width. */
+  .director:last-child:nth-child(odd) { grid-column: 1 / -1; width: calc(50% - 9px); }
 }
 @media (min-width: 1200px) {
   .director { grid-template-columns: 240px minmax(0, 1fr); }
@@ -201,7 +206,7 @@
   .director__body { padding: 30px 28px 30px 26px; }
 }
 
-/* Entry to the application page, under the four directors. */
+/* Entry to the application page, under the directors. */
 .org__join { margin-top: clamp(32px, 4.5vw, 52px); display: flex; justify-content: center; }
 
 /* ============================================================== CLOSE == */
