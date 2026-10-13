@@ -234,6 +234,13 @@ button { -webkit-tap-highlight-color: transparent; }
 .btn--sm { --h: 38px; padding: 0 15px; font-size: 14px; border-radius: 10px; }
 .btn--lg { --h: 52px; padding: 0 24px; font-size: 16px; border-radius: 13px; }
 .btn--block { width: 100%; }
+/* A small chevron inside a button: same stroke and lean as .link-arrow. */
+.btn__arrow { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--t-ui) var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover .btn__arrow { transform: translateX(3px); }
+  .btn:hover .btn__arrow--back { transform: translateX(-3px); }
+}
+@media (prefers-reduced-motion: reduce) { .btn__arrow { transition: none; } }
 
 /* Primary: the exact gold of the Scalia logo (#E2AC56). Flat base, a light
    lip on top and a darker edge below so it reads as a physical key. Ink text
