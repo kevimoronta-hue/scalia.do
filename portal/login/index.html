@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Connexion · Scalia</title>
+<meta name="pt-title" content="Connexion">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#F6F4EF">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<script>document.documentElement.classList.add('js');</script>
+<script src="/i18n/boot.js?v=2" data-root="/"></script>
+<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/portal.css">
+</head>
+<body class="page-portal" data-i18n-skip>
+
+<a class="sr-only" href="#main" data-t="Aller au contenu">Aller au contenu</a>
+<header class="pt-bar">
+  <div class="pt-bar__row">
+    <a class="pt-brand" href="/portal/"><img src="/assets/scalia-horizontal.webp" width="509" height="200" alt="Scalia"><span class="pt-brand__tag" data-t="Espace client">Espace client</span></a>
+
+    <div class="pt-actions">
+      <div class="lang" data-lang data-open="false">
+        <button class="lang__btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="Changer de langue" data-t-aria="Changer de langue" data-lang-toggle>
+          <span class="lang__flag" data-lang-flag aria-hidden="true">🇫🇷</span><span class="lang__code" data-lang-code>FR</span>
+          <svg class="lang__chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5L6 7.5 9 4.5"/></svg>
+        </button>
+        <ul class="lang__menu" id="lang-menu" role="menu" aria-label="Langue" data-lang-menu>
+          <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-lang-option data-lang="es" lang="es"><span class="lang__flag" aria-hidden="true">🇩🇴</span><span class="lang__name">Español</span><span class="lang__iso">ES</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
+          <li role="none"><button type="button" role="menuitemradio" aria-checked="true" data-lang-option data-lang="fr" lang="fr"><span class="lang__flag" aria-hidden="true">🇫🇷</span><span class="lang__name">Français</span><span class="lang__iso">FR</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
+          <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-lang-option data-lang="en" lang="en"><span class="lang__flag" aria-hidden="true">🇺🇸</span><span class="lang__name">English</span><span class="lang__iso">EN</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
+        </ul>
+      </div>
+      <button class="pt-iconbtn" type="button" data-logout aria-label="Déconnexion" data-t-aria="Déconnexion" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 2.5h-3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3M10.5 11l3-3-3-3M13.5 8H6"/></svg><span class="pt-iconbtn__label" data-t="Déconnexion">Déconnexion</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="pt-auth" id="main" tabindex="-1">
+  <section data-view="login">
+    <p class="pt-eyebrow" data-t="Espace client Scalia">Espace client Scalia</p>
+    <h1 style="margin-top:10px" data-t="Suivez votre projet.">Suivez votre projet.</h1>
+    <p class="lead" data-t="Connectez-vous avec l’adresse email à laquelle Scalia vous a invité.">Connectez-vous avec l’adresse email à laquelle Scalia vous a invité.</p>
+    <form data-login novalidate>
+      <p class="pt-alert" data-form-alert role="alert" hidden></p>
+      <div class="pt-field" data-field="email">
+        <label for="lg-email" data-t="Email">Email</label>
+        <input class="pt-input" id="lg-email" name="email" type="email" autocomplete="username" inputmode="email" required>
+      </div>
+      <div class="pt-field" data-field="password">
+        <label for="lg-pw" data-t="Mot de passe">Mot de passe</label>
+        <input class="pt-input" id="lg-pw" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn--primary btn--lg btn--block" type="submit" data-t="Se connecter">Se connecter</button>
+      <button class="pt-link" type="button" data-to="forgot" data-t="Mot de passe oublié ?">Mot de passe oublié ?</button>
+    </form>
+  </section>
+  <section data-view="forgot" hidden>
+    <p class="pt-eyebrow" data-t="Espace client Scalia">Espace client Scalia</p>
+    <h1 style="margin-top:10px" data-t="Nouveau mot de passe">Nouveau mot de passe</h1>
+    <p class="lead" data-t="Indiquez votre email : si un accès existe, vous recevrez un lien pour choisir un nouveau mot de passe.">Indiquez votre email : si un accès existe, vous recevrez un lien pour choisir un nouveau mot de passe.</p>
+    <form data-forgot novalidate>
+      <p class="pt-alert" data-form-alert role="alert" hidden></p>
+      <p class="pt-alert pt-alert--ok" data-sent role="status" hidden data-t="C’est envoyé. Vérifiez votre boîte de réception (et les indésirables).">C’est envoyé. Vérifiez votre boîte de réception (et les indésirables).</p>
+      <div class="pt-field" data-field="email">
+        <label for="fg-email" data-t="Email">Email</label>
+        <input class="pt-input" id="fg-email" name="email" type="email" autocomplete="username" inputmode="email" required>
+      </div>
+      <button class="btn btn--primary btn--lg btn--block" type="submit" data-t="Recevoir le lien">Recevoir le lien</button>
+      <button class="pt-link" type="button" data-to="login" data-t="Retour à la connexion">Retour à la connexion</button>
+    </form>
+  </section>
+</main>
+
+<script src="/i18n/i18n.js"></script>
+<script src="/i18n/portal.js"></script>
+<script src="/portal-core.js"></script>
+<script src="/portal-auth.js"></script>
+</body>
+</html>

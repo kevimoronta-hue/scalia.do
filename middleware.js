@@ -7,12 +7,15 @@
    scalia_timezone (booking times, read by booking.js after a zone chosen by
    hand). Nothing else: the IP address, city or coordinates are never read,
    stored or sent anywhere. Pages only; assets and /api are untouched.
+   Portal pages (/portal/, /admin/): without a session cookie, straight to
+   the sign-in page. The cookie is not trusted for anything else: who may
+   see which data is decided by /api/portal* and the database.
    Both cookies arrive with the page itself, so i18n/boot.js reads them on
    the very first visit. Pages are no-store (vercel.json): a revalidated
    page (304) would come back without these Set-Cookie headers.
    ========================================================================== */
 export const config = {
-  matcher: ['/', '/fr/:path*', '/en/:path*', '/es/:path*', '/scalians/:path*', '/mentions-legales/:path*', '/confidentialite/:path*']
+  matcher: ['/', '/fr/:path*', '/en/:path*', '/es/:path*', '/scalians/:path*', '/mentions-legales/:path*', '/confidentialite/:path*', '/portal/:path*', '/admin/:path*']
 };
 
 const MAX_AGE = 86400;
@@ -29,9 +32,19 @@ function cookie(header, name) {
   return m ? m[1] : null;
 }
 
+// Pages that need a signed-in visitor (sign-in and welcome pages excepted).
+const PRIVATE = /^\/(?:portal\/(?!login\/|welcome\/)|admin\/)/;
+
 export default function middleware(request) {
   const jar = request.headers.get('cookie') || '';
   const set = [];
+
+  const url = new URL(request.url);
+  if (PRIVATE.test(url.pathname) && !cookie(jar, 'scalia_pr')) {
+    const to = new URL('/portal/login/', url);
+    to.searchParams.set('next', url.pathname + url.search);
+    return new Response(null, { status: 307, headers: { Location: to.toString(), 'Cache-Control': 'no-store' } });
+  }
 
   const country = String(request.headers.get('x-vercel-ip-country') || '').toUpperCase();
   if (/^[A-Z]{2}$/.test(country) && cookie(jar, 'scalia_country') !== country) {

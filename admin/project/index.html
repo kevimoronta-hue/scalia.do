@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Projet · Scalia</title>
+<meta name="pt-title" content="Projet">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#F6F4EF">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<script>document.documentElement.classList.add('js');</script>
+<script src="/i18n/boot.js?v=2" data-root="/"></script>
+<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/portal.css">
+</head>
+<body class="page-portal" data-i18n-skip>
+
+<a class="sr-only" href="#main" data-t="Aller au contenu">Aller au contenu</a>
+<header class="pt-bar">
+  <div class="pt-bar__row">
+    <a class="pt-brand" href="/admin/"><img src="/assets/scalia-horizontal.webp" width="509" height="200" alt="Scalia"><span class="pt-brand__tag" data-t="Admin">Admin</span></a>
+      <nav class="pt-nav" aria-label="Administration" data-t-aria="Administration">
+        <a href="/admin/" data-nav="projects" data-t="Projets">Projets</a>
+        <a href="/admin/?tab=clients" data-nav="clients" data-t="Clients">Clients</a>
+      </nav>
+    <div class="pt-actions">
+      <div class="lang" data-lang data-open="false">
+        <button class="lang__btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="Changer de langue" data-t-aria="Changer de langue" data-lang-toggle>
+          <span class="lang__flag" data-lang-flag aria-hidden="true">🇫🇷</span><span class="lang__code" data-lang-code>FR</span>
+          <svg class="lang__chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5L6 7.5 9 4.5"/></svg>
+        </button>
+        <ul class="lang__menu" id="lang-menu" role="menu" aria-label="Langue" data-lang-menu>
+          <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-lang-option data-lang="es" lang="es"><span class="lang__flag" aria-hidden="true">🇩🇴</span><span class="lang__name">Español</span><span class="lang__iso">ES</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
+          <li role="none"><button type="button" role="menuitemradio" aria-checked="true" data-lang-option data-lang="fr" lang="fr"><span class="lang__flag" aria-hidden="true">🇫🇷</span><span class="lang__name">Français</span><span class="lang__iso">FR</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
+          <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-lang-option data-lang="en" lang="en"><span class="lang__flag" aria-hidden="true">🇺🇸</span><span class="lang__name">English</span><span class="lang__iso">EN</span><svg class="lang__check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.4"/></svg></button></li>
+        </ul>
+      </div>
+      <button class="pt-iconbtn" type="button" data-logout aria-label="Déconnexion" data-t-aria="Déconnexion" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 2.5h-3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3M10.5 11l3-3-3-3M13.5 8H6"/></svg><span class="pt-iconbtn__label" data-t="Déconnexion">Déconnexion</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="pt-main" id="main" tabindex="-1">
+  <div data-app aria-busy="true">
+    <div class="pt-skel" style="height:44px;width:50%"></div>
+    <div class="pt-skel" style="height:220px;margin-top:20px"></div>
+    <div class="pt-skel" style="height:220px;margin-top:16px"></div>
+  </div>
+</main>
+
+<script src="/i18n/i18n.js"></script>
+<script src="/i18n/portal.js"></script>
+<script src="/portal-core.js"></script>
+<script src="/admin.js"></script>
+</body>
+</html>

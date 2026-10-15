@@ -23,6 +23,7 @@ puis http://localhost:4510.
 | `analytics.js` | Vercel Web Analytics sans cookie + événements |
 | `i18n/` | FR source dans le HTML, dictionnaires `en.js` / `es.js` (clé = texte français) |
 | `vercel.json` | En-têtes de sécurité, CSP, `www` → apex, slash final |
+| `portal/`, `admin/`, `portal*.js`, `admin.js`, `api/portal*.js`, `server/portal/` | Portail client et admin (voir `PORTAL.md`) |
 | `robots.txt`, `sitemap.xml` | Indexation |
 
 ## Mesure d'audience (Vercel Web Analytics, sans cookie)

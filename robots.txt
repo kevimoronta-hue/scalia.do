@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /portal/
+Disallow: /admin/
+Disallow: /api/
 
 Sitemap: https://scalia.do/sitemap.xml

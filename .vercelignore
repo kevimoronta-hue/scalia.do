@@ -11,3 +11,6 @@ BRIEF.md
 scripts/*
 !scripts/build-locales.mjs
 .env.example
+
+# Portal documentation (repository only).
+PORTAL.md

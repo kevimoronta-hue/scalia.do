@@ -4,6 +4,8 @@
    booking API uses a local test calendar instead of Google.
      node scripts/dev-server.mjs              → http://localhost:4520
      BOOKING_MOCK=1 node scripts/dev-server.mjs
+     PORTAL_MOCK=1 node scripts/dev-server.mjs  (client portal without Supabase,
+       see PORTAL.md; admin: node scripts/portal-mock.mjs admin <email> <pw>)
      PORT=3001 HOST=0.0.0.0 node scripts/dev-server.mjs   (phones on Wi-Fi)
      DEV_GEO=FR:Europe/Paris node scripts/dev-server.mjs  (a visitor's country
        and zone, as Vercel would send them: pages then go through
@@ -77,6 +79,13 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Portal pages without a session cookie → sign-in (as middleware.js).
+  if (/^\/(?:portal\/(?!login\/|welcome\/)|admin\/)/.test(p) && !/(?:^|;\s*)scalia_pr=/.test(req.headers.cookie || '')) {
+    res.statusCode = 307;
+    res.setHeader('Location', '/portal/login/?next=' + encodeURIComponent(p + url.search));
+    return res.end();
+  }
+
   // Static files. Never serve sources or secrets.
   if (/(^|\/)\.|^\/api\/|^\/server\/|^\/scripts\//.test(p)) { res.statusCode = 404; return res.end('Not found'); }
   let file = path.join(ROOT, p);
@@ -112,6 +121,6 @@ const server = http.createServer(async (req, res) => {
 const PORT = +process.env.PORT || 4520;
 const HOST = process.env.HOST || '127.0.0.1';
 server.listen(PORT, HOST, () => {
-  const mock = (process.env.BOOKING_MOCK === '1' ? ' · booking: local test calendar' : '') + (GEO[0] ? ' · geo ' + GEO.join(' ') : '');
+  const mock = (process.env.BOOKING_MOCK === '1' ? ' · booking: local test calendar' : '') + (process.env.PORTAL_MOCK === '1' ? ' · portal: local test backend' : '') + (GEO[0] ? ' · geo ' + GEO.join(' ') : '');
   console.log('Scalia dev server on http://' + (HOST === '0.0.0.0' ? 'localhost' : HOST) + ':' + PORT + mock);
 });
