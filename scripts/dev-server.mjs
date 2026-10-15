@@ -4,8 +4,8 @@
    booking API uses a local test calendar instead of Google.
      node scripts/dev-server.mjs              → http://localhost:4520
      BOOKING_MOCK=1 node scripts/dev-server.mjs
-     PORTAL_MOCK=1 node scripts/dev-server.mjs  (client portal without Supabase,
-       see PORTAL.md; admin: node scripts/portal-mock.mjs admin <email> <pw>)
+     PORTAL_MOCK=1 node scripts/dev-server.mjs  (client portal on a local
+       PostgreSQL (PGlite) + local files, see PORTAL.md)
      PORT=3001 HOST=0.0.0.0 node scripts/dev-server.mjs   (phones on Wi-Fi)
      DEV_GEO=FR:Europe/Paris node scripts/dev-server.mjs  (a visitor's country
        and zone, as Vercel would send them: pages then go through
@@ -80,14 +80,14 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Portal pages without a session cookie → sign-in (as middleware.js).
-  if (/^\/(?:portal\/(?!login\/|welcome\/)|admin\/)/.test(p) && !/(?:^|;\s*)scalia_pr=/.test(req.headers.cookie || '')) {
+  if (/^\/(?:portal\/(?!login\/|welcome\/)|admin\/)/.test(p) && !/(?:^|;\s*)scalia_ps=/.test(req.headers.cookie || '')) {
     res.statusCode = 307;
     res.setHeader('Location', '/portal/login/?next=' + encodeURIComponent(p + url.search));
     return res.end();
   }
 
   // Static files. Never serve sources or secrets.
-  if (/(^|\/)\.|^\/api\/|^\/server\/|^\/scripts\//.test(p)) { res.statusCode = 404; return res.end('Not found'); }
+  if (/(^|\/)\.|^\/api\/|^\/server\/|^\/scripts\/|^\/node_modules\/|^\/package(-lock)?\.json$/.test(p)) { res.statusCode = 404; return res.end('Not found'); }
   let file = path.join(ROOT, p);
   if (!file.startsWith(ROOT)) { res.statusCode = 403; return res.end(); }
   try {

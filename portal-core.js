@@ -93,6 +93,7 @@
     INVALID: 'Valeur invalide.',
     TOO_LONG: 'Texte trop long.',
     FILE_TOO_LARGE: 'Fichier trop lourd (50 Mo maximum).',
+    FILE_TYPE: 'Type de fichier non accepté (PDF, images, documents Office, ZIP, vidéo).',
     UPLOAD_MISSING: 'Le fichier n’a pas été reçu. Réessayez.',
     NOT_FOUND: 'Élément introuvable.',
     FORBIDDEN: 'Accès refusé.',

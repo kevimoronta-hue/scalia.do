@@ -2,77 +2,85 @@
 
 `scalia.do/portal` : le client suit son projet. `scalia.do/admin` : Scalia le met à jour, sans toucher au code.
 Une seule application : ce que chacun voit dépend des données, jamais d'une URL par client.
+Tout reste dans GitHub + Vercel : Vercel Functions, Postgres (Neon, onglet Storage de Vercel), Vercel Blob privé.
 
 ## Architecture
 
 | Couche | Fichiers |
 |---|---|
-| Pages (HTML statique, comme le site) | `portal/` (dashboard), `portal/login/`, `portal/welcome/`, `admin/`, `admin/project/` |
-| Navigateur | `portal-core.js` (API, formats, i18n), `portal.js`, `portal-auth.js`, `admin.js`, `portal.css`, `i18n/portal.js` (ES / EN, clé = texte FR) |
-| API (fonctions Vercel) | `api/portal.js` (client : login, lien email, mot de passe, projet, fichiers), `api/portal-admin.js` (admin) |
-| Métier | `server/portal/service.js` : **toutes** les modifications passent par ces fonctions |
-| Données | `server/portal/supabase.js` (Supabase via fetch, sans dépendance npm), `server/portal/mock.js` (backend local de test) |
-| Session | `server/portal/session.js` : cookies httpOnly `scalia_pa` / `scalia_pr`, rôle lu en base à chaque requête |
-| Schéma | `server/portal/schema.sql` : tables, RLS, bucket Storage privé |
+| Pages (HTML statique, comme le site) | `portal/`, `portal/login/`, `portal/welcome/`, `admin/`, `admin/project/` |
+| Navigateur | `portal-core.js`, `portal.js`, `portal-auth.js`, `admin.js`, `portal.css`, `i18n/portal.js` (ES / EN, clé = texte FR) |
+| API (Vercel Functions) | `api/portal.js` (connexion, lien email, projet, fichiers), `api/portal-admin.js` (admin) |
+| Métier | `server/portal/service.js` : **toutes** les lectures et modifications passent par ces fonctions |
+| SQL | `server/portal/repositories/*.js` : seul endroit où il y a du SQL (paramètres `$1…`, jamais concaténés) |
+| Base | `server/portal/db.js` : `query` / `one` / `transaction` sur `pg` (prod) ou PGlite (tests locaux) |
+| Auth | `server/portal/auth.js` (Argon2id, sessions, jetons, limites), `server/portal/session.js` (cookie) |
+| Fichiers | `server/portal/storage.js` : Vercel Blob privé (URL signées) ou dossier local en test |
+| Schéma | `server/portal/migrations/NNN_*.sql` (source de vérité), `server/portal/schema.sql` (photo complète) |
 
-Supabase est retenu parce que le site n'avait ni base, ni auth, ni stockage. Il apporte les trois (Auth, Postgres avec RLS, Storage privé) sans serveur à maintenir. Il est appelé uniquement côté serveur, la CSP du site reste `connect-src 'self'` (seul `/admin/` autorise `*.supabase.co`, pour l'upload direct des fichiers).
+Dépendances npm : `pg`, `@vercel/blob`, `@node-rs/argon2` (+ `@electric-sql/pglite` en dev, jamais chargé en production).
 
-## Rôles et sécurité
+## Base de données
 
-- **admin** : tout. **client** : lecture seule de ses propres projets.
-- Chaque requête client utilise **la session du client** : la base (RLS) filtre elle-même ; l'API vérifie aussi (`service.js`). Un ID d'un autre client donne 404, `/api/portal-admin` donne 403.
-- La clé secrète (`SUPABASE_SERVICE_ROLE_KEY`) ne sert qu'à créer les liens d'invitation / de nouveau mot de passe.
-- Mises à jour, documents : `visible_to_client = false` = interne, jamais renvoyé au client (RLS + API + Storage).
-- Fichiers : bucket privé `portal`, liens signés de 60 s créés avec la session du lecteur.
-- `/portal/*` et `/admin/*` sans cookie de session → `/portal/login/` (`middleware.js`) ; `/admin` vérifie le rôle en base et renvoie un client vers `/portal`.
+Postgres standard (SQL portable, aucune fonction propriétaire). Tables : `users`, `sessions`, `auth_tokens`, `rate_limits`, `organizations`, `organization_members`, `projects`, `project_stages`, `project_updates`, `payments`, `documents`, `project_actions` (+ `schema_migrations`).
+**Montants en centimes entiers** (`bigint`) : 700 EUR = `70000`. L'API reçoit et renvoie des décimales (`"700.50"` → `70050`), sans calcul flottant.
+`created_at`, `updated_at`, `updated_by` sur les données métier.
+Évolution : ajouter `server/portal/migrations/002_….sql` (ne jamais modifier une migration appliquée), mettre à jour `schema.sql`, puis `npm run portal:migrate`.
 
-## Tables
+## Auth et sessions
 
-`profiles` (rôle, langue, contact) · `organizations` · `organization_members` · `projects` · `project_stages` (5 par projet) · `project_updates` · `payments` · `documents` · `project_actions` (« action requise » ; `kind = approval` réservé à la validation client, V2).
-`updated_at` / `updated_by` remplis par trigger (petit journal d'audit).
+- Mots de passe : **Argon2id** (19 Mio, t=2, p=1), 10 caractères minimum, mots de passe évidents et égaux à l'email refusés. Jamais stockés ni envoyés en clair.
+- Session : cookie `scalia_ps` = valeur aléatoire opaque (256 bits), `HttpOnly`, `Secure` en HTTPS, `SameSite=Lax`, `Path=/`, 30 jours. La base ne garde que son SHA-256. Déconnexion = session supprimée en base + cookie expiré.
+- Invitation : l'admin crée le client → compte inactif sans mot de passe → jeton aléatoire (SHA-256 en base), usage unique, **24 h** → email `/portal/welcome/?token=…` → le client choisit son mot de passe → jeton consommé, compte actif. « Renvoyer l'invitation » crée un nouveau jeton et annule les anciens.
+- Mot de passe oublié : même principe, jeton **1 h**, réponse identique que l'email existe ou non ; à la réussite, toutes les autres sessions du compte sont fermées.
+- Limites (en base, partagées par toutes les instances) : connexion 8 essais / 15 min par email et 30 par IP ; mot de passe oublié 3 / h par email et 5 / 15 min par IP ; liens 30 / 15 min par IP.
+- Emails : l'expéditeur déjà utilisé par la réservation (Gmail `contact@scalia.do`, ou Resend), en ES / FR / EN.
 
-## Progression
+## Accès et isolation
 
-5 étapes × 20 %. Terminée = 20 %, en cours (ou en attente du client) = 20 % × sa progression, à venir = 0.
-Ex. : Brief + Maquette terminés, Développement à 50 % → 40 + 10 = **50 %**. L'étape courante = la première non terminée.
+- Rôle `admin` ou `client`, relu en base à chaque requête. `/api/portal-admin` : 401 sans session, 403 pour un client. `/portal/*` et `/admin/*` sans cookie → `/portal/login/` (`middleware.js`).
+- Les lectures client sont filtrées **dans le SQL** par l'appartenance à l'organisation : un projet ou un document d'un autre client, ou un document interne, répond 404 (comme un document inexistant).
+- Écritures : `Origin` du site obligatoire, session, rôle, validation de chaque champ côté serveur.
 
-## Paiements
+## Fichiers (Vercel Blob privé)
 
-`total_amount` + devise (EUR, USD, DOP) par projet. Payé = somme des paiements `paid` ; restant = total − payé.
-Les paiements sont dans la devise du projet ; elle ne peut plus changer une fois un paiement enregistré.
-
-## Mise en service (une fois)
-
-1. Créer un projet Supabase (région proche des clients), puis **SQL Editor** → coller et exécuter `server/portal/schema.sql`.
-2. Premier admin : **Authentication → Users → Add user → Create new user** (email de l'admin, mot de passe choisi par lui, « Auto confirm » coché), puis en SQL :
-   `update public.profiles set role = 'admin', full_name = 'Kevi Moronta', title = 'Founder · Head of AI', whatsapp = '+33…' where email = 'contact@scalia.do';`
-3. **Authentication → URL Configuration** : Site URL `https://scalia.do`.
-   Admins suivants : même méthode (Add user + la requête SQL). Le rôle ne se change qu'en base, jamais depuis le site.
-4. Vercel → Environment Variables : `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (voir `.env.example`). Les emails partent par l'expéditeur déjà configuré pour la réservation (Gmail `contact@scalia.do` ou Resend).
-
-## Créer un client
-
-`/admin` → **+ Nouveau client** (entreprise, contact, email, téléphone, langue) → l'organisation et l'accès sont créés, l'invitation part dans la langue du client → le formulaire du projet s'ouvre (nom, type, devise, montant, dates, contact Scalia) avec les 5 étapes créées automatiquement.
-Le client clique le lien (valable 24 h, usage unique), choisit son mot de passe et arrive sur son projet. Ensuite : `https://scalia.do/portal`.
-**Renvoyer l'invitation** (onglet Clients) : nouvelle invitation, ou lien « nouveau mot de passe » si le compte est déjà activé.
-
-## Mettre à jour un projet (30 s)
-
-Fiche projet → **Mise à jour rapide** : étape → statut → progression → dernière mise à jour → prochaine étape → Enregistrer.
-Plus bas : action requise, 5 étapes, paiements, contrat et documents (upload jusqu'à 50 Mo, interne ou visible), notes internes, détails, clôture.
-**Voir comme le client** ouvre exactement sa vue.
+- Upload : le serveur vérifie l'admin, le projet, l'extension (PDF, images, Office, ZIP, vidéo ; pas d'exécutable, HTML ni SVG) et la taille (50 Mo max.), choisit lui-même le chemin `projects/<projet>/<uuid>/<nom-nettoyé>` et le type, puis signe **une** URL d'upload (ce chemin, ce type, cette taille, 15 min). Le navigateur de l'admin envoie le fichier directement à Vercel Blob (les fonctions Vercel limitent les requêtes à 4,5 Mo). Le serveur revérifie ensuite le fichier stocké avant de l'enregistrer.
+- Téléchargement : `/api/portal/?a=file&id=…` vérifie la session et l'accès, puis redirige vers une URL signée valable **60 s**. Le jeton Blob ne quitte jamais le serveur.
+- CSP : seule `/admin/` autorise `https://vercel.com/api/blob/` (upload). Le reste du site garde `connect-src 'self'`.
 
 ## Fonctions métier (prêtes pour un agent)
 
 `server/portal/service.js` : `createClient`, `createProject`, `updateProject`, `updateProjectStage`, `addProjectUpdate`, `setNextStep`, `recordPayment`, `updatePayment`, `setRequiredAction`, `resolveRequiredAction`, `requestDocumentUpload` + `uploadProjectDocument`, `quickUpdate`, `resendInvite`…
-Chacune prend `ctx` (session admin), valide ses entrées et vérifie le rôle : un agent les appellera telles quelles, jamais d'écriture directe en base.
+Chacune prend `ctx = { user, admin }`, valide ses entrées et vérifie le rôle. Un agent les appellera telles quelles, jamais de SQL.
+
+## Variables d'environnement
+
+| Variable | Origine |
+|---|---|
+| `DATABASE_URL` (ou `POSTGRES_URL`) | ajoutée par Vercel en connectant la base Postgres au projet |
+| `DATABASE_URL_UNPOOLED` / `POSTGRES_URL_NON_POOLING` | si présente : utilisée par les migrations |
+| `BLOB_READ_WRITE_TOKEN` | ajoutée par Vercel en connectant le store Blob au projet |
+| `PORTAL_SITE_URL` | facultative (liens des emails) |
+| `PORTAL_MOCK`, `PORTAL_MOCK_DIR` | tests locaux uniquement, ignorées sur Vercel |
+
+Pas de secret de session : les sessions sont des valeurs aléatoires hashées en base.
+
+## Mise en service dans Vercel
+
+1. Vercel → projet du site → **Storage** → créer une base **Postgres** (fournisseur Neon, via le Marketplace) → la connecter au projet pour Production (et Preview si besoin). Vercel ajoute `DATABASE_URL` et ses variantes.
+2. **Storage** → créer un store **Blob** (accès **Private** si Vercel le demande) → le connecter au projet. Vercel ajoute `BLOB_READ_WRITE_TOKEN`.
+3. En local, récupérer les variables : `npm i -g vercel`, `vercel link` (dans ce dossier), puis `vercel env pull .env.local`.
+4. Créer les tables : `npm run portal:migrate`.
+5. Créer le premier admin : `npm run portal:create-admin -- --email contact@scalia.do --name "Kevi Moronta" --locale fr` → le script affiche un lien (24 h) pour choisir le mot de passe. Il refuse dès qu'un admin existe. Admins suivants : créer le compte comme un client puis, dans la base (onglet Storage → Neon → SQL), `update users set role = 'admin' where email = '…';`. Nom, titre et WhatsApp affichés aux clients : colonnes `first_name`, `last_name`, `title`, `whatsapp` de `users`.
+6. Déployer (push sur GitHub). L'adresse client à envoyer : `https://scalia.do/portal`.
 
 ## Local
 
 ```bash
+npm install
+PORTAL_MOCK=1 npm run portal:create-admin -- --email admin@scalia.test --name "Admin Test"
 PORTAL_MOCK=1 PORT=3001 HOST=0.0.0.0 node scripts/dev-server.mjs
-node scripts/portal-mock.mjs admin admin@scalia.test 'mot-de-passe-local'
+npm run portal:test
 ```
 
-Backend de test (aucun Supabase, refusé sur Vercel) : données, fichiers et emails `.eml` dans le dossier temporaire (`node scripts/portal-mock.mjs mails`). Le lien d'invitation est dans l'email. `node scripts/portal-mock.mjs reset` vide tout.
-Avec Supabase : mettre les 3 variables dans `.env.local` et lancer sans `PORTAL_MOCK`.
+Mode test : vrai Postgres (PGlite) avec les vraies migrations, fichiers et emails `.eml` dans le dossier temporaire (`PORTAL_MOCK_DIR`). Lancer `create-admin` serveur arrêté (un seul processus à la fois sur cette base). Les liens d'invitation sont dans les `.eml`.

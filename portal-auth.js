@@ -1,9 +1,9 @@
 /* ==========================================================================
    Scalia Portal · sign-in pages
    /portal/login/    email + password, "forgot password" (new link by email)
-   /portal/welcome/  link from an invitation or a new-password email:
-                     the one-time token opens a session, the client chooses
-                     their password, then lands on their project.
+   /portal/welcome/  link from an invitation or a new-password email
+                     (?token=…): the client chooses their password, the
+                     one-time token is used, then they land on their project.
    No password ever travels anywhere but to /api/portal (same origin).
    ========================================================================== */
 (function () {
@@ -64,11 +64,11 @@
   /* ------------------------------------------------------------- welcome */
   var pwForm = $('[data-password]');
   if (pwForm) {
-    var th = q.get('th'), type = q.get('type');
-    // The token leaves the address bar at once (history, screenshots).
+    var token = q.get('token');
+    // The token leaves the address bar at once (history, screenshots); it
+    // stays in memory until the password is saved.
     try { history.replaceState(null, '', location.pathname + (q.get('lang') ? '?lang=' + q.get('lang') : '')); } catch (e) {}
-    var invite = type === 'invite';
-    var role = 'client';
+    var invite = true;
     var fill = function (name) {
       $('[data-welcome-eyebrow]').textContent = L('Espace client Scalia');
       $('[data-welcome-title]').textContent = invite
@@ -76,9 +76,10 @@
         : L('Choisissez un nouveau mot de passe.');
     };
     var who = '';
-    if (!th || (type !== 'invite' && type !== 'recovery')) show('invalid');
+    if (!token || !/^[A-Za-z0-9_-]{43}$/.test(token)) show('invalid');
     else {
-      P.portalApi('verify', { th: th, type: type }, { noRedirect: true }).then(function (r) {
+      P.portalApi('token-info', { token: token }, { noRedirect: true }).then(function (r) {
+        invite = r.type === 'invite';
         who = r.name || '';
         if (r.locale && !q.get('lang')) P.preferLocale(r.locale);
         $('[data-username]').value = r.email || '';
@@ -93,11 +94,10 @@
       var a = pwForm.password.value, b = pwForm.confirm.value;
       if (a.length < 10) return P.formError(pwForm, { code: 'PASSWORD_WEAK', field: 'password' });
       if (a !== b) return P.formError(pwForm, { code: 'PASSWORD_MISMATCH', field: 'confirm' });
-      P.busy(pwForm.querySelector('[type="submit"]'), P.portalApi('password', { password: a }, { noRedirect: true })).then(function (r) {
-        role = r.role;
-        location.replace(role === 'admin' ? '/admin/' : '/portal/');
+      P.busy(pwForm.querySelector('[type="submit"]'), P.portalApi('accept', { token: token, password: a }, { noRedirect: true })).then(function (r) {
+        location.replace(r.role === 'admin' ? '/admin/' : '/portal/');
       }, function (err) {
-        if (err.code === 'UNAUTHENTICATED') return show('invalid');
+        if (err.code === 'LINK_INVALID') return show('invalid');
         P.formError(pwForm, err);
       });
     });

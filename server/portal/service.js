@@ -1,19 +1,31 @@
 /* ==========================================================================
    Scalia Portal · business functions: the ONLY way portal data changes.
-   The admin API calls them today; a Scalia agent can call the same ones
+   The admin API calls them today; a Scalia agent will call the same ones
    later ("move Top Advertising's development to 70 %", "record a 350 €
-   payment"), never raw table writes.
-   Every function takes ctx = { backend, token, user, profile, admin }
-   (server/portal/session.js) and checks permissions itself; the database
-   checks them a second time (RLS, schema.sql), because every read and
-   write runs with the caller's own session, never with the secret key.
-   Errors: thrown with .code (FORBIDDEN, NOT_FOUND, INVALID, EMAIL_EXISTS…),
+   payment"), never SQL.
+   Admin functions take ctx = { user, admin } (server/portal/session.js)
+   and check the role themselves. Client reads are scoped in the SQL to
+   the organizations the user belongs to (repositories *ForUser): another
+   client's project or document simply does not exist (NOT_FOUND).
+   Errors carry .code (FORBIDDEN, NOT_FOUND, INVALID, EMAIL_EXISTS…) and
    .field for a form field.
+   Money: integer minor units in the database, decimals in and out of here.
    ========================================================================== */
 'use strict';
 const crypto = require('crypto');
 const S = require('./stages');
+const db = require('./db');
+const auth = require('./auth');
+const storage = require('./storage');
 const portalMail = require('./mail');
+const users = require('./repositories/users');
+const orgs = require('./repositories/organizations');
+const projects = require('./repositories/projects');
+const payments = require('./repositories/payments');
+const documents = require('./repositories/documents');
+const authRepo = require('./repositories/auth');
+
+const q = db.pool;
 
 function err(code, field, status) {
   const e = new Error(code);
@@ -27,7 +39,6 @@ function assertAdmin(ctx) {
   if (!ctx.admin) throw err('FORBIDDEN');
 }
 function assertUser(ctx) { if (!ctx || !ctx.user) throw err('UNAUTHENTICATED'); }
-const db = ctx => ctx.backend.db(ctx.token);
 
 /* ----------------------------------------------------------- validation */
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -55,11 +66,16 @@ function date(v, field) {
   if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v) || isNaN(Date.parse(v + 'T00:00:00Z'))) throw err('INVALID', field);
   return v;
 }
-function money(v, field, allowZero) {
-  const n = typeof v === 'number' ? v : Number(String(v == null ? '' : v).replace(/\s/g, '').replace(',', '.'));
-  if (!isFinite(n) || n < 0 || (!allowZero && n === 0) || n > 9999999999) throw err('INVALID', field);
-  return Math.round(n * 100) / 100;
+// "700", "700.50", "700,5" → 70000 / 70050 / 70050 (integer cents, no float math).
+function minor(v, field, allowZero) {
+  const s = typeof v === 'number' ? String(v) : String(v == null ? '' : v).replace(/\s/g, '').replace(',', '.');
+  if (!/^\d{1,10}(\.\d{1,2})?$/.test(s)) throw err('INVALID', field);
+  const parts = s.split('.');
+  const n = Number(parts[0]) * 100 + Number(((parts[1] || '') + '00').slice(0, 2));
+  if (!allowZero && n === 0) throw err('INVALID', field);
+  return n;
 }
+const major = n => Number(n || 0) / 100;
 function int(v, min, max, field) {
   const n = Number(v);
   if (!Number.isInteger(n) || n < min || n > max) throw err('INVALID', field);
@@ -70,44 +86,54 @@ function langs(v) {
   if (!Array.isArray(v)) return [];
   return [...new Set(v.filter(x => typeof x === 'string').map(x => x.trim().toLowerCase()).filter(x => /^[a-z]{2}$/.test(x)))].slice(0, 8);
 }
-const cents = n => Math.round(Number(n || 0) * 100);
+function email(v) {
+  const e = line(v, 254, 'email', true).toLowerCase();
+  if (!EMAIL.test(e)) throw err('INVALID', 'email');
+  return e;
+}
+function splitName(full) {
+  const parts = full.split(' ');
+  return { first_name: parts.shift().slice(0, 80), last_name: parts.join(' ').slice(0, 120) };
+}
 
-/* --------------------------------------------------------------- reading */
-async function loadProjectBundle(ctx, projectId) {
-  const d = db(ctx);
-  const [project] = await d.select('projects', { id: projectId });
-  if (!project) throw err('NOT_FOUND');                         // RLS: not yours = not there
-  const [orgs, stages, updates, payments, documents, actions] = await Promise.all([
-    d.select('organizations', { id: project.organization_id }),
-    d.select('project_stages', { project_id: projectId }),
-    d.select('project_updates', { project_id: projectId }, { order: [{ col: 'created_at', desc: true }], limit: 30 }),
-    d.select('payments', { project_id: projectId }, { order: [{ col: 'created_at', desc: false }] }),
-    d.select('documents', { project_id: projectId }, { order: [{ col: 'created_at', desc: true }] }),
-    d.select('project_actions', { project_id: projectId }, { order: [{ col: 'created_at', desc: true }] })
+/* ---------------------------------------------------------------- money */
+function moneyOf(project, list) {
+  const total = Number(project.total_amount_minor) || 0;
+  const paid = list.filter(p => p.status === 'paid').reduce((s, p) => s + Number(p.amount_minor), 0);
+  const m = { currency: project.currency, total: major(total), paid: major(paid), remaining: major(Math.max(0, total - paid)) };
+  m.state = m.total > 0 && m.remaining === 0 ? 'paid' : m.paid > 0 ? 'partial' : 'unpaid';
+  return m;
+}
+const paymentOut = x => ({ id: x.id, project_id: x.project_id, label: x.label, amount: major(x.amount_minor), currency: x.currency, status: x.status, paid_at: x.paid_at, notes: x.notes, created_at: x.created_at, updated_at: x.updated_at });
+function projectOut(p) {
+  const out = Object.assign({}, p, { total_amount: major(p.total_amount_minor) });
+  delete out.total_amount_minor;
+  return out;
+}
+const contactOut = u => u ? { id: u.id, full_name: users.fullName(u), title: u.title, email: u.email, whatsapp: u.whatsapp, phone: u.phone } : null;
+
+/* ----------------------------------------------------------- client view */
+async function bundle(project, includeInternal) {
+  const [org, stages, updates, pays, docs, actions, contact] = await Promise.all([
+    orgs.byId(q, project.organization_id),
+    projects.stages(q, project.id),
+    projects.updates(q, project.id, includeInternal, 30),
+    payments.list(q, project.id),
+    documents.list(q, project.id, includeInternal),
+    projects.actions(q, project.id, false),
+    project.contact_id ? users.byId(q, project.contact_id) : null
   ]);
-  const contact = project.contact_id ? (await d.select('profiles', { id: project.contact_id }))[0] || null : null;
-  return { project, organization: orgs[0] || null, stages: S.ordered(stages), updates, payments, documents, actions, contact };
+  return { project, organization: org, stages: S.ordered(stages), updates, payments: pays, documents: docs, actions, contact };
 }
 
-function money_(project, payments) {
-  const total = cents(project.total_amount);
-  const paid = payments.filter(p => p.status === 'paid').reduce((s, p) => s + cents(p.amount), 0);
-  return { currency: project.currency, total: total / 100, paid: paid / 100, remaining: Math.max(0, total - paid) / 100 };
-}
-function paymentState(m) {
-  if (m.total > 0 && m.remaining === 0) return 'paid';
-  if (m.paid > 0) return 'partial';
-  return 'unpaid';
-}
-
-// What a client sees: never internal rows, never another organization's.
 function clientView(b) {
   const p = b.project;
-  const m = money_(p, b.payments);
+  const m = moneyOf(p, b.payments);
   const visibleDocs = b.documents.filter(x => x.visible_to_client);
   const doc = x => ({ id: x.id, title: x.title, category: x.category, fileName: x.file_name, size: Number(x.size_bytes) || 0, createdAt: x.created_at });
   const contract = visibleDocs.find(x => x.category === 'contract') || null;
-  const latest = b.updates.filter(u => u.visible_to_client)[0] || null;
+  const visibleUpdates = b.updates.filter(u => u.visible_to_client);
+  const c = contactOut(b.contact);
   return {
     project: {
       id: p.id, name: p.name, type: p.type, status: p.status, locale: p.preferred_locale,
@@ -117,66 +143,112 @@ function clientView(b) {
     company: b.organization ? b.organization.name : '',
     progress: S.overall(b.stages),
     stages: b.stages.map(s => ({ key: s.stage_key, status: s.status, progress: s.status === 'completed' ? 100 : s.status === 'upcoming' ? 0 : s.progress, note: s.note, updatedAt: s.updated_at })),
-    latestUpdate: latest ? { content: latest.content, createdAt: latest.created_at } : null,
-    updates: b.updates.filter(u => u.visible_to_client).slice(0, 6).map(u => ({ content: u.content, createdAt: u.created_at })),
+    latestUpdate: visibleUpdates[0] ? { content: visibleUpdates[0].content, createdAt: visibleUpdates[0].created_at } : null,
+    updates: visibleUpdates.slice(0, 6).map(u => ({ content: u.content, createdAt: u.created_at })),
     actions: b.actions.filter(a => a.status === 'open').map(a => ({ id: a.id, title: a.title, description: a.description, kind: a.kind, createdAt: a.created_at })),
-    payments: Object.assign(m, {
-      state: paymentState(m),
-      items: b.payments.map(x => ({ id: x.id, label: x.label, amount: Number(x.amount), currency: x.currency, status: x.status, paidAt: x.paid_at }))
-    }),
+    payments: Object.assign(m, { items: b.payments.map(x => ({ id: x.id, label: x.label, amount: major(x.amount_minor), currency: x.currency, status: x.status, paidAt: x.paid_at })) }),
     contract: contract ? doc(contract) : null,
     documents: visibleDocs.filter(x => x !== contract).map(doc),
-    contact: b.contact ? { name: b.contact.full_name, title: b.contact.title, email: b.contact.email, whatsapp: b.contact.whatsapp || b.contact.phone } : null
+    contact: c ? { name: c.full_name, title: c.title, email: c.email, whatsapp: c.whatsapp || c.phone } : null
   };
 }
+const profileView = u => u ? { name: users.fullName(u), email: u.email, locale: u.preferred_locale, role: u.role } : null;
 
-// The signed-in client's projects, and the one to show.
+// The signed-in client's projects (their organizations only), and the one to show.
 async function getClientPortal(ctx, projectId) {
   assertUser(ctx);
-  const d = db(ctx);
-  const projects = await d.select('projects', {}, { order: [{ col: 'created_at', desc: true }] });
-  if (!projects.length) return { profile: profileView(ctx.profile), projects: [], current: null };
-  const pick = (projectId && projects.find(p => p.id === projectId)) || projects.find(p => p.status === 'active') || projects[0];
-  const b = await loadProjectBundle(ctx, pick.id);
-  return {
-    profile: profileView(ctx.profile),
-    projects: projects.map(p => ({ id: p.id, name: p.name })),
-    current: clientView(b)
-  };
-}
-function profileView(p) {
-  return p ? { name: p.full_name, email: p.email, locale: p.locale, role: p.role } : null;
+  const list = await projects.listForUser(q, ctx.user.id);
+  if (!list.length) return { profile: profileView(ctx.user), projects: [], current: null };
+  const pick = (projectId && list.find(p => p.id === projectId)) || list.find(p => p.status === 'active') || list[0];
+  return { profile: profileView(ctx.user), projects: list.map(p => ({ id: p.id, name: p.name })), current: clientView(await bundle(pick, false)) };
 }
 
-// A short-lived link to one of the client's files (storage policy applies).
+// Admin preview: exactly the client's view of one project.
+async function getClientPreview(ctx, projectId) {
+  assertAdmin(ctx);
+  const p = await projects.byId(q, id(projectId));
+  if (!p) throw err('NOT_FOUND');
+  return { profile: profileView(ctx.user), projects: [{ id: p.id, name: p.name }], current: clientView(await bundle(p, false)) };
+}
+
+// A 60-second link to a file. Client: own organization + visible only;
+// anything else is NOT_FOUND (never "exists but forbidden").
 async function getDocumentLink(ctx, documentId) {
   assertUser(ctx);
-  const [doc] = await db(ctx).select('documents', { id: id(documentId) });
+  const did = id(documentId);
+  const doc = ctx.admin ? await documents.byId(q, did) : await documents.byIdForUser(q, ctx.user.id, did);
   if (!doc) throw err('NOT_FOUND');
-  if (!ctx.admin && !doc.visible_to_client) throw err('NOT_FOUND');
-  return ctx.backend.storage(ctx.token).signedUrl(doc.storage_path, 60, doc.file_name);
+  return storage.store().downloadUrl(doc.blob_pathname, 60);
+}
+
+/* ------------------------------------------------------------- sign-in */
+async function signIn(rawEmail, password) {
+  const e = String(rawEmail || '').trim().toLowerCase();
+  const pw = typeof password === 'string' ? password : '';
+  const u = e && pw && pw.length <= 200 && e.length <= 254 ? await users.credentialsByEmail(q, e) : null;
+  if (!u || !u.is_active || !u.password_hash) { await auth.burn(pw); throw err('INVALID_CREDENTIALS'); }
+  if (!(await auth.verifyPassword(u.password_hash, pw))) throw err('INVALID_CREDENTIALS');
+  const s = await auth.createSession(u.id);
+  const full = await users.byId(q, u.id);
+  return { session: s, role: full.role, locale: full.preferred_locale };
+}
+
+// What the welcome page shows before the password is chosen.
+async function tokenInfo(rawToken) {
+  const h = auth.tokenHashOf(rawToken);
+  const t = h && await authRepo.peekToken(q, h);
+  if (!t) throw err('LINK_INVALID');
+  return { type: t.type, email: t.email, name: t.first_name, locale: t.preferred_locale };
+}
+
+// Invitation or reset link + new password: one use, then a fresh session.
+// Every other session of the account is signed out.
+async function acceptToken(rawToken, password) {
+  const h = auth.tokenHashOf(rawToken);
+  const peek = h && await authRepo.peekToken(q, h);
+  if (!peek) throw err('LINK_INVALID');
+  const problem = auth.passwordProblem(password, peek.email);
+  if (problem) throw err(problem, 'password');
+  const hash = await auth.hashPassword(password);
+  const user = await db.transaction(async tx => {
+    const t = await authRepo.consumeToken(tx, h);
+    if (!t) throw err('LINK_INVALID');
+    await auth.destroyUserSessions(tx, t.user_id);
+    return users.setPassword(tx, t.user_id, hash);
+  });
+  const s = await auth.createSession(user.id);
+  return { session: s, role: user.role, locale: user.preferred_locale };
+}
+
+async function sendAccess(user, type, siteUrl, company, by) {
+  const raw = await auth.issueToken(q, user.id, type, by);
+  const url = siteUrl + '/portal/welcome/?token=' + raw + '&lang=' + user.preferred_locale;
+  await portalMail.send(portalMail.accessMail({ to: user.email, locale: user.preferred_locale, name: users.fullName(user), company, url, kind: type }));
+}
+
+// Public "forgot password": same answer whether or not the address exists.
+async function requestPasswordReset(rawEmail, siteUrl) {
+  const e = String(rawEmail || '').trim().toLowerCase();
+  if (!EMAIL.test(e) || e.length > 254) throw err('INVALID', 'email');
+  try {
+    const u = await users.byEmail(q, e);
+    if (u && u.is_active) await sendAccess(u, 'reset', siteUrl, '', null);
+  } catch (x) { console.error('[portal] reset', x.code || x.message); }
+  return { ok: true };
 }
 
 /* ----------------------------------------------------------------- admin */
 async function adminOverview(ctx) {
   assertAdmin(ctx);
-  const d = db(ctx);
-  const [projects, orgs, stages, payments, actions] = await Promise.all([
-    d.select('projects', {}, { order: [{ col: 'updated_at', desc: true }] }),
-    d.select('organizations', {}),
-    d.select('project_stages', {}),
-    d.select('payments', {}),
-    d.select('project_actions', { status: 'open' })
-  ]);
+  const [list, allOrgs, stages, pays, actions] = await Promise.all([projects.listAll(q), orgs.all(q), projects.allStages(q), payments.all(q), projects.openActions(q)]);
   const orgName = {};
-  orgs.forEach(o => { orgName[o.id] = o.name; });
-  return projects.map(p => {
+  allOrgs.forEach(o => { orgName[o.id] = o.name; });
+  return list.map(p => {
     const st = stages.filter(s => s.project_id === p.id);
-    const m = money_(p, payments.filter(x => x.project_id === p.id));
     return {
       id: p.id, name: p.name, company: orgName[p.organization_id] || '', organizationId: p.organization_id, status: p.status,
       progress: S.overall(st), currentStage: S.current(st), currency: p.currency,
-      money: Object.assign(m, { state: paymentState(m) }),
+      money: moneyOf(p, pays.filter(x => x.project_id === p.id)),
       openActions: actions.filter(a => a.project_id === p.id).map(a => a.title),
       updatedAt: p.updated_at
     };
@@ -185,120 +257,76 @@ async function adminOverview(ctx) {
 
 async function adminClients(ctx) {
   assertAdmin(ctx);
-  const d = db(ctx);
-  const [orgs, members, profiles, projects] = await Promise.all([
-    d.select('organizations', {}, { order: [{ col: 'name' }] }),
-    d.select('organization_members', {}),
-    d.select('profiles', {}),
-    d.select('projects', {}, { order: [{ col: 'created_at', desc: true }] })
-  ]);
+  const [allOrgs, members, list, team] = await Promise.all([orgs.all(q), orgs.allMembers(q), projects.listAll(q), users.admins(q)]);
+  const people = await users.byIds(q, [...new Set(members.map(m => m.user_id))]);
   return {
-    clients: orgs.map(o => ({
+    clients: allOrgs.map(o => ({
       id: o.id, company: o.name, createdAt: o.created_at,
       contacts: members.filter(m => m.organization_id === o.id).map(m => {
-        const p = profiles.find(x => x.id === m.user_id) || {};
-        return { userId: m.user_id, name: p.full_name || '', email: p.email || '', phone: p.phone || '', locale: p.locale || 'es' };
+        const u = people.find(x => x.id === m.user_id) || {};
+        return { userId: m.user_id, name: users.fullName(u), email: u.email || '', phone: u.phone || '', locale: u.preferred_locale || 'es', active: !!u.is_active };
       }),
-      projects: projects.filter(p => p.organization_id === o.id).map(p => ({ id: p.id, name: p.name, status: p.status }))
+      projects: list.filter(p => p.organization_id === o.id).map(p => ({ id: p.id, name: p.name, status: p.status }))
     })),
-    team: profiles.filter(p => p.role === 'admin').map(p => ({ id: p.id, name: p.full_name || p.email, email: p.email, title: p.title }))
+    team: team.map(u => ({ id: u.id, name: users.fullName(u) || u.email, email: u.email, title: u.title }))
   };
 }
 
-async function sendAccessEmail(ctx, opts) {
-  const link = await ctx.backend.auth.generateLink(opts.type, opts.email, opts.meta);
-  const url = opts.siteUrl + '/portal/welcome/?th=' + encodeURIComponent(link.tokenHash) + '&type=' + link.type + '&lang=' + opts.locale;
-  await portalMail.send(ctx.backend, portalMail.accessMail({ to: opts.email, locale: opts.locale, name: opts.name, company: opts.company, url, kind: link.type === 'recovery' ? 'reset' : 'invite' }));
-  return link;
-}
-
-// New client = organization + its first contact + invitation email.
+// New client = user (no password yet) + organization + membership, in one
+// transaction; then the invitation (one-time token + email).
 async function createClient(ctx, input, siteUrl) {
   assertAdmin(ctx);
   const company = line(input.company, 160, 'company', true);
   const name = line(input.contactName, 120, 'contactName', true);
-  const email = line(input.email, 254, 'email', true).toLowerCase();
-  if (!EMAIL.test(email)) throw err('INVALID', 'email');
+  const mail = email(input.email);
   const phone = line(input.phone, 40, 'phone');
   const locale = oneOf(input.locale || 'es', S.LOCALES, 'locale');
-  const d = db(ctx);
-  // An address already invited (activated or not) is never invited twice:
-  // "resend the invitation" is the way for that.
-  if ((await d.select('profiles', { email })).length) throw err('EMAIL_EXISTS', 'email');
-
-  let link;
-  try {
-    link = await sendAccessEmail(ctx, { type: 'invite', email, meta: { full_name: name, locale }, siteUrl, locale, name, company });
-  } catch (e) {
-    if (e.code === 'email_exists' || e.status === 422) throw err('EMAIL_EXISTS', 'email');
-    throw e;
-  }
-  await d.update('profiles', { id: link.userId }, { full_name: name, phone, locale });
-  const [org] = await d.insert('organizations', { name: company, created_by: ctx.user.id });
-  await d.insert('organization_members', { organization_id: org.id, user_id: link.userId });
-  return { id: org.id, company, userId: link.userId };
+  const created = await db.transaction(async tx => {
+    if (await users.byEmail(tx, mail)) throw err('EMAIL_EXISTS', 'email');
+    const user = await users.create(tx, Object.assign({ email: mail, role: 'client', preferred_locale: locale, phone, by: ctx.user.id }, splitName(name)));
+    const org = await orgs.create(tx, company, ctx.user.id);
+    await orgs.addMember(tx, org.id, user.id);
+    return { user, org };
+  }).catch(e => { if (e.code === '23505') throw err('EMAIL_EXISTS', 'email'); throw e; });
+  let mailSent = true;
+  try { await sendAccess(created.user, 'invite', siteUrl, company, ctx.user.id); } catch (e) { mailSent = false; console.error('[portal] invite email', e.code || e.message); }
+  return { id: created.org.id, company, userId: created.user.id, mailSent };
 }
 
 async function updateClient(ctx, organizationId, input) {
   assertAdmin(ctx);
-  const d = db(ctx);
-  const out = await d.update('organizations', { id: id(organizationId) }, { name: line(input.company, 160, 'company', true) });
-  if (!out.length) throw err('NOT_FOUND');
-  if (input.contact && input.contact.userId) {
-    const c = input.contact;
-    await d.update('profiles', { id: id(c.userId) }, {
-      full_name: line(c.name, 120, 'contactName', true),
-      phone: line(c.phone, 40, 'phone'),
-      locale: oneOf(c.locale || 'es', S.LOCALES, 'locale')
-    });
-  }
-  return out[0];
+  const oid = id(organizationId);
+  const company = line(input.company, 160, 'company', true);
+  const c = input.contact && input.contact.userId ? input.contact : null;
+  const contact = c ? Object.assign({ phone: line(c.phone, 40, 'phone'), preferred_locale: oneOf(c.locale || 'es', S.LOCALES, 'locale') }, splitName(line(c.name, 120, 'contactName', true))) : null;
+  return db.transaction(async tx => {
+    const o = await orgs.rename(tx, oid, company, ctx.user.id);
+    if (!o) throw err('NOT_FOUND');
+    if (contact && !(await users.update(tx, id(c.userId), contact, ctx.user.id))) throw err('NOT_FOUND');
+    return o;
+  });
 }
 
-// Sends a new link: an invitation while the account is not activated, a
-// "choose a new password" link once it is.
+// A new link: invitation while the account is not activated, "choose a new
+// password" once it is. Earlier links stop working.
 async function resendInvite(ctx, userId, siteUrl) {
   assertAdmin(ctx);
-  const d = db(ctx);
-  const [p] = await d.select('profiles', { id: id(userId) });
-  if (!p) throw err('NOT_FOUND');
-  const [m] = await d.select('organization_members', { user_id: p.id });
-  const org = m ? (await d.select('organizations', { id: m.organization_id }))[0] : null;
-  const base = { email: p.email, siteUrl, locale: p.locale, name: p.full_name, company: org ? org.name : '' };
-  try {
-    await sendAccessEmail(ctx, Object.assign({ type: 'invite', meta: { full_name: p.full_name, locale: p.locale } }, base));
-    return { sent: 'invite' };
-  } catch (e) {
-    if (!(e.code === 'email_exists' || e.status === 422)) throw e;
-  }
-  await sendAccessEmail(ctx, Object.assign({ type: 'recovery' }, base));
-  return { sent: 'reset' };
-}
-
-// Public "forgot password": always the same answer, whether or not the
-// address has an account.
-async function requestPasswordReset(backend, email, locale, siteUrl) {
-  email = String(email || '').trim().toLowerCase();
-  if (!EMAIL.test(email) || email.length > 254) throw err('INVALID', 'email');
-  locale = S.LOCALES.includes(locale) ? locale : 'es';
-  try {
-    const link = await backend.auth.generateLink('recovery', email);
-    const url = siteUrl + '/portal/welcome/?th=' + encodeURIComponent(link.tokenHash) + '&type=recovery&lang=' + locale;
-    await portalMail.send(backend, portalMail.accessMail({ to: email, locale, name: '', company: '', url, kind: 'reset' }));
-  } catch (e) {
-    if (!(e.status === 404 || e.status === 422 || /not_found/.test(e.code || ''))) console.error('[portal] reset', e.code || e.message);
-  }
-  return { ok: true };
+  const u = await users.byId(q, id(userId));
+  if (!u) throw err('NOT_FOUND');
+  const org = await orgs.firstOfUser(q, u.id);
+  const type = u.is_active ? 'reset' : 'invite';
+  await sendAccess(u, type, siteUrl, org ? org.name : '', ctx.user.id);
+  return { sent: type };
 }
 
 function projectFields(input, partial) {
   const out = {};
-  const has = k => !partial || Object.prototype.hasOwnProperty.call(input, k);
+  const has = k => (!partial || Object.prototype.hasOwnProperty.call(input, k)) && input[k] !== undefined;
   if (has('name')) out.name = line(input.name, 160, 'name', true);
   if (has('type')) out.type = line(input.type, 80, 'type');
   if (has('status')) out.status = oneOf(input.status || 'active', S.PROJECT_STATUS, 'status');
   if (has('currency')) out.currency = oneOf(input.currency || 'EUR', S.CURRENCIES, 'currency');
-  if (has('totalAmount')) out.total_amount = money(input.totalAmount, 'totalAmount', true);
+  if (has('totalAmount')) out.total_amount_minor = minor(input.totalAmount, 'totalAmount', true);
   if (has('startDate')) out.start_date = date(input.startDate, 'startDate');
   if (has('estimatedDeliveryDate')) out.estimated_delivery_date = date(input.estimatedDeliveryDate, 'estimatedDeliveryDate');
   if (has('domain')) out.domain = line(input.domain, 120, 'domain');
@@ -309,120 +337,127 @@ function projectFields(input, partial) {
   if (out.start_date && out.estimated_delivery_date && out.estimated_delivery_date < out.start_date) throw err('INVALID', 'estimatedDeliveryDate');
   return out;
 }
+async function assertContact(tx, contactId) {
+  if (!contactId) return;
+  const u = await users.byId(tx, contactId);
+  if (!u || u.role !== 'admin') throw err('INVALID', 'contactId');
+}
 
 // New project with the five standard stages (brief starts in progress).
 async function createProject(ctx, organizationId, input) {
   assertAdmin(ctx);
-  const d = db(ctx);
-  const orgId = id(organizationId, 'organizationId');
-  const [org] = await d.select('organizations', { id: orgId });
-  if (!org) throw err('NOT_FOUND');
-  const fields = projectFields(input, false);
-  const [p] = await d.insert('projects', Object.assign(fields, { organization_id: orgId, current_stage: 'brief' }));
-  await d.insert('project_stages', S.STAGES.map((k, i) => ({ project_id: p.id, stage_key: k, position: i + 1, status: i === 0 ? 'in_progress' : 'upcoming', progress: 0 })));
-  return p;
+  const oid = id(organizationId, 'organizationId');
+  const fields = projectFields(input || {}, false);
+  return db.transaction(async tx => {
+    if (!(await orgs.byId(tx, oid))) throw err('NOT_FOUND');
+    await assertContact(tx, fields.contact_id);
+    const p = await projects.create(tx, Object.assign(fields, { organization_id: oid, by: ctx.user.id }));
+    await projects.createStages(tx, p.id, S.STAGES.map((k, i) => ({ stage_key: k, position: i + 1, status: i === 0 ? 'in_progress' : 'upcoming', progress: 0 })));
+    return projectOut(await projects.byId(tx, p.id));
+  });
 }
 
 async function getProjectAdmin(ctx, projectId) {
   assertAdmin(ctx);
-  const b = await loadProjectBundle(ctx, id(projectId));
-  const m = money_(b.project, b.payments);
-  return Object.assign(b, { progress: S.overall(b.stages), currentStage: S.current(b.stages), money: Object.assign(m, { state: paymentState(m) }) });
+  const p = await projects.byId(q, id(projectId));
+  if (!p) throw err('NOT_FOUND');
+  const b = await bundle(p, true);
+  return {
+    project: projectOut(p), organization: b.organization, stages: b.stages, updates: b.updates,
+    payments: b.payments.map(paymentOut), documents: b.documents.map(d => Object.assign({}, d, { size_bytes: Number(d.size_bytes) })), actions: b.actions,
+    contact: contactOut(b.contact), progress: S.overall(b.stages), currentStage: S.current(b.stages), money: moneyOf(p, b.payments)
+  };
 }
 
 async function updateProject(ctx, projectId, input) {
   assertAdmin(ctx);
   const pid = id(projectId);
   const fields = projectFields(input || {}, true);
-  // Paid and remaining amounts are sums in one currency: it is fixed once
-  // a payment exists.
-  if (fields.currency) {
-    const [cur] = await db(ctx).select('projects', { id: pid });
+  return db.transaction(async tx => {
+    const cur = await projects.byId(tx, pid);
     if (!cur) throw err('NOT_FOUND');
-    if (cur.currency !== fields.currency && (await db(ctx).select('payments', { project_id: pid })).length) throw err('CURRENCY_LOCKED', 'currency');
-  }
-  const out = await db(ctx).update('projects', { id: pid }, fields);
-  if (!out.length) throw err('NOT_FOUND');
-  return out[0];
+    // Paid and remaining are sums in one currency: fixed once a payment exists.
+    if (fields.currency && fields.currency !== cur.currency && await payments.count(tx, pid)) throw err('CURRENCY_LOCKED', 'currency');
+    if ('contact_id' in fields) await assertContact(tx, fields.contact_id);
+    return projectOut(await projects.update(tx, pid, fields, ctx.user.id));
+  });
 }
 
-async function syncCurrentStage(ctx, projectId) {
-  const d = db(ctx);
-  const stages = await d.select('project_stages', { project_id: projectId });
-  await d.update('projects', { id: projectId }, { current_stage: S.current(stages) });
-  return { progress: S.overall(stages), currentStage: S.current(stages) };
-}
-
-// "Development at 70 %": status and/or progress of one stage.
+// "Development at 70 %": status and/or progress of one stage; the
+// project's current stage follows.
 async function updateProjectStage(ctx, projectId, stageKey, input) {
   assertAdmin(ctx);
   const pid = id(projectId);
   oneOf(stageKey, S.STAGES, 'stage');
+  input = input || {};
   const patch = {};
   if (input.status != null) patch.status = oneOf(input.status, S.STAGE_STATUS, 'status');
   if (input.progress != null && input.progress !== '') patch.progress = int(input.progress, 0, 100, 'progress');
   if (input.note != null) patch.note = text(input.note, 400, 'note');
   if (patch.status === 'completed') patch.progress = 100;
   if (patch.status === 'upcoming') patch.progress = 0;
-  // A progress above 0 on an upcoming stage starts it.
-  if (patch.status == null && patch.progress > 0) {
-    const [cur] = await db(ctx).select('project_stages', { project_id: pid, stage_key: stageKey });
-    if (cur && cur.status === 'upcoming') patch.status = 'in_progress';
-  }
-  const out = await db(ctx).update('project_stages', { project_id: pid, stage_key: stageKey }, patch);
-  if (!out.length) throw err('NOT_FOUND');
-  return Object.assign({ stage: out[0] }, await syncCurrentStage(ctx, pid));
+  return db.transaction(async tx => {
+    const cur = await projects.stageByKey(tx, pid, stageKey);
+    if (!cur) throw err('NOT_FOUND');
+    // A progress above 0 on an upcoming stage starts it.
+    if (patch.status == null && patch.progress > 0 && cur.status === 'upcoming') patch.status = 'in_progress';
+    const stage = await projects.updateStage(tx, pid, stageKey, patch, ctx.user.id);
+    const all = await projects.stages(tx, pid);
+    await projects.update(tx, pid, { current_stage: S.current(all) }, ctx.user.id);
+    return { stage, progress: S.overall(all), currentStage: S.current(all) };
+  });
 }
 
 async function addProjectUpdate(ctx, projectId, content, visibleToClient) {
   assertAdmin(ctx);
   const pid = id(projectId);
-  const [p] = await db(ctx).select('projects', { id: pid });
-  if (!p) throw err('NOT_FOUND');
-  const [u] = await db(ctx).insert('project_updates', { project_id: pid, content: text(content, 2000, 'content', true), visible_to_client: visibleToClient !== false, created_by: ctx.user.id });
-  await db(ctx).update('projects', { id: pid }, { updated_at: new Date().toISOString() });
-  return u;
+  const body = text(content, 2000, 'content', true);
+  return db.transaction(async tx => {
+    if (!(await projects.byId(tx, pid))) throw err('NOT_FOUND');
+    const u = await projects.addUpdate(tx, pid, body, visibleToClient !== false, ctx.user.id);
+    await projects.update(tx, pid, {}, ctx.user.id);              // updated_at / updated_by
+    return u;
+  });
 }
 
 async function setNextStep(ctx, projectId, nextStep) {
   return updateProject(ctx, projectId, { nextStep });
 }
 
-function paymentFields(input, partial, currency) {
+function paymentFields(input, partial) {
   const out = {};
   const has = k => !partial || Object.prototype.hasOwnProperty.call(input, k);
   if (has('label')) out.label = line(input.label, 120, 'label', true);
-  if (has('amount')) out.amount = money(input.amount, 'amount', false);
+  if (has('amount')) out.amount_minor = minor(input.amount, 'amount', false);
   if (has('status')) out.status = oneOf(input.status || 'pending', ['pending', 'paid'], 'status');
   if (has('paidAt')) out.paid_at = date(input.paidAt, 'paidAt');
   if (has('notes')) out.notes = text(input.notes, 500, 'notes');
-  if (out.status === 'paid' && !out.paid_at && !partial) out.paid_at = new Date().toISOString().slice(0, 10);
-  if (currency) out.currency = currency;
+  if (out.status === 'paid' && !out.paid_at) out.paid_at = new Date().toISOString().slice(0, 10);
+  if (out.status === 'pending') out.paid_at = null;
   return out;
 }
 
-// Payments are always in the project's currency.
+// Payments are always in the project's currency (input.currency, if given,
+// must match it).
 async function recordPayment(ctx, projectId, input) {
   assertAdmin(ctx);
   const pid = id(projectId);
-  const [p] = await db(ctx).select('projects', { id: pid });
+  input = input || {};
+  const fields = paymentFields(input, false);
+  const p = await projects.byId(q, pid);
   if (!p) throw err('NOT_FOUND');
-  const [row] = await db(ctx).insert('payments', Object.assign(paymentFields(input, false, p.currency), { project_id: pid }));
-  return row;
+  if (input.currency && input.currency !== p.currency) throw err('INVALID', 'currency');
+  return paymentOut(await payments.add(q, Object.assign(fields, { project_id: pid, currency: p.currency }), ctx.user.id));
 }
 async function updatePayment(ctx, paymentId, input) {
   assertAdmin(ctx);
-  const patch = paymentFields(input, true);
-  if (patch.status === 'paid' && !('paid_at' in patch)) patch.paid_at = new Date().toISOString().slice(0, 10);
-  if (patch.status === 'pending') patch.paid_at = null;
-  const out = await db(ctx).update('payments', { id: id(paymentId) }, patch);
-  if (!out.length) throw err('NOT_FOUND');
-  return out[0];
+  const row = await payments.update(q, id(paymentId), paymentFields(input || {}, true), ctx.user.id);
+  if (!row) throw err('NOT_FOUND');
+  return paymentOut(row);
 }
 async function deletePayment(ctx, paymentId) {
   assertAdmin(ctx);
-  const out = await db(ctx).remove('payments', { id: id(paymentId) });
-  if (!out.length) throw err('NOT_FOUND');
+  if (!(await payments.remove(q, id(paymentId)))) throw err('NOT_FOUND');
   return { ok: true };
 }
 
@@ -430,69 +465,83 @@ async function deletePayment(ctx, paymentId) {
 async function setRequiredAction(ctx, projectId, input) {
   assertAdmin(ctx);
   const pid = id(projectId);
-  const [p] = await db(ctx).select('projects', { id: pid });
-  if (!p) throw err('NOT_FOUND');
-  const [a] = await db(ctx).insert('project_actions', {
-    project_id: pid, title: line(input.title, 160, 'title', true), description: text(input.description, 800, 'description'),
-    kind: 'info', created_by: ctx.user.id
-  });
-  return a;
+  input = input || {};
+  const a = { title: line(input.title, 160, 'title', true), description: text(input.description, 800, 'description') };
+  if (!(await projects.byId(q, pid))) throw err('NOT_FOUND');
+  return projects.addAction(q, pid, a, ctx.user.id);
 }
 async function resolveRequiredAction(ctx, actionId) {
   assertAdmin(ctx);
-  const out = await db(ctx).update('project_actions', { id: id(actionId) }, { status: 'resolved', resolved_at: new Date().toISOString(), resolved_by: ctx.user.id });
-  if (!out.length) throw err('NOT_FOUND');
-  return out[0];
+  const a = await projects.resolveAction(q, id(actionId), ctx.user.id);
+  if (!a) throw err('NOT_FOUND');
+  return a;
 }
 
+/* ------------------------------------------------------------- documents */
+// Name kept for the file: ASCII letters, digits, dot, dash, underscore.
 function safeName(n) {
-  const s = String(n || 'file').normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(-90);
+  const s = String(n || 'file').normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^[-.]+|-+$/g, '').slice(-90);
   return s || 'file';
 }
-// Step 1 of an upload: a one-time URL; the browser sends the file there.
+const PATH = /^projects\/([0-9a-f-]{36})\/([0-9a-f-]{36})\/([A-Za-z0-9._-]{1,90})$/;
+
+// Step 1: a one-time signed upload URL for this exact file (server-chosen
+// path and type, declared size, 15 minutes).
 async function requestDocumentUpload(ctx, projectId, fileName, size) {
   assertAdmin(ctx);
   const pid = id(projectId);
-  const [p] = await db(ctx).select('projects', { id: pid });
-  if (!p) throw err('NOT_FOUND');
-  if (!(Number(size) > 0) || Number(size) > 50 * 1024 * 1024) throw err('FILE_TOO_LARGE', 'file');
-  const path = pid + '/' + crypto.randomUUID() + '-' + safeName(fileName);
-  const up = await ctx.backend.storage(ctx.token).uploadUrl(path);
-  return { path, uploadUrl: up.url, method: up.method };
+  if (!(await projects.byId(q, pid))) throw err('NOT_FOUND');
+  const n = Number(size);
+  if (!Number.isInteger(n) || n <= 0 || n > storage.MAX_BYTES) throw err('FILE_TOO_LARGE', 'file');
+  const name = safeName(fileName);
+  const type = storage.typeOf(name);
+  if (!type) throw err('FILE_TYPE', 'file');
+  const pathname = 'projects/' + pid + '/' + crypto.randomUUID() + '/' + name;
+  const target = await storage.store().uploadTarget(pathname, type, n);
+  return { path: pathname, uploadUrl: target.url, method: target.method, headers: target.headers };
 }
-// Step 2: the file is there; record it.
+// Step 2: the file is in the store; record it (size and type checked again
+// on the stored object).
 async function uploadProjectDocument(ctx, projectId, input) {
   assertAdmin(ctx);
   const pid = id(projectId);
-  const path = String(input.path || '');
-  if (!path.startsWith(pid + '/') || !/^[0-9a-f-]{36}\/[0-9a-f-]{36}-[A-Za-z0-9._-]{1,90}$/.test(path)) throw err('INVALID', 'path');
-  const stat = await ctx.backend.storage(ctx.token).stat(path);
+  input = input || {};
+  const m = PATH.exec(String(input.path || ''));
+  if (!m || m[1] !== pid) throw err('INVALID', 'path');
+  if (!(await projects.byId(q, pid))) throw err('NOT_FOUND');
+  const stat = await storage.store().stat(input.path);
   if (!stat) throw err('UPLOAD_MISSING', 'file');
-  const fileName = line(input.fileName, 160, 'fileName') || path.split('/')[1].slice(37);
-  const [doc] = await db(ctx).insert('documents', {
-    project_id: pid,
-    title: line(input.title, 160, 'title') || fileName,
-    category: oneOf(input.category || 'other', S.DOC_CATEGORIES, 'category'),
-    storage_path: path, file_name: fileName, mime_type: stat.mime, size_bytes: stat.size,
-    visible_to_client: input.visibleToClient !== false, uploaded_by: ctx.user.id
-  });
-  return doc;
+  const type = storage.typeOf(m[3]);
+  if (!type || stat.size > storage.MAX_BYTES || (stat.contentType && stat.contentType.split(';')[0] !== type)) {
+    await storage.store().remove(input.path);
+    throw err('FILE_TYPE', 'file');
+  }
+  try {
+    return await documents.add(q, {
+      project_id: pid,
+      title: line(input.title, 160, 'title') || m[3],
+      category: oneOf(input.category || 'other', S.DOC_CATEGORIES, 'category'),
+      blob_pathname: input.path, file_name: m[3], mime_type: type, size_bytes: stat.size,
+      visible_to_client: input.visibleToClient !== false
+    }, ctx.user.id);
+  } catch (e) { if (e.code === '23505') throw err('INVALID', 'path'); throw e; }
 }
 async function updateDocument(ctx, documentId, input) {
   assertAdmin(ctx);
+  input = input || {};
   const patch = {};
   if ('title' in input) patch.title = line(input.title, 160, 'title', true);
   if ('category' in input) patch.category = oneOf(input.category, S.DOC_CATEGORIES, 'category');
   if ('visibleToClient' in input) patch.visible_to_client = bool(input.visibleToClient);
-  const out = await db(ctx).update('documents', { id: id(documentId) }, patch);
-  if (!out.length) throw err('NOT_FOUND');
-  return out[0];
+  const row = await documents.update(q, id(documentId), patch, ctx.user.id);
+  if (!row) throw err('NOT_FOUND');
+  return row;
 }
 async function deleteDocument(ctx, documentId) {
   assertAdmin(ctx);
-  const out = await db(ctx).remove('documents', { id: id(documentId) });
-  if (!out.length) throw err('NOT_FOUND');
-  await ctx.backend.storage(ctx.token).remove(out[0].storage_path);
+  const row = await documents.remove(q, id(documentId));
+  if (!row) throw err('NOT_FOUND');
+  await storage.store().remove(row.blob_pathname);
   return { ok: true };
 }
 
@@ -500,6 +549,7 @@ async function deleteDocument(ctx, documentId) {
 async function quickUpdate(ctx, projectId, input) {
   assertAdmin(ctx);
   const pid = id(projectId);
+  input = input || {};
   const out = {};
   if (input.stage) out.stage = await updateProjectStage(ctx, pid, input.stage, { status: input.stageStatus, progress: input.progress });
   if (input.update && String(input.update).trim()) out.update = await addProjectUpdate(ctx, pid, input.update, input.updateVisible !== false);
@@ -509,8 +559,10 @@ async function quickUpdate(ctx, projectId, input) {
 
 module.exports = {
   err, UUID,
+  // sign-in
+  signIn, tokenInfo, acceptToken, requestPasswordReset,
   // client
-  getClientPortal, getDocumentLink, requestPasswordReset,
+  getClientPortal, getClientPreview, getDocumentLink,
   // admin
   adminOverview, adminClients, createClient, updateClient, resendInvite,
   createProject, getProjectAdmin, updateProject, updateProjectStage, addProjectUpdate, setNextStep,

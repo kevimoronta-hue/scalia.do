@@ -1,8 +1,7 @@
 /* ==========================================================================
    /api/portal-admin/?a=<action> · Scalia admin (scalia.do/admin)
-   Admins only: the role is read from the database for every request
-   (session.resolve → profiles.role), and the database refuses non-admin
-   writes again (RLS). Each action is one business function of
+   Admins only: the role is read from the database on every request
+   (session.resolve). Each action is one business function of
    server/portal/service.js, the same ones a Scalia agent will call.
    ========================================================================== */
 'use strict';
@@ -19,7 +18,7 @@ async function admin(req, res) {
 const q = (req, k) => String((req.query && req.query[k]) || '');
 
 module.exports = router({
-  me: { method: 'GET', async run(req, res) { const c = await admin(req, res); return { name: c.profile.full_name, email: c.profile.email, locale: c.profile.locale }; } },
+  me: { method: 'GET', async run(req, res) { const c = await admin(req, res); return { name: [c.user.first_name, c.user.last_name].filter(Boolean).join(' '), email: c.user.email, locale: c.user.preferred_locale }; } },
   overview: { method: 'GET', async run(req, res) { return { projects: await service.adminOverview(await admin(req, res)) }; } },
   clients: { method: 'GET', async run(req, res) { return service.adminClients(await admin(req, res)); } },
   project: { method: 'GET', async run(req, res) { return service.getProjectAdmin(await admin(req, res), q(req, 'id')); } },

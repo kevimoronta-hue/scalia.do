@@ -40,7 +40,7 @@ export default function middleware(request) {
   const set = [];
 
   const url = new URL(request.url);
-  if (PRIVATE.test(url.pathname) && !cookie(jar, 'scalia_pr')) {
+  if (PRIVATE.test(url.pathname) && !cookie(jar, 'scalia_ps')) {
     const to = new URL('/portal/login/', url);
     to.searchParams.set('next', url.pathname + url.search);
     return new Response(null, { status: 307, headers: { Location: to.toString(), 'Cache-Control': 'no-store' } });

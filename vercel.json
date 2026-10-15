@@ -37,6 +37,21 @@
       "permanent": false
     },
     {
+      "source": "/package-lock.json",
+      "destination": "/introuvable/",
+      "permanent": false
+    },
+    {
+      "source": "/package.json",
+      "destination": "/introuvable/",
+      "permanent": false
+    },
+    {
+      "source": "/node_modules/:path*",
+      "destination": "/introuvable/",
+      "permanent": false
+    },
+    {
       "source": "/:path(.*)",
       "has": [
         {
@@ -103,7 +118,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'sha256-/x7W7R75k8Roq0WaVRQX9blP4OufE5xbAdzklGxsgpw='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.supabase.co; media-src 'self' https://embed-ssl.wistia.com; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+          "value": "default-src 'self'; script-src 'self' 'sha256-/x7W7R75k8Roq0WaVRQX9blP4OufE5xbAdzklGxsgpw='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://vercel.com/api/blob/; media-src 'self' https://embed-ssl.wistia.com; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
         }
       ]
     },

@@ -1,69 +1,45 @@
 /* ==========================================================================
-   Scalia Portal · backend choice and session cookies.
-   The Supabase session lives in two httpOnly cookies the page's scripts
-   cannot read (scalia_pa: access token, scalia_pr: refresh token). Every
-   API call resolves them into ctx = { backend, token, user, profile, admin }
-   for server/portal/service.js; an expired access token is refreshed once.
-   The role comes from the database (profiles.role), never from the URL or
-   the browser.
+   Scalia Portal · session cookie and request context.
+   One cookie, scalia_ps: an opaque random value (no data, no JWT),
+   HttpOnly (page scripts cannot read it), Secure on HTTPS, SameSite=Lax,
+   Path=/, 30 days. resolve() turns it into the ctx every business function
+   takes: { user, admin }. The role comes from the database on every request.
    ========================================================================== */
 'use strict';
-const supabase = require('./supabase');
-const mock = require('./mock');
+const config = require('./config');
+const auth = require('./auth');
 
-const ACCESS = 'scalia_pa';
-const REFRESH = 'scalia_pr';
-const MAX_AGE = 30 * 24 * 3600;                 // refresh token lifetime on our side
-
-function backend() { return mock.enabled() ? mock : supabase; }
+const COOKIE = 'scalia_ps';
 
 function cookies(req) {
   const out = {};
   String(req.headers.cookie || '').split(';').forEach(p => {
     const i = p.indexOf('=');
-    if (i > 0) out[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim());
+    if (i > 0) { try { out[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim()); } catch (e) { /* malformed */ } }
   });
   return out;
 }
 function secure(req) {
   return !!(process.env.VERCEL || String(req.headers['x-forwarded-proto'] || '').split(',')[0] === 'https');
 }
-function cookie(req, name, value, maxAge) {
-  return name + '=' + encodeURIComponent(value) + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=' + maxAge + (secure(req) ? '; Secure' : '');
+function serialize(req, value, maxAge) {
+  return COOKIE + '=' + encodeURIComponent(value) + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=' + maxAge + (secure(req) ? '; Secure' : '');
 }
-function setSession(req, res, s) {
-  res.setHeader('Set-Cookie', [cookie(req, ACCESS, s.accessToken, MAX_AGE), cookie(req, REFRESH, s.refreshToken, MAX_AGE)]);
-}
-function clearSession(req, res) {
-  res.setHeader('Set-Cookie', [cookie(req, ACCESS, '', 0), cookie(req, REFRESH, '', 0)]);
-}
+function setCookie(req, res, s) { res.setHeader('Set-Cookie', serialize(req, s.token, s.maxAge)); }
+function clearCookie(req, res) { res.setHeader('Set-Cookie', serialize(req, '', 0)); }
+const token = req => cookies(req)[COOKIE] || null;
 
-// null when signed out (or the session cannot be renewed).
+function notConfigured() { const e = new Error('NOT_CONFIGURED'); e.code = 'NOT_CONFIGURED'; e.status = 503; return e; }
+
+// null when signed out, expired, or the account is disabled.
 async function resolve(req, res) {
-  const b = backend();
-  if (!b.configured()) { const e = new Error('NOT_CONFIGURED'); e.code = 'NOT_CONFIGURED'; e.status = 503; throw e; }
-  const c = cookies(req);
-  let token = c[ACCESS] || null;
-  let user = null;
-  if (token) {
-    try { user = await b.auth.getUser(token); } catch (e) { if (e.status && e.status >= 500) throw e; user = null; }
-  }
-  if (!user && c[REFRESH]) {
-    try {
-      const s = await b.auth.refresh(c[REFRESH]);
-      setSession(req, res, s);
-      token = s.accessToken;
-      user = s.user;
-    } catch (e) {
-      if (e.status && e.status >= 500) throw e;
-      clearSession(req, res);
-      return null;
-    }
-  }
-  if (!user) return null;
-  const [profile] = await b.db(token).select('profiles', { id: user.id });
-  if (!profile) return null;
-  return { backend: b, token, user, profile, admin: profile.role === 'admin' };
+  if (!config.configured()) throw notConfigured();
+  const raw = token(req);
+  if (!raw) return null;
+  const u = await auth.sessionUser(raw);
+  if (!u) { if (res) clearCookie(req, res); return null; }
+  const user = { id: u.id, email: u.email, role: u.role, preferred_locale: u.preferred_locale, first_name: u.first_name, last_name: u.last_name, phone: u.phone, whatsapp: u.whatsapp, title: u.title };
+  return { user, admin: u.role === 'admin' };
 }
 
 // Where links in emails point: the production site, or this local server.
@@ -75,4 +51,4 @@ function siteUrl(req) {
   return (secure(req) ? 'https://' : 'http://') + host;
 }
 
-module.exports = { backend, resolve, setSession, clearSession, siteUrl, ACCESS, REFRESH };
+module.exports = { COOKIE, resolve, token, setCookie, clearCookie, siteUrl, notConfigured };

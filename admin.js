@@ -70,7 +70,8 @@
       L('Créer et inviter'),
       function (f) {
         return P.adminApi('client-create', { company: f.company.value, contactName: f.contactName.value, email: f.email.value, phone: f.phone.value, locale: f.locale.value }).then(function (r) {
-          P.toast(L('Client créé. Invitation envoyée à {email}.', { email: f.email.value.trim() }));
+          if (r.mailSent === false) P.toast(L('Client créé, mais l’email n’est pas parti : utilisez « Renvoyer l’invitation ».'), 'err');
+          else P.toast(L('Client créé. Invitation envoyée à {email}.', { email: f.email.value.trim() }));
           setTimeout(function () { newProjectDialog(r.id, f.company.value, f.locale.value); }, 50);
         });
       });
@@ -378,14 +379,16 @@
         return new Promise(function (resolve, reject) {
           var x = new XMLHttpRequest();
           x.open(u.method || 'PUT', u.uploadUrl);
-          x.setRequestHeader('Content-Type', f.type || 'application/octet-stream');
+          // Headers signed by the server (type decided server-side, never by the browser).
+          Object.keys(u.headers || {}).forEach(function (k) { x.setRequestHeader(k, u.headers[k]); });
+          x.setRequestHeader('Content-Type', (u.headers && u.headers['x-content-type']) || 'application/octet-stream');
           x.upload.onprogress = function (ev) { if (ev.lengthComputable) fill.style.width = Math.round(ev.loaded / ev.total * 100) + '%'; };
           x.onload = function () { x.status >= 200 && x.status < 300 ? resolve(u) : reject(Object.assign(new Error('UPLOAD'), { code: 'UPLOAD_MISSING', field: 'file' })); };
           x.onerror = function () { reject(Object.assign(new Error('NETWORK'), { code: 'NETWORK' })); };
           x.send(f);
         });
       }).then(function (u) {
-        return P.adminApi('document-add', { projectId: p.id, path: u.path, fileName: f.name, title: df.title.value, category: df.category.value, visibleToClient: df.visible.checked });
+        return P.adminApi('document-add', { projectId: p.id, path: u.path, title: df.title.value, category: df.category.value, visibleToClient: df.visible.checked });
       })).then(function () { return reload(L('Fichier déposé.')); }, function (err) { bar.hidden = true; P.formError(df, err); });
     });
 
