@@ -16,7 +16,7 @@
 'use strict';
 
 const API = 'https://api.openai.com/v1/responses';
-const TIMEOUT_MS = 9000;
+const TIMEOUT_MS = 5000;   // the application email waits for it: kept short (api/apply.js budget)
 
 const SYSTEM = [
   'Tu aides uniquement à résumer les réponses déclaratives d’une candidature professionnelle.',

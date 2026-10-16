@@ -129,7 +129,7 @@ module.exports = async function reminders(req, res) {
       if (!(await claim(cal, ev, run, now))) { out.skipped++; continue; }
 
       try {
-        await mail.send(cal, mail.reminderMail(b));
+        await mail.send(cal, Object.assign(mail.reminderMail(b), { messageId: mail.messageId('booking', ev.id, 'reminder') }));
       } catch (e) {
         console.error('[booking] reminder mail', ev.id, e.message);
         await mark(cal, ev.id, { scaliaReminderClaim: '' });       // the next run retries

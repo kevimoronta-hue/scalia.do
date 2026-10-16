@@ -74,4 +74,11 @@ const BOOKING = {
   cacheSeconds: 20
 };
 
+// Configuration check, once per cold start (no crash): Scalia's notices sent
+// from and to the same address land in both Sent and Inbox of that mailbox,
+// which some mail apps show as two emails.
+if (BOOKING.fromEmail.toLowerCase() === BOOKING.notifyEmail.toLowerCase()) {
+  console.warn('[mail] BOOKING_FROM and BOOKING_NOTIFY are the same address (' + BOOKING.notifyEmail + '): Scalia notices are self-sent (Sent + Inbox copies)');
+}
+
 module.exports = { BOOKING };

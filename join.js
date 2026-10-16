@@ -28,7 +28,16 @@
   var count = $('[data-jn-count]');
   var prev = $('[data-jn-prev]');
   var done = $('[data-jn-done]');
-  var S = { step: 1, answers: new Array(TOTAL).fill(''), start: Date.now(), cv: null, busy: false, sending: false };
+  var S = { step: 1, answers: new Array(TOTAL).fill(''), start: Date.now(), cv: null, busy: false, sending: false, submissionId: null };
+  // One id per application, made at the first try and kept for every retry
+  // of the same form: the server sends its emails once per id (api/apply.js).
+  function newId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    var b = crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    var h = Array.prototype.map.call(b, function (x) { return (x + 256).toString(16).slice(1); }).join('');
+    return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+  }
 
   /* -------------------------------------------------------------- links -- */
   // Back to Scalia's home page, in the language of this page.
@@ -238,6 +247,8 @@
     fd.append('website', form.elements.website.value);
     fd.append('elapsed', String(Date.now() - S.start));
     fd.append('cv', S.cv, S.cv.name);
+    if (!S.submissionId) S.submissionId = newId();
+    fd.append('submissionId', S.submissionId);
 
     S.sending = true;
     submit.disabled = true;
@@ -246,7 +257,8 @@
     fetch(API, { method: 'POST', body: fd, credentials: 'same-origin' })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
       .then(function (res) {
-        if (res.status === 201) return sent();
+        // 202: this application is already being handled (a retry): received.
+        if (res.status === 201 || res.status === 202) return sent();
         if (res.status === 422 && res.body.fields) {
           var f = res.body.fields;
           if (f.answers) { go(1, 'back'); return; }
@@ -272,6 +284,7 @@
 
   // Only after the server's success: 5, 4, 3, 2, 1, then the home page.
   function sent() {
+    S.submissionId = null;   // a later application gets a new id
     dropDraft();
     form.hidden = true;
     $('[data-jn-head]').hidden = true;

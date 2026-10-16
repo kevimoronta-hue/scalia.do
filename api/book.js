@@ -194,7 +194,11 @@ module.exports = async function book(req, res) {
       name: d.name, email: d.email, phone: d.phoneDisplay, whatsapp: phoneFmt.whatsapp(d.phone), company: d.company, message: d.message,
       projectTypes: d.projectTypes, locale: d.locale, timezone: d.timezone
     };
-    const sent = await Promise.allSettled([mail.send(cal, mail.clientMail(booking)), mail.send(cal, mail.ownerMail(booking))]);
+    // Stable identities (booking-<event>-client / -admin): two copies in a
+    // mailbox with the same Message-ID are one email shown twice.
+    const clientM = Object.assign(mail.clientMail(booking), { messageId: mail.messageId('booking', booking.id, 'client') });
+    const ownerM = Object.assign(mail.ownerMail(booking), { messageId: mail.messageId('booking', booking.id, 'admin') });
+    const sent = await Promise.allSettled([mail.send(cal, clientM), mail.send(cal, ownerM)]);
     sent.forEach((s, i) => { if (s.status === 'rejected') console.error('[booking] mail ' + (i ? 'owner' : 'client'), s.reason && s.reason.message); });
 
     send(res, 201, {

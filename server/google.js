@@ -41,12 +41,26 @@ function privateKey() {
   return keyObj;
 }
 
+// Every Google call has a deadline, well inside the 30 s a Vercel function
+// may run. A call that gets no answer in time throws code TIMEOUT (no
+// status): for an email, that means "maybe sent" (server/mail-events.js).
+const TIMEOUT_MS = 15000;
+async function timedFetch(url, init, ms) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms || TIMEOUT_MS);
+  try { return await fetch(url, Object.assign({}, init, { signal: ctrl.signal })); }
+  catch (e) {
+    if (e.name === 'AbortError') { const t = new Error('google_timeout'); t.code = 'TIMEOUT'; throw t; }
+    throw e;
+  } finally { clearTimeout(timer); }
+}
+
 async function tokenRequest(body) {
-  const r = await fetch('https://oauth2.googleapis.com/token', {
+  const r = await timedFetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams(body)
-  });
+  }, 8000);
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.access_token) throw new Error('google_auth_' + (j.error || r.status));
   return j;
@@ -81,12 +95,12 @@ async function accessToken() {
   return cached.token;
 }
 
-async function api(method, url, body, extra) {
-  const r = await fetch(url, {
+async function api(method, url, body, extra, timeoutMs) {
+  const r = await timedFetch(url, {
     method,
     headers: Object.assign({ Authorization: 'Bearer ' + await accessToken(), 'Content-Type': 'application/json' }, extra || {}),
     body: body ? JSON.stringify(body) : undefined
-  });
+  }, timeoutMs);
   if (r.status === 204) return { status: 204, data: null };
   const data = await r.json().catch(() => null);
   return { status: r.status, data };
@@ -185,20 +199,24 @@ function meetUrl(ev) {
 }
 
 // Gmail: send a raw MIME message as the connected account.
-async function sendMail(raw) {
-  const res = await api('POST', 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send', { raw: b64url(raw) });
-  must(res, 'gmail');
+// Returns { provider, id } (Gmail's message id).
+async function sendMail(raw, opts) {
+  const res = await api('POST', 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send', { raw: b64url(raw) }, null, opts && opts.timeoutMs);
+  const data = must(res, 'gmail');
+  return { provider: 'gmail', id: (data && data.id) || '' };
 }
 
 // Same, through the media upload endpoint: the raw MIME message is the body
 // (no base64 JSON wrapper), for messages carrying a sizeable attachment.
-async function sendMailUpload(raw) {
-  const r = await fetch('https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send?uploadType=media', {
+async function sendMailUpload(raw, opts) {
+  const r = await timedFetch('https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send?uploadType=media', {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + await accessToken(), 'Content-Type': 'message/rfc822' },
     body: raw
-  });
+  }, opts && opts.timeoutMs);
+  const data = await r.json().catch(() => null);
   must({ status: r.status }, 'gmail_upload');
+  return { provider: 'gmail', id: (data && data.id) || '' };
 }
 
 module.exports = { configured, busy, bookings, upcoming, setPrivate, insert, get, remove, meetUrl, sendMail, sendMailUpload, privateKey };

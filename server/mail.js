@@ -215,6 +215,10 @@ function mime(m) {
     'Subject: ' + hdr(m.subject),
     'MIME-Version: 1.0'
   ];
+  // A stable identity per email (booking-<event>-client@…, apply-<id>-admin@…):
+  // two copies with the same Message-ID are one email shown twice; two
+  // different ones are two sends.
+  if (m.messageId && /^<[A-Za-z0-9._-]{1,180}@[A-Za-z0-9.-]{1,60}>$/.test(m.messageId)) head.push('Message-ID: ' + m.messageId);
   const altPart = [
     '--' + alt, 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', b64lines(m.text),
     '--' + alt, 'Content-Type: text/html; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', b64lines(m.html),
@@ -230,27 +234,53 @@ function mime(m) {
   ]).join('\r\n');
 }
 
-async function viaResend(m) {
-  const r = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: BOOKING.fromName + ' <' + BOOKING.fromEmail + '>', to: [m.to], reply_to: m.replyTo,
-      subject: m.subject, html: m.html, text: m.text,
-      attachments: m.attachment ? [{ filename: m.attachment.name, content: Buffer.from(m.attachment.content).toString('base64') }] : undefined
-    })
-  });
-  if (!r.ok) throw new Error('resend_' + r.status);
+// Resend (when RESEND_API_KEY is set): same deadline idea as Google
+// (server/google.js). Deduplication is not left to the provider: it is
+// server/mail-events.js (Postgres).
+async function viaResend(m, timeoutMs) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs || 15000);
+  const headers = { Authorization: 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' };
+  let r;
+  try {
+    r = await fetch('https://api.resend.com/emails', {
+      method: 'POST', headers, signal: ctrl.signal,
+      body: JSON.stringify({
+        from: BOOKING.fromName + ' <' + BOOKING.fromEmail + '>', to: [m.to], reply_to: m.replyTo,
+        subject: m.subject, html: m.html, text: m.text,
+        headers: m.messageId ? { 'Message-ID': m.messageId } : undefined,
+        attachments: m.attachment ? [{ filename: m.attachment.name, content: Buffer.from(m.attachment.content).toString('base64') }] : undefined
+      })
+    });
+  } catch (e) {
+    if (e.name === 'AbortError') { const t = new Error('resend_timeout'); t.code = 'TIMEOUT'; throw t; }
+    throw e;
+  } finally { clearTimeout(timer); }
+  const data = await r.json().catch(() => null);
+  if (!r.ok) { const e = new Error('resend_' + r.status); e.status = r.status; throw e; }
+  return { provider: 'resend', id: (data && data.id) || '' };
 }
 
+// One provider per environment: Resend when RESEND_API_KEY is set, else
+// Gmail (the booking's Google account). Never both, no fallback.
+// m.timeoutMs: optional deadline for this send. Returns { provider, id }.
+function usesResend(cal) { return !!process.env.RESEND_API_KEY && !cal.DIR; }
 async function send(cal, m) {
-  if (process.env.RESEND_API_KEY && !cal.DIR) return viaResend(m);
-  return cal.sendMail(mime(m));
+  if (usesResend(cal)) return viaResend(m, m.timeoutMs);
+  return cal.sendMail(mime(m), { timeoutMs: m.timeoutMs });
 }
-// Large attachments (applications: the CV): Gmail's upload endpoint takes
-// the raw message as is, up to 35 MB. The local test calendar keeps its file.
+// Large attachments (applications: the CV, 4 MB max). Resend takes them in
+// the same request (its limit is 40 MB), so the provider follows send().
+// Gmail: the upload endpoint takes the raw message as is.
 async function sendLarge(cal, m) {
-  return cal.sendMailUpload ? cal.sendMailUpload(mime(m)) : cal.sendMail(mime(m));
+  if (usesResend(cal)) return viaResend(m, m.timeoutMs);
+  return cal.sendMailUpload ? cal.sendMailUpload(mime(m), { timeoutMs: m.timeoutMs }) : cal.sendMail(mime(m), { timeoutMs: m.timeoutMs });
+}
+// Message-ID for an email of a known event (booking id, submission id).
+function messageId(kind, id, role) {
+  const domain = String(BOOKING.fromEmail).split('@')[1] || 'scalia.do';
+  const safe = String(id).replace(/[^A-Za-z0-9._-]/g, '').slice(0, 120);
+  return safe ? '<' + kind + '-' + safe + '-' + role + '@' + domain + '>' : undefined;
 }
 
-module.exports = { clientMail, ownerMail, reminderMail, send, sendLarge, ics, shell, row, esc };
+module.exports = { clientMail, ownerMail, reminderMail, send, sendLarge, messageId, usesResend, ics, shell, row, esc };

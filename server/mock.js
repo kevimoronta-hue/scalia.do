@@ -14,7 +14,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const DIR = path.join(os.tmpdir(), 'scalia-booking-mock');
+const DIR = process.env.BOOKING_MOCK_DIR || path.join(os.tmpdir(), 'scalia-booking-mock');
 const FILE = path.join(DIR, 'calendar.json');
 const FAIL = path.join(DIR, 'scalia-booking-mock-fail');
 
@@ -106,10 +106,19 @@ function meetUrl(ev) {
   const v = ev && ev.conferenceData && ev.conferenceData.entryPoints[0];
   return v ? v.uri : null;
 }
+// Test switch: a file mail-fail in the folder makes the "provider" refuse
+// (HTTP 503 answer, nothing written), as Gmail answering an error. Empty
+// file: every email; otherwise only the emails containing its text.
 async function sendMail(raw) {
   fs.mkdirSync(DIR, { recursive: true });
-  const f = path.join(DIR, 'mail-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6) + '.eml');
-  fs.writeFileSync(f, raw);
+  const failFile = path.join(DIR, 'mail-fail');
+  if (fs.existsSync(failFile)) {
+    const only = fs.readFileSync(failFile, 'utf8');
+    if (!only || raw.includes(only)) { const e = new Error('mock_mail_503'); e.status = 503; throw e; }
+  }
+  const id = Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  fs.writeFileSync(path.join(DIR, 'mail-' + id + '.eml'), raw);
+  return { provider: 'mock', id };
 }
 
 // Test helpers (dev server only).
