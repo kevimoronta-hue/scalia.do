@@ -171,3 +171,20 @@ create table project_actions (
   resolved_by uuid references users (id) on delete set null
 );
 create index project_actions_project_idx on project_actions (project_id, status);
+
+-- ------------------------------------------------- 002 · mail_events (emails sent at most once)
+create table mail_events (
+  id                  uuid primary key default gen_random_uuid(),
+  event_key           text not null unique check (length(event_key) between 3 and 200),
+  event_type          text not null check (event_type in ('application_admin', 'application_candidate', 'booking_admin', 'booking_client', 'portal_invite', 'password_reset')),
+  recipient           text not null default '' check (length(recipient) <= 254),
+  status              text not null default 'processing' check (status in ('processing', 'completed', 'failed')),
+  attempts            integer not null default 1,
+  provider            text not null default '' check (length(provider) <= 20),
+  provider_message_id text not null default '' check (length(provider_message_id) <= 200),
+  error               text not null default '' check (length(error) <= 200),
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now()
+);
+create index mail_events_created_idx on mail_events (created_at);
+create index mail_events_status_idx on mail_events (status, updated_at);

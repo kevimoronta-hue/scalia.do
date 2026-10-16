@@ -7,7 +7,9 @@
     "dev": "node scripts/dev-server.mjs",
     "portal:migrate": "node scripts/portal-migrate.mjs",
     "portal:create-admin": "node scripts/portal-create-admin.mjs",
-    "portal:test": "node scripts/portal-test.mjs"
+    "portal:test": "node scripts/portal-test.mjs",
+    "mail:check": "node scripts/mail-config-check.mjs",
+    "mail:test": "node scripts/mail-test.mjs"
   },
   "dependencies": {
     "@node-rs/argon2": "2.2.2",
