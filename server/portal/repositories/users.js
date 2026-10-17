@@ -28,6 +28,9 @@ const admins = q => q.query('select ' + SAFE + " from users where role = 'admin'
 async function adminExists(q) { return !!(await q.one("select 1 as x from users where role = 'admin' limit 1")); }
 const byIds = (q, ids) => ids.length ? q.query('select ' + SAFE + ' from users where id = any($1::uuid[])', [ids]) : Promise.resolve([]);
 
+// Client accounts only (sessions and links go with them: ON DELETE CASCADE).
+const removeClients = (q, ids) => ids.length ? q.query("delete from users where id = any($1::uuid[]) and role = 'client'", [ids]) : Promise.resolve([]);
+
 function fullName(u) { return u ? [u.first_name, u.last_name].filter(Boolean).join(' ').trim() : ''; }
 
-module.exports = { byId, byEmail, credentialsByEmail, create, update, setPassword, admins, adminExists, byIds, fullName };
+module.exports = { byId, byEmail, credentialsByEmail, create, update, setPassword, admins, adminExists, byIds, removeClients, fullName };

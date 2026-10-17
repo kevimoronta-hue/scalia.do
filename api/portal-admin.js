@@ -26,9 +26,11 @@ module.exports = router({
 
   'client-create': { method: 'POST', async run(req, res, b) { return service.createClient(await admin(req, res), b, session.siteUrl(req)); } },
   'client-update': { method: 'POST', async run(req, res, b) { return service.updateClient(await admin(req, res), b.id, b); } },
+  'client-delete': { method: 'POST', async run(req, res, b) { return service.deleteClient(await admin(req, res), b.id, b.confirm); } },
   'invite-resend': { method: 'POST', async run(req, res, b) { return service.resendInvite(await admin(req, res), b.userId, session.siteUrl(req)); } },
 
   'project-create': { method: 'POST', async run(req, res, b) { return service.createProject(await admin(req, res), b.organizationId, b); } },
+  'project-delete': { method: 'POST', async run(req, res, b) { return service.deleteProject(await admin(req, res), b.id, b.confirm); } },
   'project-update': { method: 'POST', async run(req, res, b) { return service.updateProject(await admin(req, res), b.id, b.fields || {}); } },
   'stage-update': { method: 'POST', async run(req, res, b) { return service.updateProjectStage(await admin(req, res), b.projectId, b.stage, b); } },
   'quick-update': { method: 'POST', async run(req, res, b) { return service.quickUpdate(await admin(req, res), b.projectId, b); } },

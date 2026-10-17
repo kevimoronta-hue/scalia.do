@@ -25,5 +25,7 @@ async function update(q, id, patch, by) {
   return q.one('update documents set ' + set + ' where id = $1 returning *', [id, by].concat(s.values));
 }
 const remove = (q, id) => q.one('delete from documents where id = $1 returning *', [id]);
+// Stored files of projects about to be deleted (their rows go with the project).
+const pathsOfProjects = (q, projectIds) => projectIds.length ? q.query('select blob_pathname from documents where project_id = any($1::uuid[])', [projectIds]).then(r => r.map(x => x.blob_pathname)) : Promise.resolve([]);
 
-module.exports = { list, byId, byIdForUser, add, update, remove };
+module.exports = { list, byId, byIdForUser, add, update, remove, pathsOfProjects };

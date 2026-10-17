@@ -64,6 +64,18 @@
     return d;
   }
 
+  // Irreversible deletion: says what goes, and asks to type the name.
+  function deleteDialog(title, lines, name, run) {
+    var d = dialog(title,
+      '<div class="pt-alert">' + lines.map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</div>' +
+      field('confirm', L('Pour confirmer, tapez « {name} »', { name: name }), input('confirm', 'text', '', ' autocomplete="off" autocapitalize="off" spellcheck="false" required')),
+      L('Supprimer définitivement'),
+      function (f) { return run(f.confirm.value); });
+    var b = d.querySelector('[type="submit"]');
+    b.className = 'btn btn--secondary btn--danger btn--lg';
+    return d;
+  }
+
   function newClientDialog() {
     dialog(L('Nouveau client'),
       field('company', 'Entreprise', input('company', 'text', '', ' required autocomplete="organization"')) +
@@ -143,7 +155,8 @@
           '<div class="ad-item__meta">' + c.projects.map(function (p) { return '<a class="pt-badge pt-badge--open" href="/admin/project/?id=' + encodeURIComponent(p.id) + '">' + esc(p.name) + '</a>'; }).join('') + '</div>' +
           '<div class="ad-item__meta"><button class="btn btn--secondary btn--sm" type="button" data-new-project>+ ' + esc(L('Nouveau projet')) + '</button>' +
           (c.contacts[0] ? '<button class="btn btn--secondary btn--sm" type="button" data-resend="' + esc(c.contacts[0].userId) + '">' + esc(L('Renvoyer l’invitation')) + '</button>' : '') +
-          '<button class="btn btn--secondary btn--sm" type="button" data-edit>' + esc(L('Modifier')) + '</button></div></div>';
+          '<button class="btn btn--secondary btn--sm" type="button" data-edit>' + esc(L('Modifier')) + '</button>' +
+          '<button class="btn btn--secondary btn--sm btn--danger" type="button" data-delete-client>' + esc(L('Supprimer')) + '</button></div></div>';
       }).join('') + '</div>' : '<div class="pt-card"><p class="pt-h2">' + esc(L('Aucun client pour le moment.')) + '</p></div>';
     }
     app.removeAttribute('aria-busy');
@@ -153,6 +166,16 @@
       var c = state.clients.find(function (x) { return x.id === el.getAttribute('data-client'); });
       $('[data-new-project]', el).addEventListener('click', function () { newProjectDialog(c.id, c.company, c.contacts[0] && c.contacts[0].locale); });
       $('[data-edit]', el).addEventListener('click', function () { editClientDialog(c); });
+      $('[data-delete-client]', el).addEventListener('click', function () {
+        deleteDialog(L('Supprimer le client'), [
+          !c.projects.length ? L('« {name} » sera supprimé (aucun projet).', { name: c.company })
+            : c.projects.length === 1 ? L('« {name} » sera supprimé avec son projet : étapes, mises à jour, paiements, documents et fichiers.', { name: c.company })
+              : L('« {name} » sera supprimé avec ses {n} projets : étapes, mises à jour, paiements, documents et fichiers.', { name: c.company, n: c.projects.length }),
+          L('Ses accès au portail sont supprimés aussi. Cette action est irréversible.')
+        ], c.company, function (confirm) {
+          return P.adminApi('client-delete', { id: c.id, confirm: confirm }).then(function () { return loadOverview().then(function () { P.toast(L('Client supprimé.')); }); });
+        });
+      });
       var rs = $('[data-resend]', el);
       if (rs) rs.addEventListener('click', function () {
         P.busy(rs, P.adminApi('invite-resend', { userId: rs.getAttribute('data-resend') })).then(function (r) {
@@ -274,6 +297,11 @@
       (b.payments.length ? '<p class="pt-muted pt-small">' + esc(L('La devise ne peut plus changer : des paiements sont enregistrés.')) + '</p>' : '') +
       '<div class="pt-actions"><button class="btn btn--primary" type="submit">' + esc(L('Enregistrer les détails')) + '</button>' +
       (p.status !== 'completed' ? '<button class="btn btn--secondary" type="button" data-close-project>' + esc(L('Clôturer le projet')) + '</button>' : '') + '</div></form></section>';
+
+    // Deletion, last and apart
+    html += '<section class="ad-sheet" aria-labelledby="ad-del"><h2 class="pt-h2" id="ad-del">' + esc(L('Supprimer le projet')) + '</h2>' +
+      '<p class="pt-muted" style="margin:6px 0 14px">' + esc(L('Pour un projet de test ou créé par erreur. Tout ce qui le concerne est effacé, le client ne le voit plus.')) + '</p>' +
+      '<div class="pt-actions"><button class="btn btn--secondary btn--danger" type="button" data-delete-project>' + esc(L('Supprimer le projet')) + '</button></div></section>';
 
     html += '</div>';
     app.removeAttribute('aria-busy');
@@ -431,6 +459,14 @@
       e.preventDefault();
       P.busy(tf.querySelector('[type="submit"]'), P.adminApi('project-update', { id: p.id, fields: fields() })).then(function () { return reload(L('Détails enregistrés.')); }, function (err) { P.formError(tf, err); });
     });
+    $('[data-delete-project]', app).addEventListener('click', function () {
+      deleteDialog(L('Supprimer le projet'), [
+        L('« {name} » sera supprimé avec ses étapes, mises à jour, paiements, documents et fichiers.', { name: p.name }),
+        L('Cette action est irréversible.')
+      ], p.name, function (confirm) {
+        return P.adminApi('project-delete', { id: p.id, confirm: confirm }).then(function () { location.replace('/admin/?deleted=1'); });
+      });
+    });
     var cl = $('[data-close-project]', app);
     if (cl) cl.addEventListener('click', function () {
       if (!confirm(L('Clôturer ce projet ? Il sera affiché comme livré au client.'))) return;
@@ -478,7 +514,9 @@
     $('[data-profile]').hidden = false;
     profileHint();
     P.preferLocale(me.locale);
-    return isProject ? (pid ? loadProject() : Promise.reject({ code: 'NOT_FOUND' })) : loadOverview();
+    return isProject ? (pid ? loadProject() : Promise.reject({ code: 'NOT_FOUND' })) : loadOverview().then(function () {
+      if (/[?&]deleted=1/.test(location.search)) { history.replaceState(null, '', location.pathname); P.toast(L('Projet supprimé.')); }
+    });
   }).catch(fail);
   P.onLocale(function () {
     P.applyStatic();

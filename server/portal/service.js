@@ -622,6 +622,56 @@ async function deleteDocument(ctx, documentId) {
   return { ok: true };
 }
 
+/* -------------------------------------------------------------- deletion */
+// Irreversible, so the admin types the exact name to confirm (the API
+// checks it too). Everything attached goes with the project (stages,
+// updates, actions, payments, documents: ON DELETE CASCADE), then the
+// stored files; a file the store failed to delete is unreachable and logged.
+function confirmName(given, expected) {
+  if (String(given || '').trim().toLowerCase() !== String(expected || '').trim().toLowerCase()) throw err('CONFIRM_MISMATCH', 'confirm');
+}
+async function removeFiles(paths) {
+  for (const p of paths) {
+    try { await storage.store().remove(p); } catch (e) { console.error('[portal] blob not deleted', p, e.code || e.message); }
+  }
+}
+
+async function deleteProject(ctx, projectId, confirm) {
+  assertAdmin(ctx);
+  const pid = id(projectId);
+  const paths = await db.transaction(async tx => {
+    const p = await projects.byId(tx, pid);
+    if (!p) throw err('NOT_FOUND');
+    confirmName(confirm, p.name);
+    const files = await documents.pathsOfProjects(tx, [pid]);
+    await projects.remove(tx, pid);
+    return files;
+  });
+  await removeFiles(paths);
+  return { ok: true };
+}
+
+// A client: the company, all its projects, and its client accounts that
+// belong to no other company (their sessions and links too). Admin accounts
+// are never deleted here.
+async function deleteClient(ctx, organizationId, confirm) {
+  assertAdmin(ctx);
+  const oid = id(organizationId);
+  const out = await db.transaction(async tx => {
+    const o = await orgs.byId(tx, oid);
+    if (!o) throw err('NOT_FOUND');
+    confirmName(confirm, o.name);
+    const pids = await projects.idsOfOrganization(tx, oid);
+    const files = await documents.pathsOfProjects(tx, pids);
+    const people = await orgs.exclusiveClients(tx, oid);
+    await orgs.remove(tx, oid);
+    await users.removeClients(tx, people);
+    return { files, projects: pids.length, accounts: people.length };
+  });
+  await removeFiles(out.files);
+  return { ok: true, projects: out.projects, accounts: out.accounts };
+}
+
 // The 30-second update: stage + progress + update + next step in one go.
 async function quickUpdate(ctx, projectId, input) {
   assertAdmin(ctx);
@@ -650,7 +700,7 @@ module.exports = {
   // client
   getClientPortal, getClientPreview, getDocumentLink,
   // admin
-  getMyProfile, updateMyProfile, adminOverview, adminClients, createClient, updateClient, resendInvite,
+  getMyProfile, updateMyProfile, adminOverview, adminClients, createClient, deleteClient, deleteProject, updateClient, resendInvite,
   createProject, getProjectAdmin, updateProject, updateProjectStage, addProjectUpdate, setNextStep,
   recordPayment, updatePayment, deletePayment, setRequiredAction, resolveRequiredAction,
   requestDocumentUpload, uploadProjectDocument, updateDocument, deleteDocument, quickUpdate

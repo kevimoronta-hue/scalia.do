@@ -86,6 +86,7 @@
     LINK_INVALID: 'Ce lien n’est plus valable. Demandez-en un nouveau.',
     PASSWORD_WEAK: 'Le mot de passe doit contenir au moins 10 caractères.',
     PASSWORD_MISMATCH: 'Les deux mots de passe ne correspondent pas.',
+    CONFIRM_MISMATCH: 'Le nom tapé ne correspond pas.',
     CURRENCY_LOCKED: 'La devise ne peut plus changer : des paiements sont enregistrés.',
     NOT_CONFIGURED: 'Le portail n’est pas encore configuré.',
     EMAIL_EXISTS: 'Cette adresse a déjà un accès. Utilisez « Renvoyer l’invitation ».',

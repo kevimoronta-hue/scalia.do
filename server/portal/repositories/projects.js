@@ -25,6 +25,8 @@ function create(q, p) {
 const byId = (q, id) => q.one('select ' + COLS + ' from projects p where p.id = $1', [id]);
 const listForUser = (q, userId) => q.query(
   'select ' + COLS + ' from projects p join organization_members m on m.organization_id = p.organization_id where m.user_id = $1 order by p.created_at desc', [userId]);
+const remove = (q, id) => q.one('delete from projects where id = $1 returning id', [id]);
+const idsOfOrganization = (q, orgId) => q.query('select id from projects where organization_id = $1', [orgId]).then(r => r.map(x => x.id));
 const listAll = q => q.query('select ' + COLS + ' from projects p order by p.updated_at desc');
 async function update(q, id, patch, by) {
   const s = setClause(patch, PROJECT_EDITABLE, 3);
@@ -71,7 +73,7 @@ const resolveAction = (q, id, by) => q.one(
   "update project_actions set status = 'resolved', resolved_at = now(), resolved_by = $2 where id = $1 and status = 'open' returning *", [id, by]);
 
 module.exports = {
-  create, byId, listForUser, listAll, update,
+  create, byId, listForUser, listAll, update, remove, idsOfOrganization,
   createStages, stages, stageByKey, allStages, updateStage,
   updates, addUpdate, actions, openActions, addAction, resolveAction
 };
