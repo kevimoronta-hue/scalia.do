@@ -1,6 +1,7 @@
 /* ==========================================================================
-   Scalia Portal · access emails (invitation, new password), in the
-   client's language, through the same sender as the booking emails
+   Scalia Portal · access emails (invitation, new password) and the
+   welcome email (password chosen, portal ready), in the client's language
+   and, where the language has it, the client's gender (users.gender), through the same sender as the booking emails
    (Gmail as contact@scalia.do, or Resend when RESEND_API_KEY is set).
    The link carries a one-time token (server/portal/auth.js).
    PORTAL_MOCK=1: the email is written as an .eml file instead.
@@ -27,6 +28,20 @@ const T = {
     resetExpiry: 'Este enlace es personal y válido 1 hora. Scalia nunca te pedirá tu contraseña.',
     ignore: 'Si no esperabas este correo, puedes ignorarlo.',
     then: 'Después, entra siempre desde scalia.do/portal.',
+    // Welcome (password chosen). g: 'm' | 'f' | '' (neutral)
+    welcomeSubject: g => (g === 'm' ? 'Bienvenido' : g === 'f' ? 'Bienvenida' : 'Te damos la bienvenida') + ' a tu portal Scalia',
+    welcomeTitle: (g, n) => g === 'm' ? '¡Bienvenido' + (n ? ', ' + n : '') + '!' : g === 'f' ? '¡Bienvenida' + (n ? ', ' + n : '') + '!' : 'Te damos la bienvenida' + (n ? ', ' + n : '') + '.',
+    welcomeLead: c => 'Tu cuenta está activada. Desde hoy sigues tu proyecto' + (c ? ' de ' + c : '') + ' en tiempo real, en un solo lugar:',
+    welcomeItems: [
+      'El avance de cada etapa, del brief a la entrega.',
+      'Las próximas etapas y lo que necesitamos de ti, en el momento justo.',
+      'Tus pagos: lo pagado y lo que queda.',
+      'Tus documentos (contratos, maquetas, facturas, entregables), siempre a mano.'
+    ],
+    welcomeCta: 'Ir a mi portal',
+    welcomeLogin: e => 'Para entrar: scalia.do/portal, con tu correo ' + e + ' y la contraseña que acabas de crear.',
+    welcomeHelp: '¿Una pregunta? Responde a este correo y te contestamos directamente.',
+    welcomeSafety: 'Si no fuiste tú quien creó esta contraseña, avísanos respondiendo a este correo.',
     sign: 'El equipo Scalia'
   },
   fr: {
@@ -43,6 +58,20 @@ const T = {
     resetExpiry: 'Ce lien est personnel et valable 1 heure. Scalia ne vous demandera jamais votre mot de passe.',
     ignore: 'Si vous n’attendiez pas cet email, vous pouvez l’ignorer.',
     then: 'Ensuite, connectez-vous toujours depuis scalia.do/portal.',
+    // Welcome (password chosen). g: 'm' | 'f' | '' (neutral)
+    welcomeSubject: g => (g === 'm' ? 'Bienvenu' : 'Bienvenue') + ' sur votre portail Scalia',
+    welcomeTitle: (g, n) => (g === 'm' ? 'Bienvenu' : 'Bienvenue') + (n ? ', ' + n : '') + '.',
+    welcomeLead: c => 'Votre compte est activé. Vous suivez désormais votre projet' + (c ? ' ' + c : '') + ' en temps réel, au même endroit :',
+    welcomeItems: [
+      'L’avancement de chaque étape, du brief à la livraison.',
+      'Les prochaines étapes, et ce dont nous avons besoin de votre part au bon moment.',
+      'Vos paiements : ce qui est réglé et ce qui reste.',
+      'Vos documents (contrats, maquettes, factures, livrables), toujours à portée de main.'
+    ],
+    welcomeCta: 'Accéder à mon portail',
+    welcomeLogin: e => 'Pour vous connecter : scalia.do/portal, avec votre email ' + e + ' et le mot de passe que vous venez de créer.',
+    welcomeHelp: 'Une question ? Répondez simplement à cet email, nous vous répondons directement.',
+    welcomeSafety: 'Si vous n’êtes pas à l’origine de ce mot de passe, prévenez-nous en répondant à cet email.',
     sign: 'L’équipe Scalia'
   },
   en: {
@@ -59,6 +88,20 @@ const T = {
     resetExpiry: 'This link is personal and valid for 1 hour. Scalia will never ask for your password.',
     ignore: 'If you weren’t expecting this email, you can ignore it.',
     then: 'After that, always sign in from scalia.do/portal.',
+    // Welcome (password chosen). English has no gendered form.
+    welcomeSubject: () => 'Welcome to your Scalia portal',
+    welcomeTitle: (g, n) => 'Welcome' + (n ? ', ' + n : '') + '.',
+    welcomeLead: c => 'Your account is active. From now on you follow your project' + (c ? ' for ' + c : '') + ' in real time, in one place:',
+    welcomeItems: [
+      'The progress of each stage, from brief to delivery.',
+      'The next steps, and what we need from you, right when we need it.',
+      'Your payments: what is paid and what is left.',
+      'Your documents (contracts, mockups, invoices, deliverables), always at hand.'
+    ],
+    welcomeCta: 'Go to my portal',
+    welcomeLogin: e => 'To sign in: scalia.do/portal, with your email ' + e + ' and the password you just created.',
+    welcomeHelp: 'A question? Just reply to this email and we will answer you directly.',
+    welcomeSafety: 'If you did not create this password, let us know by replying to this email.',
     sign: 'The Scalia team'
   }
 };
@@ -86,6 +129,32 @@ function accessMail(o) {
   return { to: o.to, replyTo: BOOKING.fromEmail, subject: invite ? t.inviteSubject(o.company) : t.resetSubject, html: mail.shell(inner), text: textBody };
 }
 
+// Password chosen through an invitation: what the portal is for, how to
+// come back, who to ask. o: { to, locale, gender, firstName, company, url }
+function welcomeMail(o) {
+  const t = T[o.locale] || T.es;
+  const esc = mail.esc;
+  const p = s => '<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#57504A;">' + esc(s) + '</p>';
+  const li = s => '<tr><td style="width:22px;padding:0 0 10px;vertical-align:top;font-size:15px;line-height:1.6;color:#E2AC56;">&#10003;</td>' +
+    '<td style="padding:0 0 10px;font-size:15px;line-height:1.6;color:#57504A;">' + esc(s) + '</td></tr>';
+  const lead = t.welcomeLead(o.company);
+  const inner =
+    '<tr><td style="padding:32px 32px 8px;">' +
+    '<h1 style="margin:0 0 18px;font-size:24px;line-height:1.25;font-weight:650;color:#0E0B0A;">' + esc(t.welcomeTitle(o.gender, o.firstName)) + '</h1>' +
+    p(lead) +
+    '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">' + t.welcomeItems.map(li).join('') + '</table>' +
+    '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:14px 0 22px;"><tr><td style="border-radius:12px;background:#E2AC56;">' +
+    '<a href="' + esc(o.url) + '" style="display:inline-block;padding:15px 26px;font-size:15px;font-weight:600;color:#160F08;text-decoration:none;border-radius:12px;">' + esc(t.welcomeCta) + '</a></td></tr></table>' +
+    '<p style="margin:0 0 10px;font-size:13px;line-height:1.55;color:#8D857E;">' + esc(t.welcomeLogin(o.to)) + '</p>' +
+    '<p style="margin:0 0 10px;font-size:13px;line-height:1.55;color:#8D857E;">' + esc(t.welcomeHelp) + '</p>' +
+    '<p style="margin:0 0 22px;font-size:13px;line-height:1.55;color:#8D857E;">' + esc(t.welcomeSafety) + '</p>' +
+    '<p style="margin:0 0 8px;font-size:15px;line-height:1.6;color:#0E0B0A;">' + esc(t.sign) + '</p>' +
+    '</td></tr>';
+  const textBody = [t.welcomeTitle(o.gender, o.firstName), '', lead].concat(t.welcomeItems.map(x => '- ' + x),
+    ['', t.welcomeCta + ': ' + o.url, '', t.welcomeLogin(o.to), t.welcomeHelp, t.welcomeSafety, '', t.sign]).join('\n');
+  return { to: o.to, replyTo: BOOKING.fromEmail, subject: t.welcomeSubject(o.gender), html: mail.shell(inner), text: textBody, messageId: o.messageId };
+}
+
 // PORTAL_MOCK=1 keeps the email as a file instead of sending it.
 async function send(m) {
   if (config.mock()) {
@@ -104,4 +173,4 @@ async function send(m) {
   return mail.send(require('../google'), m);
 }
 
-module.exports = { accessMail, send };
+module.exports = { accessMail, welcomeMail, send };

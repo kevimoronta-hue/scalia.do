@@ -18,6 +18,8 @@ const db = require('./db');
 const auth = require('./auth');
 const storage = require('./storage');
 const portalMail = require('./mail');
+const mailEvents = require('../mail-events');
+const { messageId } = require('../mail');
 const users = require('./repositories/users');
 const orgs = require('./repositories/organizations');
 const projects = require('./repositories/projects');
@@ -57,6 +59,8 @@ function text(v, max, field, required) {
   return s;
 }
 function oneOf(v, list, field) { if (!list.includes(v)) throw err('INVALID', field); return v; }
+// Salutation (users.gender): '' neutral, m, f.
+const gender = v => oneOf(v == null ? '' : String(v), ['', 'm', 'f'], 'gender');
 // A real calendar day (2026-02-31 is refused, not rolled over).
 function date(v, field) {
   if (v == null || v === '') return null;
@@ -201,12 +205,14 @@ async function tokenInfo(rawToken) {
   const h = auth.tokenHashOf(rawToken);
   const t = h && await authRepo.peekToken(q, h);
   if (!t) throw err('LINK_INVALID');
-  return { type: t.type, email: t.email, name: t.first_name, locale: t.preferred_locale };
+  return { type: t.type, email: t.email, name: t.first_name, gender: t.gender, locale: t.preferred_locale };
 }
 
 // Invitation or reset link + new password: one use, then a fresh session.
-// Every other session of the account is signed out.
-async function acceptToken(rawToken, password) {
+// Every other session of the account is signed out. A client accepting an
+// invitation then gets the welcome email (once per account, mail_events);
+// if it cannot leave, the sign-in still succeeds.
+async function acceptToken(rawToken, password, siteUrl) {
   const h = auth.tokenHashOf(rawToken);
   const peek = h && await authRepo.peekToken(q, h);
   if (!peek) throw err('LINK_INVALID');
@@ -220,7 +226,19 @@ async function acceptToken(rawToken, password) {
     return users.setPassword(tx, t.user_id, hash);
   });
   const s = await auth.createSession(user.id);
+  if (peek.type === 'invite' && user.role === 'client' && siteUrl) await sendWelcome(user, siteUrl);
   return { session: s, role: user.role, locale: user.preferred_locale };
+}
+
+async function sendWelcome(user, siteUrl) {
+  try {
+    const org = await orgs.firstOfUser(q, user.id);
+    const m = portalMail.welcomeMail({
+      to: user.email, locale: user.preferred_locale, gender: user.gender, firstName: user.first_name, company: org ? org.name : '',
+      url: siteUrl + '/portal/?lang=' + user.preferred_locale, messageId: messageId('portal-welcome', user.id, 'client')
+    });
+    await mailEvents.once({ key: 'portal-welcome:' + user.id, type: 'portal_welcome', recipient: user.email }, () => portalMail.send(m));
+  } catch (e) { console.error('[portal] welcome email', e.code || e.message); }
 }
 
 async function sendAccess(user, type, siteUrl, company, by) {
@@ -277,7 +295,7 @@ async function adminClients(ctx) {
       id: o.id, company: o.name, createdAt: o.created_at,
       contacts: members.filter(m => m.organization_id === o.id).map(m => {
         const u = people.find(x => x.id === m.user_id) || {};
-        return { userId: m.user_id, name: users.fullName(u), email: u.email || '', phone: u.phone || '', locale: u.preferred_locale || 'es', active: !!u.is_active };
+        return { userId: m.user_id, name: users.fullName(u), email: u.email || '', phone: u.phone || '', locale: u.preferred_locale || 'es', gender: u.gender || '', active: !!u.is_active };
       }),
       projects: list.filter(p => p.organization_id === o.id).map(p => ({ id: p.id, name: p.name, status: p.status }))
     })),
@@ -294,9 +312,10 @@ async function createClient(ctx, input, siteUrl) {
   const mail = email(input.email);
   const phone = line(input.phone, 40, 'phone');
   const locale = oneOf(input.locale || 'es', S.LOCALES, 'locale');
+  const g = gender(input.gender);
   const created = await db.transaction(async tx => {
     if (await users.byEmail(tx, mail)) throw err('EMAIL_EXISTS', 'email');
-    const user = await users.create(tx, Object.assign({ email: mail, role: 'client', preferred_locale: locale, phone, by: ctx.user.id }, splitName(name)));
+    const user = await users.create(tx, Object.assign({ email: mail, role: 'client', preferred_locale: locale, gender: g, phone, by: ctx.user.id }, splitName(name)));
     const org = await orgs.create(tx, company, ctx.user.id);
     await orgs.addMember(tx, org.id, user.id);
     return { user, org };
@@ -311,7 +330,7 @@ async function updateClient(ctx, organizationId, input) {
   const oid = id(organizationId);
   const company = line(input.company, 160, 'company', true);
   const c = input.contact && input.contact.userId ? input.contact : null;
-  const contact = c ? Object.assign({ phone: line(c.phone, 40, 'phone'), preferred_locale: oneOf(c.locale || 'es', S.LOCALES, 'locale') }, splitName(line(c.name, 120, 'contactName', true))) : null;
+  const contact = c ? Object.assign({ phone: line(c.phone, 40, 'phone'), preferred_locale: oneOf(c.locale || 'es', S.LOCALES, 'locale'), gender: gender(c.gender) }, splitName(line(c.name, 120, 'contactName', true))) : null;
   return db.transaction(async tx => {
     const o = await orgs.rename(tx, oid, company, ctx.user.id);
     if (!o) throw err('NOT_FOUND');

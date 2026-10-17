@@ -17,6 +17,7 @@ create table users (
   phone            text not null default '' check (length(phone) <= 40),
   whatsapp         text not null default '' check (length(whatsapp) <= 40),
   title            text not null default '' check (length(title) <= 120),   -- shown when an admin is a project contact
+  gender           text not null default '' check (gender in ('', 'm', 'f')),   -- salutation: '' neutral, m, f
   is_active        boolean not null default false,        -- true once the password is set
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now(),
@@ -176,7 +177,7 @@ create index project_actions_project_idx on project_actions (project_id, status)
 create table mail_events (
   id                  uuid primary key default gen_random_uuid(),
   event_key           text not null unique check (length(event_key) between 3 and 200),
-  event_type          text not null check (event_type in ('application_admin', 'application_candidate', 'booking_admin', 'booking_client', 'portal_invite', 'password_reset')),
+  event_type          text not null check (event_type in ('application_admin', 'application_candidate', 'booking_admin', 'booking_client', 'portal_invite', 'password_reset', 'portal_welcome')),
   recipient           text not null default '' check (length(recipient) <= 254),
   status              text not null default 'processing' check (status in ('processing', 'completed', 'failed')),
   attempts            integer not null default 1,

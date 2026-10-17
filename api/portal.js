@@ -80,7 +80,7 @@ module.exports = router({
     async run(req, res, b) {
       ready();
       await limit('token:ip:' + ip(req), 30, 15 * MIN);
-      const r = await service.acceptToken(b.token, b.password);
+      const r = await service.acceptToken(b.token, b.password, session.siteUrl(req));
       await dropPreviousSession(req);
       session.setCookie(req, res, r.session);
       return { ok: true, role: r.role, locale: r.locale };

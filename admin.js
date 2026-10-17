@@ -15,6 +15,7 @@
   var state = {};
 
   var LOCALES = [['es', 'Espagnol'], ['fr', 'Français'], ['en', 'Anglais']];
+  var GENDERS = [['', 'Neutre (non précisé)'], ['m', 'Homme · Bienvenido'], ['f', 'Femme · Bienvenida']];
   var CURRENCIES = ['EUR', 'USD', 'DOP'];
   var SITE_LANGS = ['es', 'fr', 'en', 'de', 'it', 'pt'];
 
@@ -66,10 +67,11 @@
       field('company', 'Entreprise', input('company', 'text', '', ' required autocomplete="organization"')) +
       field('contactName', 'Nom du contact', input('contactName', 'text', '', ' required autocomplete="name"')) +
       field('email', 'Email', input('email', 'email', '', ' required autocomplete="email" inputmode="email"'), 'Le client recevra une invitation pour créer son mot de passe.') +
-      '<div class="pt-row pt-row--2">' + field('phone', 'Téléphone', input('phone', 'tel', '', ' autocomplete="tel"')) + field('locale', 'Langue', select('locale', LOCALES, 'es')) + '</div>',
+      '<div class="pt-row pt-row--2">' + field('phone', 'Téléphone', input('phone', 'tel', '', ' autocomplete="tel"')) + field('locale', 'Langue', select('locale', LOCALES, 'es')) + '</div>' +
+      field('gender', 'Salutation', select('gender', GENDERS, ''), 'Accord du « Bienvenido / Bienvenida » dans le portail et les emails.'),
       L('Créer et inviter'),
       function (f) {
-        return P.adminApi('client-create', { company: f.company.value, contactName: f.contactName.value, email: f.email.value, phone: f.phone.value, locale: f.locale.value }).then(function (r) {
+        return P.adminApi('client-create', { company: f.company.value, contactName: f.contactName.value, email: f.email.value, phone: f.phone.value, locale: f.locale.value, gender: f.gender.value }).then(function (r) {
           if (r.mailSent === false) P.toast(L('Client créé, mais l’email n’est pas parti : utilisez « Renvoyer l’invitation ».'), 'err');
           else P.toast(L('Client créé. Invitation envoyée à {email}.', { email: f.email.value.trim() }));
           setTimeout(function () { newProjectDialog(r.id, f.company.value, f.locale.value); }, 50);
@@ -99,10 +101,11 @@
     dialog(L('Modifier le client'),
       field('company', 'Entreprise', input('company', 'text', c.company, ' required')) +
       (k.userId ? field('contactName', 'Nom du contact', input('contactName', 'text', k.name, ' required')) +
-        '<div class="pt-row pt-row--2">' + field('phone', 'Téléphone', input('phone', 'tel', k.phone)) + field('locale', 'Langue', select('locale', LOCALES, k.locale)) + '</div>' : ''),
+        '<div class="pt-row pt-row--2">' + field('phone', 'Téléphone', input('phone', 'tel', k.phone)) + field('locale', 'Langue', select('locale', LOCALES, k.locale)) + '</div>' +
+        field('gender', 'Salutation', select('gender', GENDERS, k.gender || '')) : ''),
       L('Enregistrer'),
       function (f) {
-        return P.adminApi('client-update', { id: c.id, company: f.company.value, contact: k.userId ? { userId: k.userId, name: f.contactName.value, phone: f.phone.value, locale: f.locale.value } : null })
+        return P.adminApi('client-update', { id: c.id, company: f.company.value, contact: k.userId ? { userId: k.userId, name: f.contactName.value, phone: f.phone.value, locale: f.locale.value, gender: f.gender.value } : null })
           .then(function () { P.toast(L('Enregistré.')); loadOverview(); });
       });
   }
@@ -134,7 +137,7 @@
     } else {
       body = state.clients.length ? '<div class="ad-list">' + state.clients.map(function (c) {
         return '<div class="ad-item" data-client="' + esc(c.id) + '"><div><p class="ad-item__name">' + esc(c.company) + '</p>' +
-          c.contacts.map(function (k) { return '<p class="ad-item__sub">' + esc(k.name) + ' · ' + esc(k.email) + ' · ' + esc(k.locale.toUpperCase()) + '</p>'; }).join('') + '</div><span></span>' +
+          c.contacts.map(function (k) { return '<p class="ad-item__sub">' + esc(k.name) + ' · ' + esc(k.email) + ' · ' + esc(k.locale.toUpperCase()) + (k.gender ? ' · ' + esc(L(k.gender === 'm' ? 'Homme' : 'Femme')) : '') + '</p>'; }).join('') + '</div><span></span>' +
           '<div class="ad-item__meta">' + c.projects.map(function (p) { return '<a class="pt-badge pt-badge--open" href="/admin/project/?id=' + encodeURIComponent(p.id) + '">' + esc(p.name) + '</a>'; }).join('') + '</div>' +
           '<div class="ad-item__meta"><button class="btn btn--secondary btn--sm" type="button" data-new-project>+ ' + esc(L('Nouveau projet')) + '</button>' +
           (c.contacts[0] ? '<button class="btn btn--secondary btn--sm" type="button" data-resend="' + esc(c.contacts[0].userId) + '">' + esc(L('Renvoyer l’invitation')) + '</button>' : '') +

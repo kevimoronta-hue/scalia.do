@@ -74,18 +74,27 @@
     else try { token = sessionStorage.getItem(KEY); } catch (e) {}
     try { history.replaceState(null, '', location.pathname + (q.get('lang') ? '?lang=' + q.get('lang') : '')); } catch (e) {}
     var invite = true;
+    // Salutation set by Scalia (users.gender): ES Bienvenido / Bienvenida,
+    // FR Bienvenu / Bienvenue, neutral wording when not specified.
+    var GREET = {
+      m: ['Bienvenu, {name}.', 'Bienvenu.'],
+      f: ['Bienvenue, {name}.', 'Bienvenue.'],
+      '': ['Nous vous souhaitons la bienvenue, {name}.', 'Nous vous souhaitons la bienvenue.']
+    };
     var fill = function (name) {
+      var g = GREET[gender] || GREET[''];
       $('[data-welcome-eyebrow]').textContent = L('Espace client Scalia');
       $('[data-welcome-title]').textContent = invite
-        ? (name ? L('Bienvenue, {name}.', { name: name.split(' ')[0] }) : L('Bienvenue.'))
+        ? (name ? L(g[0], { name: name.split(' ')[0] }) : L(g[1]))
         : L('Choisissez un nouveau mot de passe.');
     };
-    var who = '';
+    var who = '', gender = '';
     if (!token || !/^[A-Za-z0-9_-]{43}$/.test(token)) show('invalid');
     else {
       P.portalApi('token-info', { token: token }, { noRedirect: true }).then(function (r) {
         invite = r.type === 'invite';
         who = r.name || '';
+        gender = r.gender || '';
         if (r.locale && !q.get('lang')) P.preferLocale(r.locale);
         $('[data-username]').value = r.email || '';
         fill(who);

@@ -83,7 +83,7 @@ r = await req(jar(), 'POST', '/api/portal/?a=login', { email: 'nobody@scalia.tes
 ok(r.s === 400 && r.d.error === 'INVALID_CREDENTIALS', 'unknown email: same answer as a wrong password');
 
 section('clients, projects, progress');
-let c = await req(A, 'POST', '/api/portal-admin/?a=client-create', { company: 'Top Advertising', contactName: 'Ana Pérez', email: 'ana@top.test', phone: '+18095551234', locale: 'es' }, O);
+let c = await req(A, 'POST', '/api/portal-admin/?a=client-create', { company: 'Top Advertising', contactName: 'Ana Pérez', email: 'ana@top.test', phone: '+18095551234', locale: 'es', gender: 'f' }, O);
 const cA = c.d;
 const cB = (await req(A, 'POST', '/api/portal-admin/?a=client-create', { company: 'Client B', contactName: 'Bob Brown', email: 'bob@b.test', locale: 'en' }, O)).d;
 ok(cA.id && cB.id && cA.mailSent, 'two clients created, invitation sent');
@@ -91,6 +91,9 @@ r = await req(A, 'POST', '/api/portal-admin/?a=client-create', { company: 'X', c
 ok(r.d.error === 'EMAIL_EXISTS', 'duplicate email refused (case-insensitive)');
 r = await req(A, 'POST', '/api/portal-admin/?a=client-create', { company: 'X', contactName: 'X', email: 'not-an-email', locale: 'es' }, O);
 ok(r.d.error === 'INVALID' && r.d.field === 'email', 'invalid email refused');
+r = await req(A, 'POST', '/api/portal-admin/?a=client-create', { company: 'X', contactName: 'X', email: 'x@x.test', locale: 'es', gender: 'x' }, O);
+ok(r.d.error === 'INVALID' && r.d.field === 'gender', 'unknown salutation refused');
+ok((await req(A, 'GET', '/api/portal-admin/?a=clients')).d.clients.find(x => x.id === cB.id).contacts[0].gender === '', 'salutation not given: neutral');
 const team = (await req(A, 'GET', '/api/portal-admin/?a=clients')).d.team;
 const pA = (await req(A, 'POST', '/api/portal-admin/?a=project-create', { organizationId: cA.id, name: 'Rediseño web', type: 'Sitio web', currency: 'EUR', totalAmount: '700', startDate: '2026-10-01', estimatedDeliveryDate: '2026-11-20', contactId: team[0].id, preferredLocale: 'es' }, O)).d;
 const pB = (await req(A, 'POST', '/api/portal-admin/?a=project-create', { organizationId: cB.id, name: 'B secret project', currency: 'USD', totalAmount: '1200' }, O)).d;
@@ -162,7 +165,7 @@ ok(tA && mails().find(m => m.to === 'ana@top.test').text.includes('/portal/welco
 const stored = await db.query('select token_hash from auth_tokens where token_hash = $1 or token_hash = $2', [tA, auth.sha256(tA)]);
 ok(stored.length === 1 && stored[0].token_hash === auth.sha256(tA), 'only the SHA-256 of the token is stored');
 r = await req(jar(), 'POST', '/api/portal/?a=token-info', { token: tA }, O);
-ok(r.s === 200 && r.d.type === 'invite' && r.d.name === 'Ana' && r.d.locale === 'es', 'token-info: name and language for the welcome page');
+ok(r.s === 200 && r.d.type === 'invite' && r.d.name === 'Ana' && r.d.gender === 'f' && r.d.locale === 'es', 'token-info: name, salutation and language for the welcome page');
 const CA = jar();
 r = await req(CA, 'POST', '/api/portal/?a=accept', { token: tA, password: 'short' }, O);
 ok(r.d.error === 'PASSWORD_WEAK', 'password under 10 characters refused');
@@ -172,6 +175,11 @@ r = await req(CA, 'POST', '/api/portal/?a=accept', { token: tA, password: 'ana@t
 ok(r.d.error === 'PASSWORD_WEAK', 'password = email refused');
 r = await req(CA, 'POST', '/api/portal/?a=accept', { token: tA, password: 'AnaTop-2026-pw' }, O);
 ok(r.s === 200 && r.d.role === 'client' && CA.c.scalia_ps, 'client sets own password and is signed in');
+const welcomes = () => mails().filter(m => m.to === 'ana@top.test' && /portal Scalia/.test(m.subject || ''));
+const wA = welcomes();
+ok(wA.length === 1 && wA[0].subject === 'Bienvenida a tu portal Scalia' && wA[0].text.startsWith('¡Bienvenida, Ana!'), 'welcome email after the invitation: Spanish, feminine');
+ok(wA[0].text.includes('/portal/?lang=es') && !/token=/.test(wA[0].text) && wA[0].text.includes('ana@top.test'), 'welcome email: portal link, sign-in email, no token');
+ok(!mails().some(m => m.to === 'admin@scalia.test' && /portail Scalia|portal Scalia/.test(m.subject || '')), 'no welcome email for an admin');
 r = await req(jar(), 'POST', '/api/portal/?a=accept', { token: tA, password: 'Another-pass-2026' }, O);
 ok(r.d.error === 'LINK_INVALID', 'invitation link: one use only');
 const hashRow = await db.one('select password_hash from users where email = $1', ['ana@top.test']);
@@ -255,6 +263,7 @@ ok(resetRow.type === 'reset' && resetRow.ttl === 3600, 'reset link valid 1 hour'
 ok(mails().filter(m => m.to === 'ana@top.test').pop().text.includes('1 hora'), 'reset email in the client language (ES)');
 const R = jar();
 r = await req(R, 'POST', '/api/portal/?a=accept', { token: tR, password: 'AnaNew-2026-pw' }, O); ok(r.s === 200, 'new password set through the reset link');
+ok(welcomes().length === 1, 'new password through a reset: no second welcome email');
 r = await req(jar(), 'POST', '/api/portal/?a=accept', { token: tR, password: 'AnaNew-2026-pw2' }, O); ok(r.d.error === 'LINK_INVALID', 'reset link reused: refused');
 r = await req(other, 'GET', '/api/portal/?a=me'); ok(r.s === 401, 'reset signs every other session out');
 r = await req(CA, 'GET', '/api/portal/?a=me'); ok(r.s === 401, 'reset signs the earlier session out too');
@@ -282,8 +291,9 @@ ok(r.s === 404 && users.fullName(await users.byId(db.pool, adminRow.id)) === 'Sc
 const anaId = (await users.byEmail(db.pool, 'ana@top.test')).id;
 r = await req(A, 'POST', '/api/portal-admin/?a=client-update', { id: cB.id, company: 'Client B', contact: { userId: anaId, name: 'Wrong Org', phone: '', locale: 'es' } }, O);
 ok(r.s === 404 && users.fullName(await users.byId(db.pool, anaId)) === 'Ana Pérez', 'client update cannot edit a contact of another organization');
-r = await req(A, 'POST', '/api/portal-admin/?a=client-update', { id: cB.id, company: 'Client B', contact: { userId: cB.userId, name: 'Bob Brown', phone: '+1 809 555 0000', locale: 'en' } }, O);
+r = await req(A, 'POST', '/api/portal-admin/?a=client-update', { id: cB.id, company: 'Client B', contact: { userId: cB.userId, name: 'Bob Brown', phone: '+1 809 555 0000', locale: 'en', gender: 'm' } }, O);
 ok(r.s === 200 && (await users.byId(db.pool, cB.userId)).phone === '+1 809 555 0000', 'client update still edits its own contact');
+ok((await users.byId(db.pool, cB.userId)).gender === 'm', 'admin sets the salutation of a contact');
 const cD = (await req(A, 'POST', '/api/portal-admin/?a=client-create', { company: 'Client D', contactName: 'Dana', email: 'dana@d.test', locale: 'en' }, O)).d;
 const tD1 = lastToken('dana@d.test');
 t0 = Date.now();

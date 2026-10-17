@@ -3,8 +3,8 @@
 'use strict';
 const { setClause } = require('./sql');
 
-const SAFE = 'id, email, role, preferred_locale, first_name, last_name, phone, whatsapp, title, is_active, created_at, updated_at';
-const EDITABLE = ['first_name', 'last_name', 'phone', 'whatsapp', 'title', 'preferred_locale', 'is_active'];
+const SAFE = 'id, email, role, preferred_locale, gender, first_name, last_name, phone, whatsapp, title, is_active, created_at, updated_at';
+const EDITABLE = ['first_name', 'last_name', 'gender', 'phone', 'whatsapp', 'title', 'preferred_locale', 'is_active'];
 
 const byId = (q, id) => q.one('select ' + SAFE + ' from users where id = $1', [id]);
 const byEmail = (q, email) => q.one('select ' + SAFE + ' from users where email = $1', [String(email).toLowerCase()]);
@@ -13,8 +13,8 @@ const credentialsByEmail = (q, email) => q.one('select id, password_hash, is_act
 
 function create(q, u) {
   return q.one(
-    'insert into users (email, role, preferred_locale, first_name, last_name, phone, updated_by) values ($1, $2, $3, $4, $5, $6, $7) returning ' + SAFE,
-    [u.email.toLowerCase(), u.role || 'client', u.preferred_locale || 'es', u.first_name || '', u.last_name || '', u.phone || '', u.by || null]
+    'insert into users (email, role, preferred_locale, gender, first_name, last_name, phone, updated_by) values ($1, $2, $3, $4, $5, $6, $7, $8) returning ' + SAFE,
+    [u.email.toLowerCase(), u.role || 'client', u.preferred_locale || 'es', u.gender || '', u.first_name || '', u.last_name || '', u.phone || '', u.by || null]
   );
 }
 async function update(q, id, patch, by) {

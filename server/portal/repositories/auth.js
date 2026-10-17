@@ -33,7 +33,7 @@ async function createToken(q, userId, type, tokenHash, ttlSeconds, by) {
 }
 // Read without using it (welcome page: "Welcome, María").
 const peekToken = (q, tokenHash) => q.one(
-  'select t.id, t.type, u.id as user_id, u.email, u.first_name, u.preferred_locale from auth_tokens t join users u on u.id = t.user_id ' +
+  'select t.id, t.type, u.id as user_id, u.email, u.first_name, u.gender, u.preferred_locale from auth_tokens t join users u on u.id = t.user_id ' +
   'where t.token_hash = $1 and t.used_at is null and t.expires_at > now()', [tokenHash]);
 // Use it: atomic, a second call finds nothing.
 const consumeToken = (q, tokenHash) => q.one(
