@@ -4,7 +4,7 @@
 const { setClause } = require('./sql');
 
 const SAFE = 'id, email, role, preferred_locale, gender, first_name, last_name, phone, whatsapp, title, is_active, created_at, updated_at';
-const EDITABLE = ['first_name', 'last_name', 'gender', 'phone', 'whatsapp', 'title', 'preferred_locale', 'is_active'];
+const EDITABLE = ['email', 'first_name', 'last_name', 'gender', 'phone', 'whatsapp', 'title', 'preferred_locale', 'is_active'];
 
 const byId = (q, id) => q.one('select ' + SAFE + ' from users where id = $1', [id]);
 const byEmail = (q, email) => q.one('select ' + SAFE + ' from users where email = $1', [String(email).toLowerCase()]);

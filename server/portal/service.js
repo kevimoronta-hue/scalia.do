@@ -350,25 +350,43 @@ async function createClient(ctx, input, siteUrl) {
   return { id: created.org.id, company, userId: created.user.id, mailSent };
 }
 
-async function updateClient(ctx, organizationId, input) {
+// Company and contact. A new email address: links already sent to the old
+// one stop working, and a client who has not chosen a password yet gets a
+// new invitation at the new address (language, name and salutation as just
+// saved). An activated client signs in with the new address from now on.
+async function updateClient(ctx, organizationId, input, siteUrl) {
   assertAdmin(ctx);
   const oid = id(organizationId);
   const company = line(input.company, 160, 'company', true);
   const c = input.contact && input.contact.userId ? input.contact : null;
   const contact = c ? Object.assign({ phone: line(c.phone, 40, 'phone'), preferred_locale: oneOf(c.locale || 'es', S.LOCALES, 'locale'), gender: gender(c.gender) }, splitName(line(c.name, 120, 'contactName', true))) : null;
-  return db.transaction(async tx => {
+  if (contact && c.email != null) contact.email = email(c.email);
+  const r = await db.transaction(async tx => {
     const o = await orgs.rename(tx, oid, company, ctx.user.id);
     if (!o) throw err('NOT_FOUND');
-    if (contact) {
-      const uid = id(c.userId, 'contactName');
-      // Only a client contact of this very organization can be edited here.
-      if (!(await orgs.isMember(tx, oid, uid))) throw err('NOT_FOUND');
-      const u = await users.byId(tx, uid);
-      if (!u || u.role !== 'client') throw err('NOT_FOUND');
-      await users.update(tx, uid, contact, ctx.user.id);
+    if (!contact) return { o };
+    const uid = id(c.userId, 'contactName');
+    // Only a client contact of this very organization can be edited here.
+    if (!(await orgs.isMember(tx, oid, uid))) throw err('NOT_FOUND');
+    const u = await users.byId(tx, uid);
+    if (!u || u.role !== 'client') throw err('NOT_FOUND');
+    const changed = !!contact.email && contact.email !== u.email;
+    if (!changed) delete contact.email;
+    else {
+      const other = await users.byEmail(tx, contact.email);
+      if (other) throw err('EMAIL_EXISTS', 'email');
+      await authRepo.cancelTokens(tx, uid);
     }
-    return o;
-  });
+    const saved = await users.update(tx, uid, contact, ctx.user.id);
+    return { o, user: saved, changed };
+  }).catch(e => { if (e.code === '23505') throw err('EMAIL_EXISTS', 'email'); throw e; });
+  const out = Object.assign({}, r.o, { emailChanged: !!r.changed, invited: false });
+  if (r.changed && !r.user.is_active) {
+    out.invited = true;
+    try { await sendAccess(r.user, 'invite', siteUrl, company, ctx.user.id); out.mailSent = true; }
+    catch (e) { out.mailSent = false; console.error('[portal] invite email', e.code || e.message); }
+  }
+  return out;
 }
 
 // A new link: invitation while the account is not activated, "choose a new

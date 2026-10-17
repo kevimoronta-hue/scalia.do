@@ -115,12 +115,22 @@
     dialog(L('Modifier le client'),
       field('company', 'Entreprise', input('company', 'text', c.company, ' required')) +
       (k.userId ? field('contactName', 'Nom du contact', input('contactName', 'text', k.name, ' required')) +
+        field('email', 'Email', input('email', 'email', k.email, ' required autocomplete="off" inputmode="email"'),
+          k.active ? 'Compte activé : le client se connectera avec cette adresse. Les liens envoyés à l’ancienne adresse ne marcheront plus.'
+            : 'Si vous changez l’adresse, une nouvelle invitation part à la nouvelle adresse et l’ancien lien ne marche plus.') +
         '<div class="pt-row pt-row--2">' + field('phone', 'Téléphone', input('phone', 'tel', k.phone)) + field('locale', 'Langue', select('locale', LOCALES, k.locale)) + '</div>' +
         field('gender', 'Salutation', select('gender', GENDERS, k.gender || '')) : ''),
       L('Enregistrer'),
       function (f) {
-        return P.adminApi('client-update', { id: c.id, company: f.company.value, contact: k.userId ? { userId: k.userId, name: f.contactName.value, phone: f.phone.value, locale: f.locale.value, gender: f.gender.value } : null })
-          .then(function () { P.toast(L('Enregistré.')); loadOverview(); });
+        return P.adminApi('client-update', { id: c.id, company: f.company.value, contact: k.userId ? { userId: k.userId, name: f.contactName.value, email: f.email.value, phone: f.phone.value, locale: f.locale.value, gender: f.gender.value } : null })
+          .then(function (r) {
+            var to = f.email ? f.email.value.trim() : '';
+            if (r.invited && r.mailSent === false) P.toast(L('Enregistré, mais l’invitation n’est pas partie : utilisez « Renvoyer l’invitation ».'), 'err');
+            else if (r.invited) P.toast(L('Enregistré. Nouvelle invitation envoyée à {email}.', { email: to }));
+            else if (r.emailChanged) P.toast(L('Enregistré. Le client se connecte désormais avec {email}.', { email: to }));
+            else P.toast(L('Enregistré.'));
+            loadOverview();
+          });
       });
   }
 
@@ -151,10 +161,11 @@
     } else {
       body = state.clients.length ? '<div class="ad-list">' + state.clients.map(function (c) {
         return '<div class="ad-item" data-client="' + esc(c.id) + '"><div><p class="ad-item__name">' + esc(c.company) + '</p>' +
-          c.contacts.map(function (k) { return '<p class="ad-item__sub">' + esc(k.name) + ' · ' + esc(k.email) + ' · ' + esc(k.locale.toUpperCase()) + (k.gender ? ' · ' + esc(L(k.gender === 'm' ? 'Homme' : 'Femme')) : '') + '</p>'; }).join('') + '</div><span></span>' +
+          c.contacts.map(function (k) { return '<p class="ad-item__sub">' + esc(k.name) + ' · ' + esc(k.email) + ' · ' + esc(k.locale.toUpperCase()) + (k.gender ? ' · ' + esc(L(k.gender === 'm' ? 'Homme' : 'Femme')) : '') + '</p>' +
+            '<p class="ad-item__sub"><span class="pt-badge ' + (k.active ? 'pt-badge--paid' : 'pt-badge--pending') + '">' + esc(k.active ? L('Compte activé') : L('Invitation en attente')) + '</span></p>'; }).join('') + '</div><span></span>' +
           '<div class="ad-item__meta">' + c.projects.map(function (p) { return '<a class="pt-badge pt-badge--open" href="/admin/project/?id=' + encodeURIComponent(p.id) + '">' + esc(p.name) + '</a>'; }).join('') + '</div>' +
           '<div class="ad-item__meta"><button class="btn btn--secondary btn--sm" type="button" data-new-project>+ ' + esc(L('Nouveau projet')) + '</button>' +
-          (c.contacts[0] ? '<button class="btn btn--secondary btn--sm" type="button" data-resend="' + esc(c.contacts[0].userId) + '">' + esc(L('Renvoyer l’invitation')) + '</button>' : '') +
+          (c.contacts[0] ? '<button class="btn btn--secondary btn--sm" type="button" data-resend="' + esc(c.contacts[0].userId) + '">' + esc(c.contacts[0].active ? L('Envoyer un lien de mot de passe') : L('Renvoyer l’invitation')) + '</button>' : '') +
           '<button class="btn btn--secondary btn--sm" type="button" data-edit>' + esc(L('Modifier')) + '</button>' +
           '<button class="btn btn--secondary btn--sm btn--danger" type="button" data-delete-client>' + esc(L('Supprimer')) + '</button></div></div>';
       }).join('') + '</div>' : '<div class="pt-card"><p class="pt-h2">' + esc(L('Aucun client pour le moment.')) + '</p></div>';

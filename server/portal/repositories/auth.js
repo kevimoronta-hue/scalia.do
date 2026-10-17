@@ -31,6 +31,8 @@ async function createToken(q, userId, type, tokenHash, ttlSeconds, by) {
     'insert into auth_tokens (user_id, type, token_hash, expires_at, created_by) values ($1, $2, $3, now() + make_interval(secs => $4), $5) returning id, expires_at',
     [userId, type, tokenHash, ttlSeconds, by || null]);
 }
+// Every unused link of an account stops working (its email address changed).
+const cancelTokens = (q, userId) => q.query('update auth_tokens set used_at = now() where user_id = $1 and used_at is null', [userId]);
 // Read without using it (welcome page: "Welcome, María").
 const peekToken = (q, tokenHash) => q.one(
   'select t.id, t.type, u.id as user_id, u.email, u.first_name, u.gender, u.preferred_locale from auth_tokens t join users u on u.id = t.user_id ' +
@@ -52,4 +54,4 @@ async function hit(q, key, windowSeconds) {
 }
 const clearHits = (q, key) => q.query('delete from rate_limits where key = $1', [key]);
 
-module.exports = { createSession, sessionUser, touchSession, deleteSession, deleteUserSessions, purgeExpired, createToken, peekToken, consumeToken, hit, clearHits };
+module.exports = { createSession, sessionUser, touchSession, deleteSession, deleteUserSessions, purgeExpired, createToken, cancelTokens, peekToken, consumeToken, hit, clearHits };

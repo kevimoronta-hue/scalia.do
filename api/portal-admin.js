@@ -25,7 +25,7 @@ module.exports = router({
   project: { method: 'GET', async run(req, res) { return service.getProjectAdmin(await admin(req, res), q(req, 'id')); } },
 
   'client-create': { method: 'POST', async run(req, res, b) { return service.createClient(await admin(req, res), b, session.siteUrl(req)); } },
-  'client-update': { method: 'POST', async run(req, res, b) { return service.updateClient(await admin(req, res), b.id, b); } },
+  'client-update': { method: 'POST', async run(req, res, b) { return service.updateClient(await admin(req, res), b.id, b, session.siteUrl(req)); } },
   'client-delete': { method: 'POST', async run(req, res, b) { return service.deleteClient(await admin(req, res), b.id, b.confirm); } },
   'invite-resend': { method: 'POST', async run(req, res, b) { return service.resendInvite(await admin(req, res), b.userId, session.siteUrl(req)); } },
 

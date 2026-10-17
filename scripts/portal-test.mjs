@@ -397,6 +397,28 @@ r = await req(IA, 'GET', '/api/portal/?a=ping'); ok(r.d.idleSeconds === 1800, 'p
 await age(IA, 31); ok((await req(IA, 'GET', '/api/portal-admin/?a=me')).s === 401, 'admin inactive 31 min: signed out');
 ok((await req(jar(), 'GET', '/api/portal/?a=ping')).s === 401, 'ping without a session: 401');
 
+section('client email change');
+const oldBob = lastToken('bob@b.test');
+ok(oldBob && (await req(jar(), 'POST', '/api/portal/?a=token-info', { token: oldBob }, O)).s === 200, 'Bob has a pending invitation');
+r = await req(A, 'POST', '/api/portal-admin/?a=client-update', { id: cB.id, company: 'Client B', contact: { userId: cB.userId, name: 'Bob Brown', email: 'ana@top.test', phone: '', locale: 'en', gender: 'm' } }, O);
+ok(r.d.error === 'EMAIL_EXISTS' && r.d.field === 'email', 'new email already used by another account: refused');
+r = await req(A, 'POST', '/api/portal-admin/?a=client-update', { id: cB.id, company: 'Client B', contact: { userId: cB.userId, name: 'Bob Brown', email: 'nope', phone: '', locale: 'en', gender: 'm' } }, O);
+ok(r.d.error === 'INVALID' && r.d.field === 'email', 'invalid new email refused');
+r = await req(A, 'POST', '/api/portal-admin/?a=client-update', { id: cB.id, company: 'Client B', contact: { userId: cB.userId, name: 'Bob Brown', email: ' Bob.New@B.test ', phone: '', locale: 'es', gender: 'm' } }, O);
+ok(r.s === 200 && r.d.emailChanged && r.d.invited && r.d.mailSent, 'invited client: email changed, new invitation sent');
+ok((await req(jar(), 'POST', '/api/portal/?a=token-info', { token: oldBob }, O)).d.error === 'LINK_INVALID', 'the link sent to the old address no longer works');
+const newBob = lastToken('bob.new@b.test');
+r = await req(jar(), 'POST', '/api/portal/?a=token-info', { token: newBob }, O);
+ok(r.s === 200 && r.d.email === 'bob.new@b.test' && r.d.gender === 'm' && r.d.locale === 'es', 'new invitation: new address, salutation and language as saved');
+ok(mails().filter(m => m.to === 'bob.new@b.test').pop().text.includes('Bob'), 'invitation email greets the contact by name');
+r = await req(A, 'POST', '/api/portal-admin/?a=client-update', { id: cB.id, company: 'Client B', contact: { userId: cB.userId, name: 'Bob Brown', email: 'bob.new@b.test', phone: '', locale: 'es', gender: 'm' } }, O);
+ok(r.s === 200 && !r.d.emailChanged && !r.d.invited, 'same email saved again: no new invitation');
+const anaId2 = (await users.byEmail(db.pool, 'ana@top.test')).id;
+r = await req(A, 'POST', '/api/portal-admin/?a=client-update', { id: cA.id, company: 'Top Advertising', contact: { userId: anaId2, name: 'Ana Pérez', email: 'ana.perez@top.test', phone: '', locale: 'es', gender: 'f' } }, O);
+ok(r.s === 200 && r.d.emailChanged && !r.d.invited, 'activated client: email changed, no invitation');
+ok((await req(jar(), 'POST', '/api/portal/?a=login', { email: 'ana.perez@top.test', password: 'AnaNew-2026-pw' }, O)).s === 200, 'activated client signs in with the new address');
+ok((await req(jar(), 'POST', '/api/portal/?a=login', { email: 'ana@top.test', password: 'AnaNew-2026-pw' }, O)).d.error === 'INVALID_CREDENTIALS', 'the old address no longer signs in');
+
 await db.transaction(async tx => ok(await users.adminExists(tx), 'bootstrap would now refuse (an admin exists)'));
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
