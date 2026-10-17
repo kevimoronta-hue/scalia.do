@@ -72,6 +72,11 @@
   .pt-brand__tag { display: none; }
   .pt-iconbtn__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .pt-iconbtn { width: 36px; padding: 0; }
+  .pt-bar__row > .pt-actions { flex-wrap: nowrap; gap: 8px; }
+  /* Admin: logo + buttons on the first row, the tabs on a second one. */
+  .pt-bar__row:has(.pt-nav) { flex-wrap: wrap; height: auto; padding: 8px 0; row-gap: 6px; }
+  .pt-bar__row .pt-nav { order: 3; width: 100%; }
+  .pt-bar__row .pt-nav a { flex: 1; justify-content: center; }
 }
 
 /* =============================================================== PAGE == */
