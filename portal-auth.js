@@ -64,9 +64,14 @@
   /* ------------------------------------------------------------- welcome */
   var pwForm = $('[data-password]');
   if (pwForm) {
+    // The token leaves the address bar at once (history, screenshots). It is
+    // kept for this tab only (sessionStorage) so a reload, or iOS reopening
+    // the page, does not lose it; cleared once the password is saved.
+    var KEY = 'scalia_welcome_token';
+    var store = function (v) { try { v ? sessionStorage.setItem(KEY, v) : sessionStorage.removeItem(KEY); } catch (e) {} };
     var token = q.get('token');
-    // The token leaves the address bar at once (history, screenshots); it
-    // stays in memory until the password is saved.
+    if (token) store(token);
+    else try { token = sessionStorage.getItem(KEY); } catch (e) {}
     try { history.replaceState(null, '', location.pathname + (q.get('lang') ? '?lang=' + q.get('lang') : '')); } catch (e) {}
     var invite = true;
     var fill = function (name) {
@@ -95,9 +100,10 @@
       if (a.length < 10) return P.formError(pwForm, { code: 'PASSWORD_WEAK', field: 'password' });
       if (a !== b) return P.formError(pwForm, { code: 'PASSWORD_MISMATCH', field: 'confirm' });
       P.busy(pwForm.querySelector('[type="submit"]'), P.portalApi('accept', { token: token, password: a }, { noRedirect: true })).then(function (r) {
+        store(null);
         location.replace(r.role === 'admin' ? '/admin/' : '/portal/');
       }, function (err) {
-        if (err.code === 'LINK_INVALID') return show('invalid');
+        if (err.code === 'LINK_INVALID') { store(null); return show('invalid'); }
         P.formError(pwForm, err);
       });
     });
