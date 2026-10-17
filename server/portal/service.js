@@ -412,13 +412,24 @@ async function updateProject(ctx, projectId, input) {
   assertAdmin(ctx);
   const pid = id(projectId);
   const fields = projectFields(input || {}, true);
+  const reason = line(input && input.priceReason, 200, 'priceReason');
   return db.transaction(async tx => {
     const cur = await projects.byId(tx, pid);
     if (!cur) throw err('NOT_FOUND');
     // Paid and remaining are sums in one currency: fixed once a payment exists.
     if (fields.currency && fields.currency !== cur.currency && await payments.count(tx, pid)) throw err('CURRENCY_LOCKED', 'currency');
     if ('contact_id' in fields) await assertContact(tx, fields.contact_id);
-    return projectOut(await projects.update(tx, pid, fields, ctx.user.id));
+    const out = await projects.update(tx, pid, fields, ctx.user.id);
+    // A price change (discount, options) leaves a trace in the internal
+    // history: old → new, and the reason when given.
+    if ('total_amount_minor' in fields && Number(fields.total_amount_minor) !== Number(cur.total_amount_minor)) {
+      const fmt = n => {
+        const [i, d] = (n / 100).toFixed(2).split('.');
+        return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (d === '00' ? '' : ',' + d) + ' ' + out.currency;
+      };
+      await projects.addUpdate(tx, pid, 'Prix du projet : ' + fmt(Number(cur.total_amount_minor)) + ' → ' + fmt(Number(fields.total_amount_minor)) + (reason ? ' · ' + reason : ''), false, ctx.user.id);
+    }
+    return projectOut(out);
   });
 }
 

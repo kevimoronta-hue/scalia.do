@@ -219,6 +219,7 @@
     // Payments
     html += '<section class="ad-sheet" aria-labelledby="ad-pay"><h2 class="pt-h2" id="ad-pay">' + esc(L('Paiements')) + '</h2>' +
       '<dl class="pt-money" style="margin-bottom:16px"><div><dt>' + esc(L('Projet')) + '</dt><dd class="tnum">' + esc(P.money(m.total, m.currency)) + '</dd></div><div class="is-paid"><dt>' + esc(L('Payé')) + '</dt><dd class="tnum">' + esc(P.money(m.paid, m.currency)) + '</dd></div><div><dt>' + esc(L('Restant')) + '</dt><dd class="tnum">' + esc(P.money(m.remaining, m.currency)) + '</dd></div></dl>' +
+      '<div class="pt-actions" style="margin:-4px 0 16px"><button class="btn btn--secondary btn--sm" type="button" data-price-edit>' + esc(L('Modifier le prix')) + '</button></div>' +
       (b.payments.length ? '<ul class="ad-rows">' + b.payments.map(function (x) {
         var paid = x.status === 'paid';
         return '<li><div><b>' + esc(x.label) + '</b> · <span class="tnum">' + esc(P.money(x.amount, x.currency)) + '</span><p class="pt-small pt-muted"><span class="pt-badge ' + (paid ? 'pt-badge--paid' : 'pt-badge--pending') + '">' + esc(paid ? L('Payé') : L('En attente')) + '</span> ' + esc(paid ? P.date(x.paid_at) : '') + (x.notes ? ' · ' + esc(x.notes) : '') + '</p></div>' +
@@ -334,6 +335,18 @@
     });
 
     // Payments
+    // Price: discounts or options change it at any time; each change is
+    // kept in the internal history (service.updateProject).
+    $('[data-price-edit]', app).addEventListener('click', function () {
+      dialog(L('Modifier le prix'),
+        field('totalAmount', 'Nouveau prix du projet', input('totalAmount', 'text', p.total_amount, ' inputmode="decimal" required'), L('En {currency}. Déjà payé : {paid}.', { currency: p.currency, paid: P.money(state.b.money.paid, p.currency) })) +
+        field('priceReason', 'Motif (interne, facultatif)', input('priceReason', 'text', '', ' maxlength="200" placeholder="' + esc(L('Ex. : réduction 10 %, option blog, traduction')) + '"')),
+        L('Enregistrer le prix'),
+        function (f) {
+          return P.adminApi('project-update', { id: p.id, fields: { totalAmount: f.totalAmount.value, priceReason: f.priceReason.value } })
+            .then(function () { return reload(L('Prix mis à jour.')); });
+        });
+    });
     $$('[data-pay-toggle]', app).forEach(function (btn) {
       btn.addEventListener('click', function () {
         P.busy(btn, P.adminApi('payment-update', { id: btn.getAttribute('data-pay-toggle'), fields: { status: btn.getAttribute('data-to') } })).then(function () { return reload(L('Paiement mis à jour.')); }, function (err) { P.toast(P.errorText(err.code), 'err'); });

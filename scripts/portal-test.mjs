@@ -20,6 +20,7 @@ const require = createRequire(import.meta.url);
 const db = require('../server/portal/db.js');
 const auth = require('../server/portal/auth.js');
 const users = require('../server/portal/repositories/users.js');
+const projects = require('../server/portal/repositories/projects.js');
 const handlers = { portal: require('../api/portal.js'), 'portal-admin': require('../api/portal-admin.js') };
 const middleware = (await import('data:text/javascript,' + encodeURIComponent(fs.readFileSync(path.join(ROOT, 'middleware.js'), 'utf8')))).default;
 
@@ -341,6 +342,13 @@ r = await req(A, 'POST', '/api/portal-admin/?a=invite-resend', { userId: (await 
 r = await req(A, 'POST', '/api/portal-admin/?a=document-delete', { id: internal.d.id }, O); ok(r.s === 200, 'admin deletes a document');
 const adm = (await req(A, 'GET', '/api/portal/?a=me&project=' + pB.id)).d; ok(adm.admin && adm.current.project.id === pB.id && adm.projects.length === 1, 'admin preview of client B');
 const ov = (await req(A, 'GET', '/api/portal-admin/?a=overview')).d.projects; ok(ov.length === 2 && ov.find(p => p.id === pA.id).progress === 54, 'overview');
+r = await req(A, 'POST', '/api/portal-admin/?a=project-update', { id: pA.id, fields: { totalAmount: '1 250,50', priceReason: 'Option blog + traduction' } }, O);
+ok(r.s === 200 && r.d.total_amount === 1250.5, 'admin changes the project price (options)');
+const priceNote = (await projects.updates(db.pool, pA.id, true, 5)).find(u => u.content.startsWith('Prix du projet'));
+ok(priceNote && !priceNote.visible_to_client && priceNote.content.includes('→ 1 250,50 EUR · Option blog + traduction'), 'price change kept in the internal history with its reason');
+r = await req(A, 'POST', '/api/portal-admin/?a=project-update', { id: pA.id, fields: { totalAmount: '0', priceReason: '' } }, O);
+ok(r.s === 200 && r.d.total_amount === 0, 'price can go down to 0 (offered)');
+await req(A, 'POST', '/api/portal-admin/?a=project-update', { id: pA.id, fields: { totalAmount: '700' } }, O);
 r = await req(A, 'POST', '/api/portal-admin/?a=project-update', { id: pA.id, fields: { status: 'completed' } }, O); ok(r.d.status === 'completed', 'close project');
 const audit = await db.one('select updated_by from projects where id = $1', [pA.id]);
 ok(audit.updated_by === (await users.byEmail(db.pool, 'admin@scalia.test')).id, 'updated_by recorded');
