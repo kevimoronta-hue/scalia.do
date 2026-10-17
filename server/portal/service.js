@@ -286,6 +286,31 @@ async function adminOverview(ctx) {
   });
 }
 
+/* --------------------------------------------------------- admin profile */
+// Each admin keeps their own name, role and WhatsApp number: it is what the
+// client sees under "Your contact at Scalia" (name, role, WhatsApp button).
+const myProfile = u => ({ name: users.fullName(u), email: u.email, locale: u.preferred_locale, title: u.title || '', whatsapp: u.whatsapp || '' });
+function getMyProfile(ctx) { assertAdmin(ctx); return myProfile(ctx.user); }
+
+// WhatsApp number in international format, stored as "+<digits>" (what
+// wa.me needs). A Dominican number typed without the country code
+// (809 / 829 / 849 + 7 digits) gets +1.
+function waNumber(v) {
+  const s = line(v, 40, 'whatsapp');
+  if (!s) return '';
+  const d = s.replace(/[\s().-]/g, '');
+  if (/^(809|829|849)\d{7}$/.test(d)) return '+1' + d;
+  if (!/^\+\d{8,15}$/.test(d)) throw err('INVALID', 'whatsapp');
+  return d;
+}
+
+async function updateMyProfile(ctx, input) {
+  assertAdmin(ctx);
+  input = input || {};
+  const patch = Object.assign({ title: line(input.title, 120, 'title'), whatsapp: waNumber(input.whatsapp) }, splitName(line(input.name, 120, 'name', true)));
+  return myProfile(await users.update(q, ctx.user.id, patch, ctx.user.id));
+}
+
 async function adminClients(ctx) {
   assertAdmin(ctx);
   const [allOrgs, members, list, team] = await Promise.all([orgs.all(q), orgs.allMembers(q), projects.listAll(q), users.admins(q)]);
@@ -299,7 +324,7 @@ async function adminClients(ctx) {
       }),
       projects: list.filter(p => p.organization_id === o.id).map(p => ({ id: p.id, name: p.name, status: p.status }))
     })),
-    team: team.map(u => ({ id: u.id, name: users.fullName(u) || u.email, email: u.email, title: u.title }))
+    team: team.map(u => ({ id: u.id, name: users.fullName(u) || u.email, email: u.email, title: u.title, whatsapp: !!u.whatsapp }))
   };
 }
 
@@ -625,7 +650,7 @@ module.exports = {
   // client
   getClientPortal, getClientPreview, getDocumentLink,
   // admin
-  adminOverview, adminClients, createClient, updateClient, resendInvite,
+  getMyProfile, updateMyProfile, adminOverview, adminClients, createClient, updateClient, resendInvite,
   createProject, getProjectAdmin, updateProject, updateProjectStage, addProjectUpdate, setNextStep,
   recordPayment, updatePayment, deletePayment, setRequiredAction, resolveRequiredAction,
   requestDocumentUpload, uploadProjectDocument, updateDocument, deleteDocument, quickUpdate

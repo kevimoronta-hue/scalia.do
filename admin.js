@@ -32,6 +32,8 @@
     return '<input class="pt-input" id="f-' + name + '" name="' + name + '" type="' + type + '" value="' + esc(value == null ? '' : value) + '"' + (extra || '') + '>';
   }
   function select(name, list, cur) { return '<select class="pt-select" id="f-' + name + '" name="' + name + '">' + opts(list, cur) + '</select>'; }
+  // Scalia contact choices; one without WhatsApp only offers email to the client.
+  function teamOpts(team) { return team.map(function (t) { return [t.id, t.name + (t.whatsapp ? '' : ' · ' + L('sans WhatsApp'))]; }); }
   function textarea(name, value, extra) { return '<textarea class="pt-textarea" id="f-' + name + '" name="' + name + '"' + (extra || '') + '>' + esc(value || '') + '</textarea>'; }
   function badgePay(state_) {
     return state_ === 'paid' ? '<span class="pt-badge pt-badge--paid">' + esc(L('Payé')) + '</span>'
@@ -85,7 +87,7 @@
       field('type', 'Type de projet', input('type', 'text', L('Site web'))) +
       '<div class="pt-row pt-row--2">' + field('currency', 'Devise', select('currency', CURRENCIES, 'EUR')) + field('totalAmount', 'Montant total', input('totalAmount', 'text', '', ' inputmode="decimal" required')) + '</div>' +
       '<div class="pt-row pt-row--2">' + field('startDate', 'Début', input('startDate', 'date', new Date().toISOString().slice(0, 10))) + field('estimatedDeliveryDate', 'Livraison estimée', input('estimatedDeliveryDate', 'date', '')) + '</div>' +
-      '<div class="pt-row pt-row--2">' + field('contactId', 'Contact Scalia', select('contactId', team.map(function (t) { return [t.id, t.name]; }), team[0] && team[0].id)) +
+      '<div class="pt-row pt-row--2">' + field('contactId', 'Contact Scalia', select('contactId', teamOpts(team), team[0] && team[0].id)) +
       field('preferredLocale', 'Langue du portail', select('preferredLocale', LOCALES, locale || 'es')) + '</div>',
       L('Créer le projet'),
       function (f) {
@@ -265,7 +267,7 @@
       field('currency', 'Devise', b.payments.length ? '<select class="pt-select" id="f-currency" name="currency" disabled>' + opts(CURRENCIES, p.currency) + '</select>' : select('currency', CURRENCIES, p.currency)) + field('totalAmount', 'Montant total', input('totalAmount', 'text', p.total_amount, ' inputmode="decimal"')) + '</div>' +
       '<div class="pt-row pt-row--2">' + field('startDate', 'Début', input('startDate', 'date', p.start_date || '')) + field('estimatedDeliveryDate', 'Livraison estimée', input('estimatedDeliveryDate', 'date', p.estimated_delivery_date || '')) + '</div>' +
       '<div class="pt-row pt-row--2">' + field('domain', 'Domaine', input('domain', 'text', p.domain, ' placeholder="exemple.com"')) +
-      field('contactId', 'Contact Scalia', select('contactId', [['', '—']].concat(team.map(function (t) { return [t.id, t.name]; })), p.contact_id || '')) + '</div>' +
+      field('contactId', 'Contact Scalia', select('contactId', [['', '—']].concat(teamOpts(team)), p.contact_id || '')) + '</div>' +
       '<div class="pt-row pt-row--2">' + field('preferredLocale', 'Langue du portail', select('preferredLocale', LOCALES, p.preferred_locale)) +
       '<fieldset class="pt-field" data-field="languages" style="border:0;padding:0;margin:0"><legend class="pt-label">' + esc(L('Langues du site')) + '</legend><div class="pt-actions">' +
       SITE_LANGS.map(function (l) { return '<label class="pt-check"><input type="checkbox" name="languages" value="' + l + '"' + ((p.languages || []).indexOf(l) > -1 ? ' checked' : '') + '> ' + esc(L(P.LANG_NAMES[l])) + '</label>'; }).join('') + '</div></fieldset></div>' +
@@ -445,10 +447,35 @@
     $('[data-retry]', app).addEventListener('click', function () { location.reload(); });
   }
 
+  /* -------------------------------------------------------------- profile */
+  // Name, role and WhatsApp of the signed-in admin: what clients see under
+  // "Your contact at Scalia", with the "Write on WhatsApp" button.
+  var me = null;
+  function profileHint() { $('[data-profile-hint]').hidden = !me || !!me.whatsapp; }
+  function profileDialog() {
+    dialog(L('Mon profil'),
+      field('name', 'Nom', input('name', 'text', me.name, ' required autocomplete="name" maxlength="120"')) +
+      field('title', 'Fonction', input('title', 'text', me.title, ' maxlength="120" placeholder="' + esc(L('Ex. : Chef de projet')) + '"'), 'Affichée au client sous votre nom.') +
+      field('whatsapp', 'Numéro WhatsApp', input('whatsapp', 'tel', me.whatsapp, ' autocomplete="tel" inputmode="tel" placeholder="+1 809 555 1234"'), 'Format international (+ indicatif). Vos clients verront un bouton « Écrire sur WhatsApp ».'),
+      L('Enregistrer'),
+      function (f) {
+        return P.adminApi('profile-update', { name: f.name.value, title: f.title.value, whatsapp: f.whatsapp.value }).then(function (r) {
+          me = r; profileHint();
+          P.toast(r.whatsapp ? L('Profil enregistré. Lien WhatsApp : wa.me/{n}', { n: r.whatsapp.slice(1) }) : L('Profil enregistré.'));
+          if (isProject && state.b) loadProject(); else if (!isProject) loadOverview();
+        });
+      });
+  }
+  $('[data-profile]').addEventListener('click', function () { if (me) profileDialog(); });
+  $('[data-profile-open]').addEventListener('click', function () { if (me) profileDialog(); });
+
   $('[data-logout]').hidden = false;
   $('[data-logout]').addEventListener('click', P.logout);
   P.applyStatic();
-  P.adminApi('me').then(function (me) {
+  P.adminApi('me').then(function (r) {
+    me = r;
+    $('[data-profile]').hidden = false;
+    profileHint();
     P.preferLocale(me.locale);
     return isProject ? (pid ? loadProject() : Promise.reject({ code: 'NOT_FOUND' })) : loadOverview();
   }).catch(fail);

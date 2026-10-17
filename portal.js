@@ -134,6 +134,14 @@
       rows.map(function (r) { return '<div><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl></section>';
   }
 
+  // First words of the WhatsApp message, ready to send: who writes, about what.
+  function waText(c) {
+    var first = function (n) { return String(n || '').split(/\s+/)[0]; };
+    var me = data.admin ? '' : first(data.profile && data.profile.name);
+    return me
+      ? L('Bonjour {name}, c’est {me}, au sujet du projet « {project} ».', { name: first(c.contact.name), me: me + (c.company ? ' (' + c.company + ')' : ''), project: c.project.name })
+      : L('Bonjour {name}, au sujet du projet « {project} ».', { name: first(c.contact.name), project: c.project.name });
+  }
   function contact(c) {
     var k = c.contact;
     if (!k || !k.name) return '';
@@ -144,7 +152,7 @@
       (k.title ? '<p class="pt-contact__role">' + esc(k.title) + '</p>' : '') + '</div></div>' +
       '<div class="pt-contact__links">' +
       (k.email ? '<a class="btn btn--secondary" href="mailto:' + esc(k.email) + '">' + esc(L('Écrire un email')) + '</a>' : '') +
-      (wa.length >= 8 ? '<a class="btn btn--secondary" href="https://wa.me/' + wa + '" target="_blank" rel="noopener">WhatsApp</a>' : '') +
+      (wa.length >= 8 ? '<a class="btn btn--secondary" href="https://wa.me/' + wa + '?text=' + encodeURIComponent(waText(c)) + '" target="_blank" rel="noopener">' + esc(L('Écrire sur WhatsApp')) + '</a>' : '') +
       '</div></section>';
   }
 

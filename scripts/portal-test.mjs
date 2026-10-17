@@ -352,6 +352,15 @@ await req(A, 'POST', '/api/portal-admin/?a=project-update', { id: pA.id, fields:
 r = await req(A, 'POST', '/api/portal-admin/?a=project-update', { id: pA.id, fields: { status: 'completed' } }, O); ok(r.d.status === 'completed', 'close project');
 const audit = await db.one('select updated_by from projects where id = $1', [pA.id]);
 ok(audit.updated_by === (await users.byEmail(db.pool, 'admin@scalia.test')).id, 'updated_by recorded');
+r = await req(A, 'POST', '/api/portal-admin/?a=profile-update', { name: 'Scalia Admin', title: 'Chef de projet', whatsapp: '555' }, O);
+ok(r.d.error === 'INVALID' && r.d.field === 'whatsapp', 'WhatsApp number too short refused');
+r = await req(A, 'POST', '/api/portal-admin/?a=profile-update', { name: 'Scalia Admin', title: 'Chef de projet', whatsapp: '(809) 555-1234' }, O);
+ok(r.s === 200 && r.d.whatsapp === '+18095551234' && r.d.title === 'Chef de projet', 'admin profile: Dominican number gets +1');
+r = await req(A, 'POST', '/api/portal-admin/?a=profile-update', { name: 'Scalia Admin', title: 'Chef de projet', whatsapp: '+33 6 12 34 56 78' }, O);
+ok(r.d.whatsapp === '+33612345678' && (await req(A, 'GET', '/api/portal-admin/?a=me')).d.whatsapp === '+33612345678', 'admin profile: international number kept, read back by me');
+const viewA = (await req(R, 'GET', '/api/portal/?a=me&project=' + pA.id)).d.current;
+ok(viewA.contact.whatsapp === '+33612345678' && viewA.contact.title === 'Chef de projet', 'client sees the WhatsApp and role of their Scalia contact');
+ok((await req(A, 'GET', '/api/portal-admin/?a=clients')).d.team.every(t => typeof t.whatsapp === 'boolean'), 'team list says who has WhatsApp, not the number');
 await db.transaction(async tx => ok(await users.adminExists(tx), 'bootstrap would now refuse (an admin exists)'));
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

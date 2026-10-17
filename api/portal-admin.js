@@ -18,7 +18,8 @@ async function admin(req, res) {
 const q = (req, k) => String((req.query && req.query[k]) || '');
 
 module.exports = router({
-  me: { method: 'GET', async run(req, res) { const c = await admin(req, res); return { name: [c.user.first_name, c.user.last_name].filter(Boolean).join(' '), email: c.user.email, locale: c.user.preferred_locale }; } },
+  me: { method: 'GET', async run(req, res) { return service.getMyProfile(await admin(req, res)); } },
+  'profile-update': { method: 'POST', async run(req, res, b) { return service.updateMyProfile(await admin(req, res), b); } },
   overview: { method: 'GET', async run(req, res) { return { projects: await service.adminOverview(await admin(req, res)) }; } },
   clients: { method: 'GET', async run(req, res) { return service.adminClients(await admin(req, res)); } },
   project: { method: 'GET', async run(req, res) { return service.getProjectAdmin(await admin(req, res), q(req, 'id')); } },
