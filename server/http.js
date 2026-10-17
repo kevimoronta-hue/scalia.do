@@ -40,7 +40,8 @@ function originOk(req) {
   try { host = new URL(o).hostname; } catch (e) { return false; }
   if (host === 'scalia.do' || host === 'www.scalia.do') return true;
   if (process.env.VERCEL_ENV === 'production') return false;
-  if (process.env.VERCEL_URL && host === process.env.VERCEL_URL) return true;   // preview deployments
+  // Preview deployments: the unique URL and the branch URL (…-git-<branch>-…).
+  if (host === process.env.VERCEL_URL || host === process.env.VERCEL_BRANCH_URL) return true;
   return /^(localhost|127\.0\.0\.1|\[::1\]|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)$/.test(host);
 }
 

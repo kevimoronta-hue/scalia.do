@@ -53,6 +53,16 @@
       "permanent": false
     },
     {
+      "source": "/api/(.*)\\.(js|mjs|cjs)",
+      "destination": "/introuvable/",
+      "permanent": false
+    },
+    {
+      "source": "/vercel.json",
+      "destination": "/introuvable/",
+      "permanent": false
+    },
+    {
       "source": "/:path(.*)",
       "has": [
         {
