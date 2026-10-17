@@ -23,6 +23,51 @@
   ],
   "redirects": [
     {
+      "source": "/:lang(es|en|fr)/privacy{/}?",
+      "destination": "/confidentialite/?lang=:lang",
+      "permanent": true
+    },
+    {
+      "source": "/privacidad{/}?",
+      "destination": "/confidentialite/?lang=es",
+      "permanent": true
+    },
+    {
+      "source": "/privacy{/}?",
+      "destination": "/confidentialite/?lang=en",
+      "permanent": true
+    },
+    {
+      "source": "/:lang(es|en|fr)/terms{/}?",
+      "destination": "/mentions-legales/?lang=:lang",
+      "permanent": true
+    },
+    {
+      "source": "/terminos{/}?",
+      "destination": "/mentions-legales/?lang=es",
+      "permanent": true
+    },
+    {
+      "source": "/terms{/}?",
+      "destination": "/mentions-legales/?lang=en",
+      "permanent": true
+    },
+    {
+      "source": "/:lang(es|en|fr)/:old(contact|contacto|about|projects|proyectos|services|servicios){/}?",
+      "destination": "/:lang/",
+      "permanent": true
+    },
+    {
+      "source": "/:old(sobre-nosotros|proyectos|contacto|servicios){/}?",
+      "destination": "/es/",
+      "permanent": true
+    },
+    {
+      "source": "/:old(contact|about|projects|services){/}?",
+      "destination": "/",
+      "permanent": true
+    },
+    {
       "source": "/server/:path*",
       "destination": "/introuvable/",
       "permanent": false

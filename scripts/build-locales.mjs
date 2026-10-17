@@ -23,10 +23,15 @@ const PREVIEW = {
   en: { image: SITE + 'assets/og/scalia-og-en.jpg', alt: 'Scalia — The agency that connects you.' },
   es: { image: SITE + 'assets/og/scalia-og-es.jpg', alt: 'Scalia — La agencia que te conecta.' }
 };
+// Structured-data texts that are not on the page itself.
+const LD_TEXT = {
+  en: { 'Fondateur de Scalia': 'Founder of Scalia', 'Création de site web': 'Website design', 'Création d’identité visuelle': 'Visual identity design', '700 € — taxes applicables incluses': '€700, applicable taxes included' },
+  es: { 'Fondateur de Scalia': 'Fundador de Scalia', 'Création de site web': 'Diseño de sitios web', 'Création d’identité visuelle': 'Diseño de identidad visual', '700 € — taxes applicables incluses': '700 €, impuestos aplicables incluidos' }
+};
 const PAGES = ['scalians/', 'mentions-legales/', 'confidentialite/'];   // other pages: keep the language via ?lang=
 const ATTRS = ['aria-label', 'alt', 'title', 'placeholder'];
 // Same in every language (as INVARIANT in i18n.js): never reported missing.
-const INVARIANT = /^(Scalia|SCALIA|Kevi Moronta|Yeice Triana|Adan Moronta|Yolaine Gomez|Sohany Galan|[^\s]+@[^\s]+)$/;
+const INVARIANT = /^(Scalia|SCALIA|Scaly|Kevi Moronta|Yeice Triana|Adan Moronta|Yolaine Gomez|Sohany Galan|[^\s]+@[^\s]+)$/;
 const URL_ATTRS = /^(href|src|srcset|poster|action|data-[a-z-]*src[a-z-]*)$/;
 const VOID = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
 
@@ -154,6 +159,28 @@ function build(loc) {
   meta('name', 'twitter:title', t);
   meta('name', 'twitter:description', t);
   out = out.replace('<link rel="canonical" href="' + SITE + '">', '<link rel="canonical" href="' + page + '">');
+  // Structured data (schema.org) in the page's language: its texts, its URL,
+  // its language and preview image. Names that are the same everywhere stay.
+  const TEXT_KEYS = new Set(['description', 'slogan', 'name', 'serviceType', 'jobTitle']);
+  out = out.replace(/(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/, (m, open, json, close) => {
+    const data = JSON.parse(json);
+    const walk = v => {
+      if (Array.isArray(v)) return v.map(walk);
+      if (!v || typeof v !== 'object') return v;
+      const o = {};
+      for (const [k, x] of Object.entries(v)) o[k] = typeof x === 'string' && TEXT_KEYS.has(k) ? ((LD_TEXT[loc] || {})[x] || t(x, true)) : walk(x);
+      return o;
+    };
+    const ld = walk(data);
+    for (const n of ld['@graph']) {
+      if (n['@type'] === 'WebPage') {
+        n['@id'] = page + '#webpage'; n.url = page; n.inLanguage = loc;
+        if (pv) n.primaryImageOfPage = pv.image;
+      }
+      if (n['@type'] === 'Organization' && pv) n.image = pv.image;
+    }
+    return open + '\n' + JSON.stringify(ld, null, 1) + '\n' + close;
+  });
   out = out.replace(/(<script src="\/i18n\/boot\.js[^"]*" data-root=")"/, '$1/"');
   if (!out.includes('<link rel="canonical" href="' + page + '">') || !out.includes('data-root="/"')) throw new Error('head not rewritten');
 

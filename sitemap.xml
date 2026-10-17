@@ -1,9 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://scalia.do/</loc><lastmod>2026-10-09</lastmod></url>
-  <url><loc>https://scalia.do/fr/</loc><lastmod>2026-10-09</lastmod></url>
-  <url><loc>https://scalia.do/en/</loc><lastmod>2026-10-09</lastmod></url>
-  <url><loc>https://scalia.do/es/</loc><lastmod>2026-10-09</lastmod></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://scalia.do/</loc><lastmod>2026-10-17</lastmod>
+    <xhtml:link rel="alternate" hreflang="es" href="https://scalia.do/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://scalia.do/fr/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://scalia.do/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://scalia.do/"/>
+  </url>
+  <url>
+    <loc>https://scalia.do/es/</loc><lastmod>2026-10-17</lastmod>
+    <xhtml:link rel="alternate" hreflang="es" href="https://scalia.do/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://scalia.do/fr/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://scalia.do/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://scalia.do/"/>
+  </url>
+  <url>
+    <loc>https://scalia.do/en/</loc><lastmod>2026-10-17</lastmod>
+    <xhtml:link rel="alternate" hreflang="es" href="https://scalia.do/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://scalia.do/fr/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://scalia.do/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://scalia.do/"/>
+  </url>
+  <url>
+    <loc>https://scalia.do/fr/</loc><lastmod>2026-10-17</lastmod>
+    <xhtml:link rel="alternate" hreflang="es" href="https://scalia.do/es/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://scalia.do/fr/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://scalia.do/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://scalia.do/"/>
+  </url>
   <url><loc>https://scalia.do/scalians/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://scalia.do/mentions-legales/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://scalia.do/confidentialite/</loc><lastmod>2026-10-08</lastmod></url>
