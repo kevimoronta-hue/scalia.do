@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const config = require('./config');
+const { portalError } = require('./errors');
 
 const MAX_BYTES = 50 * 1024 * 1024;
 // Accepted documents: extension → MIME type. Anything executable, HTML or
@@ -44,7 +45,7 @@ function vercel() {
   const blob = require('@vercel/blob');
   const token = () => {
     const t = config.blobToken();
-    if (!t) { const e = new Error('NOT_CONFIGURED'); e.code = 'NOT_CONFIGURED'; e.status = 503; throw e; }
+    if (!t) throw portalError('NOT_CONFIGURED');
     return t;
   };
   return {

@@ -7,6 +7,7 @@ const rename = (q, id, name, by) => q.one('update organizations set name = $2, u
 const all = q => q.query('select * from organizations order by lower(name)');
 const addMember = (q, orgId, userId) => q.query('insert into organization_members (organization_id, user_id) values ($1, $2) on conflict do nothing', [orgId, userId]);
 const allMembers = q => q.query('select organization_id, user_id from organization_members');
+const isMember = async (q, orgId, userId) => !!(await q.one('select 1 as x from organization_members where organization_id = $1 and user_id = $2', [orgId, userId]));
 const firstOfUser = (q, userId) => q.one('select o.* from organizations o join organization_members m on m.organization_id = o.id where m.user_id = $1 order by m.created_at limit 1', [userId]);
 
-module.exports = { create, byId, rename, all, addMember, allMembers, firstOfUser };
+module.exports = { create, byId, rename, all, addMember, allMembers, isMember, firstOfUser };

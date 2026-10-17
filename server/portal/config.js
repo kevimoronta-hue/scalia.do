@@ -38,8 +38,10 @@ function blobToken() {
 function mockDir() {
   return process.env.PORTAL_MOCK_DIR || path.join(os.tmpdir(), 'scalia-portal-mock');
 }
+// The portal works with the database alone; documents also need Blob
+// (server/portal/storage.js answers NOT_CONFIGURED without it).
 function configured() {
-  return mock() || !!(databaseUrl() && blobToken());
+  return mock() || !!databaseUrl();
 }
 
 module.exports = { mock, databaseUrl, migrationUrl, blobToken, mockDir, configured, onVercelOrProd };

@@ -30,6 +30,10 @@ async function signedIn(req, res) {
   if (!ctx) throw service.err('UNAUTHENTICATED');
   return ctx;
 }
+// A new sign-in replaces the session this browser had, which is deleted.
+async function dropPreviousSession(req) {
+  try { await auth.destroySession(session.token(req)); } catch (e) { /* already gone */ }
+}
 function ready() { if (!config.configured()) throw session.notConfigured(); }
 async function limit(key, max, seconds) {
   if (await auth.limited(key, max, seconds)) throw service.err('RATE_LIMITED', null, 429);
@@ -46,7 +50,8 @@ module.exports = router({
       await limit('login:ip:' + ip(req), 30, 15 * MIN);
       await limit('login:email:' + email, 8, 15 * MIN);
       const r = await service.signIn(email, b.password);
-      auth.clearLimit('login:email:' + email);
+      await auth.clearLimit('login:email:' + email);
+      await dropPreviousSession(req);
       session.setCookie(req, res, r.session);
       return { ok: true, role: r.role, locale: r.locale };
     }
@@ -76,6 +81,7 @@ module.exports = router({
       ready();
       await limit('token:ip:' + ip(req), 30, 15 * MIN);
       const r = await service.acceptToken(b.token, b.password);
+      await dropPreviousSession(req);
       session.setCookie(req, res, r.session);
       return { ok: true, role: r.role, locale: r.locale };
     }

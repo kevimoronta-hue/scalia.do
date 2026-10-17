@@ -199,7 +199,7 @@ const cid = (got.find(m => m.to === 'booking@example.test') || {}).id, aid = (go
 const ev = cid && cid.match(/^<booking-(.+)-client@scalia\.do>$/);
 ok(ev && aid === '<booking-' + ev[1] + '-admin@scalia.do>', 'client / admin Message-IDs: same event id, distinct roles');
 ok(mail.messageId('booking', ev && ev[1], 'client') === cid && mail.messageId('booking', ev && ev[1], 'client') === mail.messageId('booking', ev && ev[1], 'client'), 'Message-ID stable for the same event');
-ok(got.find(m => m.to === 'booking@example.test').subject && /scalia\.ics/.test(fs.readFileSync(path.join(MAILDIR, fs.readdirSync(MAILDIR).filter(f => f.endsWith('.eml')).sort().slice(n0).find(f => fs.readFileSync(path.join(MAILDIR, f), 'utf8').includes('To: booking@example.test'))), 'utf8')), 'client email keeps its .ics');
+ok(got.find(m => m.to === 'booking@example.test').subject && /scalia\.ics/.test(fs.readFileSync(path.join(MAILDIR, fs.readdirSync(MAILDIR).filter(f => f.endsWith('.eml')).sort().slice(n0).find(f => fs.readFileSync(path.join(MAILDIR, f), 'utf8').match(/^To: booking@example\.test$/m))), 'utf8')), 'client email keeps its .ics');
 
 noise('\n' + pass + ' passed, ' + fail + ' failed');
 server.close();

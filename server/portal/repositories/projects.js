@@ -1,7 +1,7 @@
 /* ==========================================================================
    Scalia Portal · projects, stages, updates, required actions.
-   Client reads go through the *ForUser functions: the project must belong
-   to an organization the user is a member of, inside the SQL itself.
+   Client reads go through listForUser: the project must belong to an
+   organization the user is a member of, inside the SQL itself.
    Anything else answers null / [] (never "exists but forbidden").
    ========================================================================== */
 'use strict';
@@ -23,8 +23,6 @@ function create(q, p) {
   );
 }
 const byId = (q, id) => q.one('select ' + COLS + ' from projects p where p.id = $1', [id]);
-const byIdForUser = (q, userId, id) => q.one(
-  'select ' + COLS + ' from projects p join organization_members m on m.organization_id = p.organization_id where p.id = $1 and m.user_id = $2', [id, userId]);
 const listForUser = (q, userId) => q.query(
   'select ' + COLS + ' from projects p join organization_members m on m.organization_id = p.organization_id where m.user_id = $1 order by p.created_at desc', [userId]);
 const listAll = q => q.query('select ' + COLS + ' from projects p order by p.updated_at desc');
@@ -73,7 +71,7 @@ const resolveAction = (q, id, by) => q.one(
   "update project_actions set status = 'resolved', resolved_at = now(), resolved_by = $2 where id = $1 and status = 'open' returning *", [id, by]);
 
 module.exports = {
-  create, byId, byIdForUser, listForUser, listAll, update,
+  create, byId, listForUser, listAll, update,
   createStages, stages, stageByKey, allStages, updateStage,
   updates, addUpdate, actions, openActions, addAction, resolveAction
 };

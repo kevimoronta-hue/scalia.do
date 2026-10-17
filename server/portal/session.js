@@ -8,6 +8,7 @@
 'use strict';
 const config = require('./config');
 const auth = require('./auth');
+const { portalError } = require('./errors');
 
 const COOKIE = 'scalia_ps';
 
@@ -29,7 +30,7 @@ function setCookie(req, res, s) { res.setHeader('Set-Cookie', serialize(req, s.t
 function clearCookie(req, res) { res.setHeader('Set-Cookie', serialize(req, '', 0)); }
 const token = req => cookies(req)[COOKIE] || null;
 
-function notConfigured() { const e = new Error('NOT_CONFIGURED'); e.code = 'NOT_CONFIGURED'; e.status = 503; return e; }
+const notConfigured = () => portalError('NOT_CONFIGURED');
 
 // null when signed out, expired, or the account is disabled.
 async function resolve(req, res) {

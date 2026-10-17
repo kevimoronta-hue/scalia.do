@@ -15,7 +15,13 @@ const sessionUser = (q, tokenHash) => q.one(
 const touchSession = (q, sessionId) => q.query('update sessions set last_used_at = now() where id = $1', [sessionId]);
 const deleteSession = (q, tokenHash) => q.query('delete from sessions where token_hash = $1', [tokenHash]);
 const deleteUserSessions = (q, userId) => q.query('delete from sessions where user_id = $1', [userId]);
-const purgeExpired = q => q.query("delete from sessions where expires_at < now() - interval '1 day'");
+// Housekeeping, now and then (auth.createSession): expired sessions, old
+// links, finished rate-limit windows.
+async function purgeExpired(q) {
+  await q.query("delete from sessions where expires_at < now() - interval '1 day'");
+  await q.query("delete from auth_tokens where expires_at < now() - interval '30 days'");
+  await q.query("delete from rate_limits where window_start < now() - interval '1 day'");
+}
 
 /* --------------------------------------------------------------- tokens */
 // A new token cancels the earlier unused ones of the same kind.

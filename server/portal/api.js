@@ -3,13 +3,15 @@
 'use strict';
 const { send, readJson, originOk } = require('../http');
 
-const KNOWN = { UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, NOT_CONFIGURED: 503, RATE_LIMITED: 429 };
-
+// Business errors (server/portal/errors.js) keep their code; anything else
+// (database down, Google / Blob timeout, a bug) is SERVER_ERROR, logged.
 function fail(res, e) {
-  const code = e && e.code && /^[A-Z_]+$/.test(e.code) ? e.code : 'SERVER_ERROR';
-  const status = KNOWN[code] || (e && e.status && e.status < 500 && code !== 'SERVER_ERROR' ? e.status : code === 'SERVER_ERROR' ? 500 : 400);
-  if (status >= 500) console.error('[portal]', (e && (e.code || e.message)) || e);
-  send(res, status, { error: code, field: (e && e.field) || undefined }, { 'Cache-Control': 'no-store' });
+  if (e && e.expose) {
+    if (e.status >= 500) console.error('[portal]', e.code);
+    return send(res, e.status, { error: e.code, field: e.field || undefined }, { 'Cache-Control': 'no-store' });
+  }
+  console.error('[portal] server error', (e && (e.code || e.message)) || e);
+  send(res, 500, { error: 'SERVER_ERROR' }, { 'Cache-Control': 'no-store' });
 }
 
 // action handlers: { name: { method: 'GET'|'POST', run: async (req, res, body) => data } }
@@ -18,7 +20,7 @@ function router(actions) {
     const a = String((req.query && req.query.a) || '');
     const h = Object.prototype.hasOwnProperty.call(actions, a) ? actions[a] : null;
     if (!h) return send(res, 404, { error: 'NOT_FOUND' });
-    if (req.method !== h.method && !(h.method === 'POST' && req.method === h.alt)) return send(res, 405, { error: 'METHOD_NOT_ALLOWED' }, { Allow: h.method });
+    if (req.method !== h.method) return send(res, 405, { error: 'METHOD_NOT_ALLOWED' }, { Allow: h.method });
     // Writes: same site only (cookies are SameSite=Lax as well).
     if (req.method !== 'GET' && !h.raw && !originOk(req)) return send(res, 403, { error: 'FORBIDDEN' });
     try {
@@ -36,4 +38,4 @@ function router(actions) {
   };
 }
 
-module.exports = { router, fail };
+module.exports = { router };

@@ -32,7 +32,8 @@ Postgres standard (SQL portable, aucune fonction propriétaire). Tables : `users
 - Mots de passe : **Argon2id** (19 Mio, t=2, p=1), 10 caractères minimum, mots de passe évidents et égaux à l'email refusés. Jamais stockés ni envoyés en clair.
 - Session : cookie `scalia_ps` = valeur aléatoire opaque (256 bits), `HttpOnly`, `Secure` en HTTPS, `SameSite=Lax`, `Path=/`, 30 jours. La base ne garde que son SHA-256. Déconnexion = session supprimée en base + cookie expiré.
 - Invitation : l'admin crée le client → compte inactif sans mot de passe → jeton aléatoire (SHA-256 en base), usage unique, **24 h** → email `/portal/welcome/?token=…` → le client choisit son mot de passe → jeton consommé, compte actif. « Renvoyer l'invitation » crée un nouveau jeton et annule les anciens.
-- Mot de passe oublié : même principe, jeton **1 h**, réponse identique que l'email existe ou non ; à la réussite, toutes les autres sessions du compte sont fermées.
+- Mot de passe oublié : même principe, jeton **1 h**, réponse identique (et en au moins 1,5 s) que l'email existe ou non ; à la réussite, toutes les autres sessions du compte sont fermées. Un client invité qui n'a jamais choisi son mot de passe reçoit une nouvelle invitation.
+- Une nouvelle connexion supprime la session que ce navigateur avait.
 - Limites (en base, partagées par toutes les instances) : connexion 8 essais / 15 min par email et 30 par IP ; mot de passe oublié 3 / h par email et 5 / 15 min par IP ; liens 30 / 15 min par IP.
 - Emails : l'expéditeur déjà utilisé par la réservation (Gmail `contact@scalia.do`, ou Resend), en ES / FR / EN.
 
@@ -59,7 +60,7 @@ Chacune prend `ctx = { user, admin }`, valide ses entrées et vérifie le rôle.
 |---|---|
 | `DATABASE_URL` (ou `POSTGRES_URL`) | ajoutée par Vercel en connectant la base Postgres au projet |
 | `DATABASE_URL_UNPOOLED` / `POSTGRES_URL_NON_POOLING` | si présente : utilisée par les migrations |
-| `BLOB_READ_WRITE_TOKEN` | ajoutée par Vercel en connectant le store Blob au projet |
+| `BLOB_READ_WRITE_TOKEN` | ajoutée par Vercel en connectant le store Blob au projet (documents uniquement) |
 | `PORTAL_SITE_URL` | facultative (liens des emails) |
 | `PORTAL_MOCK`, `PORTAL_MOCK_DIR` | tests locaux uniquement, ignorées sur Vercel |
 
@@ -67,12 +68,21 @@ Pas de secret de session : les sessions sont des valeurs aléatoires hashées en
 
 ## Mise en service dans Vercel
 
-1. Vercel → projet du site → **Storage** → créer une base **Postgres** (fournisseur Neon, via le Marketplace) → la connecter au projet pour Production (et Preview si besoin). Vercel ajoute `DATABASE_URL` et ses variantes.
-2. **Storage** → créer un store **Blob** (accès **Private** si Vercel le demande) → le connecter au projet. Vercel ajoute `BLOB_READ_WRITE_TOKEN`.
-3. En local, récupérer les variables : `npm i -g vercel`, `vercel link` (dans ce dossier), puis `vercel env pull .env.local`.
-4. Créer les tables : `npm run portal:migrate`.
-5. Créer le premier admin : `npm run portal:create-admin -- --email contact@scalia.do --name "Kevi Moronta" --locale fr` → le script affiche un lien (24 h) pour choisir le mot de passe. Il refuse dès qu'un admin existe. Admins suivants : créer le compte comme un client puis, dans la base (onglet Storage → Neon → SQL), `update users set role = 'admin' where email = '…';`. Nom, titre et WhatsApp affichés aux clients : colonnes `first_name`, `last_name`, `title`, `whatsapp` de `users`.
-6. Déployer (push sur GitHub). L'adresse client à envoyer : `https://scalia.do/portal`.
+1. **Base Postgres** : Vercel → projet du site → onglet **Storage** → **Create Database** → **Neon** (Serverless Postgres, Marketplace) → région proche (Washington `iad1` ou Francfort `fra1`) → **Connect** au projet, environnements **Production** et **Preview**. Vercel ajoute `DATABASE_URL` (+ variantes).
+2. **Blob privé** : onglet **Storage** → **Create** → **Blob** → accès **Private** si proposé → **Connect** au même projet (Production + Preview). Vercel ajoute `BLOB_READ_WRITE_TOKEN`. Sans Blob, le portail fonctionne mais refuse les documents.
+3. **Variables en local** (une fois) : `npm i -g vercel`, puis dans ce dossier `vercel link` (choisir le projet du site) et `vercel env pull .env.local`.
+4. **Tables** : `npm run portal:migrate` (applique 001 et 002 ; sans risque si relancé).
+5. **Premier admin** : `npm run portal:create-admin -- --email contact@scalia.do --name "Kevi Moronta" --locale fr` → ouvrir le lien affiché (24 h) et choisir le mot de passe. Le script refuse dès qu'un admin existe.
+6. **Vérifier** : `npm run mail:check` (provider, adresses, `mail_events`).
+7. **Test avant production** : pousser sur une branche → Vercel crée une URL Preview (elle utilise les mêmes base et Blob si connectés à Preview) → tester connexion, client test, upload d'un PDF, téléchargement → puis fusion sur `main`.
+
+Admins suivants : créer le compte comme un client puis, dans Neon (Storage → la base → **Open in Neon** → SQL Editor), `update users set role = 'admin' where email = '…';`. Nom, titre et WhatsApp affichés aux clients : colonnes `first_name`, `last_name`, `title`, `whatsapp` de `users`.
+
+## Erreurs et maintenance
+
+- L'API ne renvoie au navigateur que des erreurs métier (`server/portal/errors.js`). Base, Google ou Blob en panne, ou bug : réponse `SERVER_ERROR` (500) et détail dans les logs Vercel (`[portal] server error …`).
+- Nettoyage automatique (de temps en temps, à la connexion) : sessions expirées, liens de plus de 30 jours, fenêtres de rate limit terminées.
+- Vercel installe les dépendances sans celles de développement (`npm install --omit=dev`) : PGlite (tests locaux) n'est jamais déployé.
 
 ## Local
 

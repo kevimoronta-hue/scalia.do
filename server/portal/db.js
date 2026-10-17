@@ -15,13 +15,14 @@
 const fs = require('fs');
 const path = require('path');
 const config = require('./config');
+const { portalError } = require('./errors');
 
 let backend = null;
 
 function pgBackend() {
   const { Pool } = require('pg');
   const url = config.databaseUrl();
-  if (!url) { const e = new Error('NOT_CONFIGURED'); e.code = 'NOT_CONFIGURED'; e.status = 503; throw e; }
+  if (!url) throw portalError('NOT_CONFIGURED');
   const pool = new Pool({ connectionString: url, max: 3, idleTimeoutMillis: 10000, connectionTimeoutMillis: 8000 });
   pool.on('error', e => console.error('[portal] db pool', e.code || e.message));
   return {

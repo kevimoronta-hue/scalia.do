@@ -24,16 +24,12 @@ const projects = require('./repositories/projects');
 const payments = require('./repositories/payments');
 const documents = require('./repositories/documents');
 const authRepo = require('./repositories/auth');
+const { portalError } = require('./errors');
 
 const q = db.pool;
+const TZ = require('../config').BOOKING.timezone;
 
-function err(code, field, status) {
-  const e = new Error(code);
-  e.code = code;
-  if (field) e.field = field;
-  e.status = status || (code === 'FORBIDDEN' ? 403 : code === 'NOT_FOUND' ? 404 : code === 'UNAUTHENTICATED' ? 401 : 400);
-  return e;
-}
+const err = portalError;
 function assertAdmin(ctx) {
   if (!ctx || !ctx.user) throw err('UNAUTHENTICATED');
   if (!ctx.admin) throw err('FORBIDDEN');
@@ -61,10 +57,17 @@ function text(v, max, field, required) {
   return s;
 }
 function oneOf(v, list, field) { if (!list.includes(v)) throw err('INVALID', field); return v; }
+// A real calendar day (2026-02-31 is refused, not rolled over).
 function date(v, field) {
   if (v == null || v === '') return null;
-  if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v) || isNaN(Date.parse(v + 'T00:00:00Z'))) throw err('INVALID', field);
+  if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) throw err('INVALID', field);
+  const d = new Date(v + 'T00:00:00Z');
+  if (isNaN(d) || d.toISOString().slice(0, 10) !== v) throw err('INVALID', field);
   return v;
+}
+// Today in Scalia's time zone (BOOKING_TIMEZONE), as YYYY-MM-DD.
+function today() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 }
 // "700", "700.50", "700,5" → 70000 / 70050 / 70050 (integer cents, no float math).
 function minor(v, field, allowZero) {
@@ -226,14 +229,24 @@ async function sendAccess(user, type, siteUrl, company, by) {
   await portalMail.send(portalMail.accessMail({ to: user.email, locale: user.preferred_locale, name: users.fullName(user), company, url, kind: type }));
 }
 
-// Public "forgot password": same answer whether or not the address exists.
+// Public "forgot password": same answer, and about the same time, whether
+// or not the address has an account. An invited client who never chose a
+// password gets a new invitation instead (a disabled account gets nothing).
+const RESET_MIN_MS = 1500;
 async function requestPasswordReset(rawEmail, siteUrl) {
+  const started = Date.now();
   const e = String(rawEmail || '').trim().toLowerCase();
   if (!EMAIL.test(e) || e.length > 254) throw err('INVALID', 'email');
   try {
-    const u = await users.byEmail(q, e);
-    if (u && u.is_active) await sendAccess(u, 'reset', siteUrl, '', null);
+    const cred = await users.credentialsByEmail(q, e);
+    if (cred && (cred.is_active || !cred.password_hash)) {
+      const u = await users.byId(q, cred.id);
+      const org = cred.is_active ? null : await orgs.firstOfUser(q, u.id);
+      await sendAccess(u, cred.is_active ? 'reset' : 'invite', siteUrl, org ? org.name : '', null);
+    }
   } catch (x) { console.error('[portal] reset', x.code || x.message); }
+  const wait = RESET_MIN_MS - (Date.now() - started);
+  if (wait > 0) await new Promise(r => setTimeout(r, wait));
   return { ok: true };
 }
 
@@ -302,7 +315,14 @@ async function updateClient(ctx, organizationId, input) {
   return db.transaction(async tx => {
     const o = await orgs.rename(tx, oid, company, ctx.user.id);
     if (!o) throw err('NOT_FOUND');
-    if (contact && !(await users.update(tx, id(c.userId), contact, ctx.user.id))) throw err('NOT_FOUND');
+    if (contact) {
+      const uid = id(c.userId, 'contactName');
+      // Only a client contact of this very organization can be edited here.
+      if (!(await orgs.isMember(tx, oid, uid))) throw err('NOT_FOUND');
+      const u = await users.byId(tx, uid);
+      if (!u || u.role !== 'client') throw err('NOT_FOUND');
+      await users.update(tx, uid, contact, ctx.user.id);
+    }
     return o;
   });
 }
@@ -432,7 +452,7 @@ function paymentFields(input, partial) {
   if (has('status')) out.status = oneOf(input.status || 'pending', ['pending', 'paid'], 'status');
   if (has('paidAt')) out.paid_at = date(input.paidAt, 'paidAt');
   if (has('notes')) out.notes = text(input.notes, 500, 'notes');
-  if (out.status === 'paid' && !out.paid_at) out.paid_at = new Date().toISOString().slice(0, 10);
+  if (out.status === 'paid' && !out.paid_at) out.paid_at = today();
   if (out.status === 'pending') out.paid_at = null;
   return out;
 }
@@ -541,7 +561,9 @@ async function deleteDocument(ctx, documentId) {
   assertAdmin(ctx);
   const row = await documents.remove(q, id(documentId));
   if (!row) throw err('NOT_FOUND');
-  await storage.store().remove(row.blob_pathname);
+  // The document is gone for everyone; a file the store failed to delete is
+  // unreachable (private, no record) and logged for cleanup.
+  try { await storage.store().remove(row.blob_pathname); } catch (e) { console.error('[portal] blob not deleted', row.blob_pathname, e.code || e.message); }
   return { ok: true };
 }
 
@@ -550,6 +572,15 @@ async function quickUpdate(ctx, projectId, input) {
   assertAdmin(ctx);
   const pid = id(projectId);
   input = input || {};
+  // All fields are checked first: an invalid one changes nothing.
+  if (input.stage) {
+    oneOf(input.stage, S.STAGES, 'stage');
+    if (input.stageStatus != null) oneOf(input.stageStatus, S.STAGE_STATUS, 'stageStatus');
+    if (input.progress != null && input.progress !== '') int(input.progress, 0, 100, 'progress');
+  }
+  if (input.update != null) text(input.update, 2000, 'update');
+  if (input.nextStep != null) text(input.nextStep, 600, 'nextStep');
+  if (!(await projects.byId(q, pid))) throw err('NOT_FOUND');
   const out = {};
   if (input.stage) out.stage = await updateProjectStage(ctx, pid, input.stage, { status: input.stageStatus, progress: input.progress });
   if (input.update && String(input.update).trim()) out.update = await addProjectUpdate(ctx, pid, input.update, input.updateVisible !== false);
