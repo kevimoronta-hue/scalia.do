@@ -474,6 +474,7 @@
   P.applyStatic();
   P.adminApi('me').then(function (r) {
     me = r;
+    P.watchIdle();
     $('[data-profile]').hidden = false;
     profileHint();
     P.preferLocale(me.locale);

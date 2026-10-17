@@ -2,7 +2,7 @@
    Scalia Portal · session cookie and request context.
    One cookie, scalia_ps: an opaque random value (no data, no JWT),
    HttpOnly (page scripts cannot read it), Secure on HTTPS, SameSite=Lax,
-   Path=/, 30 days. resolve() turns it into the ctx every business function
+   Path=/, 12 hours, and ended sooner after inactivity (auth.js IDLE). resolve() turns it into the ctx every business function
    takes: { user, admin }. The role comes from the database on every request.
    ========================================================================== */
 'use strict';

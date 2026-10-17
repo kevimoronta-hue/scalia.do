@@ -30,7 +30,7 @@ Postgres standard (SQL portable, aucune fonction propriétaire). Tables : `users
 ## Auth et sessions
 
 - Mots de passe : **Argon2id** (19 Mio, t=2, p=1), 10 caractères minimum, mots de passe évidents et égaux à l'email refusés. Jamais stockés ni envoyés en clair.
-- Session : cookie `scalia_ps` = valeur aléatoire opaque (256 bits), `HttpOnly`, `Secure` en HTTPS, `SameSite=Lax`, `Path=/`, 30 jours. La base ne garde que son SHA-256. Déconnexion = session supprimée en base + cookie expiré.
+- Session : cookie `scalia_ps` = valeur aléatoire opaque (256 bits), `HttpOnly`, `Secure` en HTTPS, `SameSite=Lax`, `Path=/`, 12 heures maximum. Déconnexion automatique après inactivité : 30 min pour un admin, 1 h pour un client (vérifiée par le serveur ; la page prévient 2 min avant et renvoie vers la connexion). La base ne garde que son SHA-256. Déconnexion = session supprimée en base + cookie expiré.
 - Invitation : l'admin crée le client → compte inactif sans mot de passe → jeton aléatoire (SHA-256 en base), usage unique, **24 h** → email `/portal/welcome/?token=…` → le client choisit son mot de passe → jeton consommé, compte actif. « Renvoyer l'invitation » crée un nouveau jeton et annule les anciens.
 - Mot de passe oublié : même principe, jeton **1 h**, réponse identique (et en au moins 1,5 s) que l'email existe ou non ; à la réussite, toutes les autres sessions du compte sont fermées. Un client invité qui n'a jamais choisi son mot de passe reçoit une nouvelle invitation.
 - Une nouvelle connexion supprime la session que ce navigateur avait.

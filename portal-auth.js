@@ -31,6 +31,7 @@
   if (login) {
     login.addEventListener('submit', function (e) {
       e.preventDefault();
+      $('[data-form-alert]', login).classList.remove('pt-alert--info');
       var email = login.email.value.trim(), pw = login.password.value;
       if (!email || !pw) return P.formError(login, { code: 'REQUIRED', field: !email ? 'email' : 'password' });
       P.busy(login.querySelector('[type="submit"]'), P.portalApi('login', { email: email, password: pw }, { noRedirect: true })).then(function (r) {
@@ -59,6 +60,13 @@
       }, function (err) { P.formError(forgot, err); });
     });
     if (q.get('forgot')) show('forgot');
+    // Back here after an automatic sign-out (portal-core.js watchIdle).
+    if (q.get('expired')) {
+      var al = $('[data-form-alert]', login);
+      al.textContent = L('Vous avez été déconnecté après une période d’inactivité. Reconnectez-vous pour continuer.');
+      al.classList.add('pt-alert--info');
+      al.hidden = false;
+    }
   }
 
   /* ------------------------------------------------------------- welcome */

@@ -74,7 +74,7 @@ ok(await users.adminExists(db.pool), 'first admin created (bootstrap)');
 const A = jar();
 let r = await req(A, 'POST', '/api/portal/?a=accept', { token: adminToken, password: 'Admin-Test-2026' }, O);
 ok(r.s === 200 && r.d.role === 'admin' && A.c.scalia_ps, 'admin chooses password through the one-time link');
-ok(/HttpOnly/.test(r.setCookie) && /SameSite=Lax/.test(r.setCookie) && /Path=\//.test(r.setCookie) && /Max-Age=2592000/.test(r.setCookie), 'session cookie: HttpOnly, SameSite=Lax, Path=/, 30 days');
+ok(/HttpOnly/.test(r.setCookie) && /SameSite=Lax/.test(r.setCookie) && /Path=\//.test(r.setCookie) && /Max-Age=43200/.test(r.setCookie), 'session cookie: HttpOnly, SameSite=Lax, Path=/, 12 hours');
 await req(A, 'POST', '/api/portal/?a=logout', {}, O);
 r = await req(A, 'POST', '/api/portal/?a=login', { email: 'admin@scalia.test', password: 'Admin-Test-2026' }, O);
 ok(r.s === 200 && r.d.role === 'admin', 'admin login');
@@ -361,6 +361,18 @@ ok(r.d.whatsapp === '+33612345678' && (await req(A, 'GET', '/api/portal-admin/?a
 const viewA = (await req(R, 'GET', '/api/portal/?a=me&project=' + pA.id)).d.current;
 ok(viewA.contact.whatsapp === '+33612345678' && viewA.contact.title === 'Chef de projet', 'client sees the WhatsApp and role of their Scalia contact');
 ok((await req(A, 'GET', '/api/portal-admin/?a=clients')).d.team.every(t => typeof t.whatsapp === 'boolean'), 'team list says who has WhatsApp, not the number');
+section('inactivity');
+const age = (j, min) => db.query("update sessions set last_used_at = now() - make_interval(mins => $2) where token_hash = $1", [auth.sha256(j.c.scalia_ps), min]);
+const IC = jar(); await req(IC, 'POST', '/api/portal/?a=login', { email: 'ana@top.test', password: 'AnaNew-2026-pw' }, O);
+r = await req(IC, 'GET', '/api/portal/?a=ping'); ok(r.s === 200 && r.d.idleSeconds === 3600, 'ping: client idle limit is 1 hour');
+await age(IC, 50); ok((await req(IC, 'GET', '/api/portal/?a=ping')).s === 200, 'client inactive 50 min: still signed in (and the ping renews it)');
+await age(IC, 61); r = await req(IC, 'GET', '/api/portal/?a=me'); ok(r.s === 401, 'client inactive 61 min: signed out');
+ok((await db.one('select count(*)::int as n from sessions where token_hash = $1', [auth.sha256(IC.c.scalia_ps)])).n === 0, 'idle session deleted from the database');
+const IA = jar(); await req(IA, 'POST', '/api/portal/?a=login', { email: 'admin@scalia.test', password: 'Admin-Test-2026' }, O);
+r = await req(IA, 'GET', '/api/portal/?a=ping'); ok(r.d.idleSeconds === 1800, 'ping: admin idle limit is 30 minutes');
+await age(IA, 31); ok((await req(IA, 'GET', '/api/portal-admin/?a=me')).s === 401, 'admin inactive 31 min: signed out');
+ok((await req(jar(), 'GET', '/api/portal/?a=ping')).s === 401, 'ping without a session: 401');
+
 await db.transaction(async tx => ok(await users.adminExists(tx), 'bootstrap would now refuse (an admin exists)'));
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

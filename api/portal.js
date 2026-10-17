@@ -8,6 +8,7 @@
      POST forgot       { email, locale }         → reset email (same answer
                                                    whether or not the address
                                                    has an account)
+     GET  ping                                   → session kept alive, idle limit
      GET  me           [&project=<id>]           → the client's project view
      GET  file         &id=<document id>         → 302 to a 60-second link
    Writes: same-site Origin only. A client only ever reads their own
@@ -95,6 +96,16 @@ module.exports = router({
       await limit('forgot:ip:' + ip(req), 5, 15 * MIN);
       await limit('forgot:email:' + email, 3, 60 * MIN);
       return service.requestPasswordReset(email, session.siteUrl(req));
+    }
+  },
+
+  // Called by the pages while the person is active: keeps the session
+  // alive and says after how long without activity it ends.
+  ping: {
+    method: 'GET',
+    async run(req, res) {
+      const ctx = await signedIn(req, res);
+      return { ok: true, idleSeconds: auth.IDLE[ctx.user.role] || auth.IDLE.client };
     }
   },
 

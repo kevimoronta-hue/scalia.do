@@ -3,8 +3,8 @@
    · Passwords: Argon2id (@node-rs/argon2, OWASP parameters: 19 MiB, t=2,
      p=1). Never stored or logged in clear; min 10 characters.
    · Sessions: a random 256-bit opaque value in an httpOnly cookie; the
-     database keeps its SHA-256 only. 30 days, renewed use is tracked
-     (last_used_at).
+     database keeps its SHA-256 only. 12 hours at most, ended after
+     30 min (admin) / 1 h (client) without activity (last_used_at).
    · Invitation / reset links: random 256-bit token, SHA-256 in the
      database, one use, 24 h (invitation) / 1 h (reset). A new link
      cancels the previous ones.
@@ -17,7 +17,12 @@ const argon2 = require('@node-rs/argon2');
 const db = require('./db');
 const authRepo = require('./repositories/auth');
 
-const SESSION_TTL = 30 * 24 * 3600;
+// A session ends after 12 hours in any case, and sooner after inactivity:
+// 30 minutes for an admin, 1 hour for a client. The pages ping while they
+// are used (api/portal.js ping), last_used_at moves at most once a minute.
+const SESSION_TTL = 12 * 3600;
+const IDLE = { admin: 30 * 60, client: 60 * 60 };
+const TOUCH_EVERY_MS = 60e3;
 const TOKEN_TTL = { invite: 24 * 3600, reset: 3600 };
 const MIN_PASSWORD = 10;
 const MAX_PASSWORD = 128;
@@ -57,9 +62,12 @@ async function createSession(userId) {
 }
 async function sessionUser(raw) {
   if (typeof raw !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(raw)) return null;
-  const u = await authRepo.sessionUser(db.pool, sha256(raw));
+  const h = sha256(raw);
+  const u = await authRepo.sessionUser(db.pool, h);
   if (!u) return null;
-  if (Date.now() - new Date(u.last_used_at).getTime() > 5 * 60e3) authRepo.touchSession(db.pool, u.session_id).catch(() => {});
+  const idle = Date.now() - new Date(u.last_used_at).getTime();
+  if (idle > (IDLE[u.role] || IDLE.client) * 1000) { await authRepo.deleteSession(db.pool, h); return null; }
+  if (idle > TOUCH_EVERY_MS) authRepo.touchSession(db.pool, u.session_id).catch(() => {});
   return u;
 }
 const destroySession = raw => typeof raw === 'string' ? authRepo.deleteSession(db.pool, sha256(raw)) : Promise.resolve();
@@ -83,7 +91,7 @@ async function limited(key, max, windowSeconds) {
 const clearLimit = key => authRepo.clearHits(db.pool, key).catch(() => {});
 
 module.exports = {
-  SESSION_TTL, TOKEN_TTL, MIN_PASSWORD, sha256, randomToken,
+  SESSION_TTL, IDLE, TOKEN_TTL, MIN_PASSWORD, sha256, randomToken,
   passwordProblem, hashPassword, verifyPassword, burn,
   createSession, sessionUser, destroySession, destroyUserSessions,
   issueToken, tokenHashOf, limited, clearLimit

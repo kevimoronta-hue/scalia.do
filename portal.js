@@ -23,12 +23,14 @@
     wa: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13l.8-2.6A5.5 5.5 0 1 1 6 12.6z"/></svg>'
   };
 
+  var watching = false;
   function load() {
     P.portalApi('me' + (projectId ? '&project=' + encodeURIComponent(projectId) : '')).then(function (d) {
       if (d.admin && !d.current && !projectId) { location.replace('/admin/'); return; }
       data = d;
       P.preferLocale(d.current ? d.current.project.locale : d.profile && d.profile.locale);
       P.$('[data-logout]').hidden = false;
+      if (!watching) { watching = true; P.watchIdle(); }
       render();
     }, function (e) {
       app.removeAttribute('aria-busy');
